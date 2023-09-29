@@ -33,6 +33,7 @@ awx/ui/templates/ui/index.html
 awx/ui/templates/ui/installing.html
 awx/ui/node_modules/
 awx/ui/src/locales/*/messages.js
+awx/ui/src/screens/Firewalls1
 awx/ui/coverage/
 awx/ui/build
 awx/ui/.env.local
