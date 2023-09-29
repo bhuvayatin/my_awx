@@ -23,7 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
-from django.db import connection, transaction, ProgrammingError
+from django.db import connection, transaction, ProgrammingError, IntegrityError
 from django.db.models.fields.related import ForeignObjectRel, ManyToManyField
 from django.db.models.fields.related_descriptors import ForwardManyToOneDescriptor, ManyToManyDescriptor
 from django.db.models.query import QuerySet
@@ -768,14 +768,13 @@ def get_corrected_cpu(cpu_count):  # formerlly get_cpu_capacity
     return cpu_count  # no correction
 
 
-def get_cpu_effective_capacity(cpu_count):
+def get_cpu_effective_capacity(cpu_count, is_control_node=False):
     from django.conf import settings
-
-    cpu_count = get_corrected_cpu(cpu_count)
 
     settings_forkcpu = getattr(settings, 'SYSTEM_TASK_FORKS_CPU', None)
     env_forkcpu = os.getenv('SYSTEM_TASK_FORKS_CPU', None)
-
+    if is_control_node:
+        cpu_count = get_corrected_cpu(cpu_count)
     if env_forkcpu:
         forkcpu = int(env_forkcpu)
     elif settings_forkcpu:
@@ -834,6 +833,7 @@ def get_corrected_memory(memory):
 
     # Runner returns memory in bytes
     # so we convert memory from settings to bytes as well.
+
     if env_absmem is not None:
         return convert_mem_str_to_bytes(env_absmem)
     elif settings_absmem is not None:
@@ -842,14 +842,13 @@ def get_corrected_memory(memory):
     return memory
 
 
-def get_mem_effective_capacity(mem_bytes):
+def get_mem_effective_capacity(mem_bytes, is_control_node=False):
     from django.conf import settings
-
-    mem_bytes = get_corrected_memory(mem_bytes)
 
     settings_mem_mb_per_fork = getattr(settings, 'SYSTEM_TASK_FORKS_MEM', None)
     env_mem_mb_per_fork = os.getenv('SYSTEM_TASK_FORKS_MEM', None)
-
+    if is_control_node:
+        mem_bytes = get_corrected_memory(mem_bytes)
     if env_mem_mb_per_fork:
         mem_mb_per_fork = int(env_mem_mb_per_fork)
     elif settings_mem_mb_per_fork:
@@ -1165,13 +1164,24 @@ def create_partition(tblname, start=None):
     try:
         with transaction.atomic():
             with connection.cursor() as cursor:
+                cursor.execute(f"SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{tblname}_{partition_label}');")
+                row = cursor.fetchone()
+                if row is not None:
+                    for val in row:  # should only have 1
+                        if val is True:
+                            logger.debug(f'Event partition table {tblname}_{partition_label} already exists')
+                            return
+
                 cursor.execute(
-                    f'CREATE TABLE IF NOT EXISTS {tblname}_{partition_label} '
-                    f'PARTITION OF {tblname} '
-                    f'FOR VALUES FROM (\'{start_timestamp}\') to (\'{end_timestamp}\');'
+                    f'CREATE TABLE {tblname}_{partition_label} (LIKE {tblname} INCLUDING DEFAULTS INCLUDING CONSTRAINTS); '
+                    f'ALTER TABLE {tblname} ATTACH PARTITION {tblname}_{partition_label} '
+                    f'FOR VALUES FROM (\'{start_timestamp}\') TO (\'{end_timestamp}\');'
                 )
-    except ProgrammingError as e:
-        logger.debug(f'Caught known error due to existing partition: {e}')
+    except (ProgrammingError, IntegrityError) as e:
+        if 'already exists' in str(e):
+            logger.info(f'Caught known error due to partition creation race: {e}')
+        else:
+            raise
 
 
 def cleanup_new_process(func):

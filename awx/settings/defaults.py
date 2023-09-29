@@ -210,7 +210,7 @@ JOB_EVENT_WORKERS = 4
 
 # The number of seconds to buffer callback receiver bulk
 # writes in memory before flushing via JobEvent.objects.bulk_create()
-JOB_EVENT_BUFFER_SECONDS = 0.1
+JOB_EVENT_BUFFER_SECONDS = 1
 
 # The interval at which callback receiver statistics should be
 # recorded
@@ -327,7 +327,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_extensions',
     'polymorphic',
-    'taggit',
     'social_django',
     'django_guid',
     'corsheaders',
@@ -454,7 +453,7 @@ RECEPTOR_SERVICE_ADVERTISEMENT_PERIOD = 60  # https://github.com/ansible/recepto
 EXECUTION_NODE_REMEDIATION_CHECKS = 60 * 30  # once every 30 minutes check if an execution node errors have been resolved
 
 # Amount of time dispatcher will try to reconnect to database for jobs and consuming new work
-DISPATCHER_DB_DOWNTOWN_TOLLERANCE = 40
+DISPATCHER_DB_DOWNTIME_TOLERANCE = 40
 
 BROKER_URL = 'unix:///var/run/redis/redis.sock'
 CELERYBEAT_SCHEDULE = {
@@ -471,13 +470,13 @@ CELERYBEAT_SCHEDULE = {
     'receptor_reaper': {'task': 'awx.main.tasks.system.awx_receptor_workunit_reaper', 'schedule': timedelta(seconds=60)},
     'send_subsystem_metrics': {'task': 'awx.main.analytics.analytics_tasks.send_subsystem_metrics', 'schedule': timedelta(seconds=20)},
     'cleanup_images': {'task': 'awx.main.tasks.system.cleanup_images_and_files', 'schedule': timedelta(hours=3)},
-    'cleanup_host_metrics': {'task': 'awx.main.tasks.system.cleanup_host_metrics', 'schedule': timedelta(hours=3, minutes=30)},
+    'cleanup_host_metrics': {'task': 'awx.main.tasks.host_metrics.cleanup_host_metrics', 'schedule': timedelta(hours=3, minutes=30)},
     'host_metric_summary_monthly': {'task': 'awx.main.tasks.host_metrics.host_metric_summary_monthly', 'schedule': timedelta(hours=4)},
 }
 
 # Django Caching Configuration
 DJANGO_REDIS_IGNORE_EXCEPTIONS = True
-CACHES = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache', 'LOCATION': 'unix:/var/run/redis/redis.sock?db=1'}}
+CACHES = {'default': {'BACKEND': 'awx.main.cache.AWXRedisCache', 'LOCATION': 'unix:///var/run/redis/redis.sock?db=1'}}
 
 # Social Auth configuration.
 SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
@@ -1050,7 +1049,7 @@ UI_NEXT = True
 # - 'unique_managed_hosts': Compliant = automated - deleted hosts (using /api/v2/host_metrics/)
 SUBSCRIPTION_USAGE_MODEL = ''
 
-# Host metrics cleanup - last time of the cleanup run (soft-deleting records)
+# Host metrics cleanup - last time of the task/command run
 CLEANUP_HOST_METRICS_LAST_TS = None
 # Host metrics cleanup - minimal interval between two cleanups in days
 CLEANUP_HOST_METRICS_INTERVAL = 30  # days

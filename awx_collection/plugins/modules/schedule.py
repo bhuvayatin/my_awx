@@ -44,7 +44,7 @@ options:
       type: str
     execution_environment:
       description:
-        - Execution Environment applied as a prompt, assuming jot template prompts for execution environment
+        - Execution Environment name, ID, or named URL applied as a prompt, assuming job template prompts for execution environment
       type: str
     extra_data:
       description:
@@ -57,12 +57,12 @@ options:
       type: int
     instance_groups:
       description:
-        - List of Instance Groups applied as a prompt, assuming job template prompts for instance groups
+        - List of Instance Group names, IDs, or named URLs applied as a prompt, assuming job template prompts for instance groups
       type: list
       elements: str
     inventory:
       description:
-        - Inventory applied as a prompt, assuming job template prompts for inventory
+        - Inventory name, ID, or named URL applied as a prompt, assuming job template prompts for inventory
       required: False
       type: str
     job_slice_count:
@@ -76,7 +76,7 @@ options:
       elements: str
     credentials:
       description:
-        - List of credentials applied as a prompt, assuming job template prompts for credentials
+        - List of credential names, IDs, or named URLs applied as a prompt, assuming job template prompts for credentials
       type: list
       elements: str
     scm_branch:
@@ -130,12 +130,12 @@ options:
         - 5
     unified_job_template:
       description:
-        - Name of unified job template to schedule. Used to look up an already existing schedule.
+        - Name, ID, or named URL of unified job template to schedule. Used to look up an already existing schedule.
       required: False
       type: str
     organization:
       description:
-        - The organization the unified job template exists in.
+        - The organization name, ID, or named URL the unified job template exists in.
         - Used for looking up the unified job template, not a direct model field.
       type: str
     enabled:
@@ -273,6 +273,26 @@ def main():
         # If the state was absent we can let the module delete it if needed, the module will handle exiting from this
         module.delete_if_needed(existing_item)
 
+    # We need to clear out the name from the search fields so we can use name_or_id in the following searches
+    if 'name' in search_fields:
+        del search_fields['name']
+
+    # Create the data that gets sent for create and update
+    new_fields = {}
+    if execution_environment is not None:
+        if execution_environment == '':
+            new_fields['execution_environment'] = ''
+        else:
+            ee = module.get_one('execution_environments', name_or_id=execution_environment, **{'data': search_fields})
+            if ee is None:
+                ee2 = module.get_one('execution_environments', name_or_id=execution_environment)
+                if ee2 is None or ee2['organization'] is not None:
+                    module.fail_json(msg='could not find execution_environment entry with name {0}'.format(execution_environment))
+                else:
+                    new_fields['execution_environment'] = ee2['id']
+            else:
+                new_fields['execution_environment'] = ee['id']
+
     association_fields = {}
 
     if credentials is not None:
@@ -280,9 +300,9 @@ def main():
         for item in credentials:
             association_fields['credentials'].append(module.resolve_name_to_id('credentials', item))
 
-    # We need to clear out the name from the search fields so we can use name_or_id in the following searches
-    if 'name' in search_fields:
-        del search_fields['name']
+    # We need to clear out the organization from the search fields the searches for labels and instance_groups doesnt support it and won't be needed anymore
+    if 'organization' in search_fields:
+        del search_fields['organization']
 
     if labels is not None:
         association_fields['labels'] = []
@@ -302,8 +322,6 @@ def main():
             else:
                 association_fields['instance_groups'].append(instance_group_id['id'])
 
-    # Create the data that gets sent for create and update
-    new_fields = {}
     if rrule is not None:
         new_fields['rrule'] = rrule
     new_fields['name'] = new_name if new_name else (module.get_item_name(existing_item) if existing_item else name)
@@ -337,16 +355,6 @@ def main():
         new_fields['job_slice_count'] = job_slice_count
     if timeout is not None:
         new_fields['timeout'] = timeout
-
-    if execution_environment is not None:
-        if execution_environment == '':
-            new_fields['execution_environment'] = ''
-        else:
-            ee = module.get_one('execution_environments', name_or_id=execution_environment, **{'data': search_fields})
-            if ee is None:
-                module.fail_json(msg='could not find execution_environment entry with name {0}'.format(execution_environment))
-            else:
-                new_fields['execution_environment'] = ee['id']
 
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(

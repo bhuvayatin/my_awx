@@ -29,8 +29,9 @@ class RunnerCallback:
         self.safe_env = {}
         self.event_ct = 0
         self.model = model
-        self.update_attempts = int(settings.DISPATCHER_DB_DOWNTOWN_TOLLERANCE / 5)
+        self.update_attempts = int(settings.DISPATCHER_DB_DOWNTIME_TOLERANCE / 5)
         self.wrapup_event_dispatched = False
+        self.artifacts_processed = False
         self.extra_update_fields = {}
 
     def update_model(self, pk, _attempt=0, **updates):
@@ -207,9 +208,13 @@ class RunnerCallback:
             # We opened a connection just for that save, close it here now
             connections.close_all()
         elif status_data['status'] == 'error':
-            result_traceback = status_data.get('result_traceback', None)
-            if result_traceback:
-                self.delay_update(result_traceback=result_traceback)
+            for field_name in ('result_traceback', 'job_explanation'):
+                field_value = status_data.get(field_name, None)
+                if field_value:
+                    self.delay_update(**{field_name: field_value})
+
+    def artifacts_handler(self, artifact_dir):
+        self.artifacts_processed = True
 
 
 class RunnerCallbackForProjectUpdate(RunnerCallback):

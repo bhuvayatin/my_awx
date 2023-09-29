@@ -2,6 +2,7 @@
 from collections import namedtuple
 import functools
 import importlib
+import itertools
 import json
 import logging
 import os
@@ -14,7 +15,7 @@ from datetime import datetime
 
 # Django
 from django.conf import settings
-from django.db import transaction, DatabaseError, IntegrityError
+from django.db import connection, transaction, DatabaseError, IntegrityError
 from django.db.models.fields.related import ForeignKey
 from django.utils.timezone import now, timedelta
 from django.utils.encoding import smart_str
@@ -47,7 +48,7 @@ from awx.main.models import (
     Inventory,
     SmartInventoryMembership,
     Job,
-    HostMetric,
+    convert_jsonfields,
 )
 from awx.main.constants import ACTIVE_STATES
 from awx.main.dispatch.publish import task
@@ -62,6 +63,7 @@ from awx.main.utils.common import (
 
 from awx.main.utils.reload import stop_local_services
 from awx.main.utils.pglock import advisory_lock
+from awx.main.tasks.helpers import is_run_threshold_reached
 from awx.main.tasks.receptor import get_receptor_ctl, worker_info, worker_cleanup, administrative_workunit_reaper, write_receptor_config
 from awx.main.consumers import emit_channel_notification
 from awx.main import analytics
@@ -85,6 +87,11 @@ def dispatch_startup():
     # TODO: Enable this on VM installs
     if settings.IS_K8S:
         write_receptor_config()
+
+    try:
+        convert_jsonfields()
+    except Exception:
+        logger.exception("Failed json field conversion, skipping.")
 
     startup_logger.debug("Syncing Schedules")
     for sch in Schedule.objects.all():
@@ -127,6 +134,52 @@ def inform_cluster_of_shutdown():
         logger.warning('Normal shutdown signal for instance {}, removed self from capacity pool.'.format(this_inst.hostname))
     except Exception:
         logger.exception('Encountered problem with normal shutdown signal.')
+
+
+@task(queue=get_task_queuename)
+def migrate_jsonfield(table, pkfield, columns):
+    batchsize = 10000
+    with advisory_lock(f'json_migration_{table}', wait=False) as acquired:
+        if not acquired:
+            return
+
+        from django.db.migrations.executor import MigrationExecutor
+
+        # If Django is currently running migrations, wait until it is done.
+        while True:
+            executor = MigrationExecutor(connection)
+            if not executor.migration_plan(executor.loader.graph.leaf_nodes()):
+                break
+            time.sleep(120)
+
+        logger.warning(f"Migrating json fields for {table}: {', '.join(columns)}")
+
+        with connection.cursor() as cursor:
+            for i in itertools.count(0, batchsize):
+                # Are there even any rows in the table beyond this point?
+                cursor.execute(f"select count(1) from {table} where {pkfield} >= %s limit 1;", (i,))
+                if not cursor.fetchone()[0]:
+                    break
+
+                column_expr = ', '.join(f"{colname} = {colname}_old::jsonb" for colname in columns)
+                # If any of the old columns have non-null values, the data needs to be cast and copied over.
+                empty_expr = ' or '.join(f"{colname}_old is not null" for colname in columns)
+                cursor.execute(  # Only clobber the new fields if there is non-null data in the old ones.
+                    f"""
+                    update {table}
+                      set {column_expr}
+                      where {pkfield} >= %s and {pkfield} < %s
+                        and {empty_expr};
+                    """,
+                    (i, i + batchsize),
+                )
+                rows = cursor.rowcount
+                logger.debug(f"Batch {i} to {i + batchsize} copied on {table}, {rows} rows affected.")
+
+            column_expr = ', '.join(f"DROP COLUMN {column}_old" for column in columns)
+            cursor.execute(f"ALTER TABLE {table} {column_expr};")
+
+        logger.warning(f"Migration of {table} to jsonb is finished.")
 
 
 @task(queue=get_task_queuename)
@@ -315,9 +368,7 @@ def send_notifications(notification_list, job_id=None):
 
 @task(queue=get_task_queuename)
 def gather_analytics():
-    from awx.conf.models import Setting
-
-    if is_run_threshold_reached(Setting.objects.filter(key='AUTOMATION_ANALYTICS_LAST_GATHER').first(), settings.AUTOMATION_ANALYTICS_GATHER_INTERVAL):
+    if is_run_threshold_reached(getattr(settings, 'AUTOMATION_ANALYTICS_LAST_GATHER', None), settings.AUTOMATION_ANALYTICS_GATHER_INTERVAL):
         analytics.gather()
 
 
@@ -375,29 +426,6 @@ def cleanup_images_and_files():
 
 
 @task(queue=get_task_queuename)
-def cleanup_host_metrics():
-    """Run cleanup host metrics ~each month"""
-    # TODO: move whole method to host_metrics in follow-up PR
-    from awx.conf.models import Setting
-
-    if is_run_threshold_reached(
-        Setting.objects.filter(key='CLEANUP_HOST_METRICS_LAST_TS').first(), getattr(settings, 'CLEANUP_HOST_METRICS_INTERVAL', 30) * 86400
-    ):
-        months_ago = getattr(settings, 'CLEANUP_HOST_METRICS_SOFT_THRESHOLD', 12)
-        logger.info("Executing cleanup_host_metrics")
-        HostMetric.cleanup_task(months_ago)
-        logger.info("Finished cleanup_host_metrics")
-
-
-def is_run_threshold_reached(setting, threshold_seconds):
-    from rest_framework.fields import DateTimeField
-
-    last_time = DateTimeField().to_internal_value(setting.value) if setting and setting.value else DateTimeField().to_internal_value('1970-01-01')
-
-    return (now() - last_time).total_seconds() > threshold_seconds
-
-
-@task(queue=get_task_queuename)
 def cluster_node_health_check(node):
     """
     Used for the health check endpoint, refreshes the status of the instance, but must be ran on target node
@@ -438,7 +466,6 @@ def execution_node_health_check(node):
     data = worker_info(node)
 
     prior_capacity = instance.capacity
-
     instance.save_health_data(
         version='ansible-runner-' + data.get('runner_version', '???'),
         cpu=data.get('cpu_count', 0),
@@ -459,12 +486,36 @@ def execution_node_health_check(node):
     return data
 
 
-def inspect_execution_nodes(instance_list):
-    with advisory_lock('inspect_execution_nodes_lock', wait=False):
-        node_lookup = {inst.hostname: inst for inst in instance_list}
+def inspect_established_receptor_connections(mesh_status):
+    '''
+    Flips link state from ADDING to ESTABLISHED
+    If the InstanceLink source and target match the entries
+    in Known Connection Costs, flip to Established.
+    '''
+    from awx.main.models import InstanceLink
 
+    all_links = InstanceLink.objects.filter(link_state=InstanceLink.States.ADDING)
+    if not all_links.exists():
+        return
+    active_receptor_conns = mesh_status['KnownConnectionCosts']
+    update_links = []
+    for link in all_links:
+        if link.link_state != InstanceLink.States.REMOVING:
+            if link.target.hostname in active_receptor_conns.get(link.source.hostname, {}):
+                if link.link_state is not InstanceLink.States.ESTABLISHED:
+                    link.link_state = InstanceLink.States.ESTABLISHED
+                    update_links.append(link)
+
+    InstanceLink.objects.bulk_update(update_links, ['link_state'])
+
+
+def inspect_execution_and_hop_nodes(instance_list):
+    with advisory_lock('inspect_execution_and_hop_nodes_lock', wait=False):
+        node_lookup = {inst.hostname: inst for inst in instance_list}
         ctl = get_receptor_ctl()
         mesh_status = ctl.simple_command('status')
+
+        inspect_established_receptor_connections(mesh_status)
 
         nowtime = now()
         workers = mesh_status['Advertisements']
@@ -523,7 +574,7 @@ def cluster_node_heartbeat(dispatch_time=None, worker_tasks=None):
             this_inst = inst
             break
 
-    inspect_execution_nodes(instance_list)
+    inspect_execution_and_hop_nodes(instance_list)
 
     for inst in list(instance_list):
         if inst == this_inst:
@@ -712,7 +763,6 @@ def awx_periodic_scheduler():
                 new_unified_job.save(update_fields=['status', 'job_explanation'])
                 new_unified_job.websocket_emit_status("failed")
             emit_channel_notification('schedules-changed', dict(id=schedule.id, group_name="schedules"))
-        state.save()
 
 
 def schedule_manager_success_or_error(instance):
@@ -843,10 +893,7 @@ def delete_inventory(inventory_id, user_id, retries=5):
             user = None
     with ignore_inventory_computed_fields(), ignore_inventory_group_removal(), impersonate(user):
         try:
-            i = Inventory.objects.get(id=inventory_id)
-            for host in i.hosts.iterator():
-                host.job_events_as_primary_host.update(host=None)
-            i.delete()
+            Inventory.objects.get(id=inventory_id).delete()
             emit_channel_notification('inventories-status_changed', {'group_name': 'inventories', 'inventory_id': inventory_id, 'status': 'deleted'})
             logger.debug('Deleted inventory {} as user {}.'.format(inventory_id, user_id))
         except Inventory.DoesNotExist:

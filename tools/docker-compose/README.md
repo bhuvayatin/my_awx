@@ -118,18 +118,36 @@ $ make docker-compose
 
 > For running docker-compose detached mode, start the containers using the following command: `$ make docker-compose COMPOSE_UP_OPTS=-d`
 
+###### Solving database-related issues during initial startup
+
+If you have encountered the infinitely-repeating `Waiting for postgres to be ready to accept connections` message during the execution, try to do the following:
+
+1. Stop and delete AWX-related docker containers.
+2. Delete all associated docker volumes.
+3. Delete all associated docker networks.
+4. Repeat the process from scratch.
+
+If you have **only** AWX-related container entities in your system, you can simply stop and delete everything using the following commands:
+
+```bash
+docker stop $(docker ps -a -q)
+docker system prune -a
+docker volume prune
+docker network prune
+```
 
 ##### _(alternative method)_ Spin up a development environment with customized mesh node cluster
 
-With the introduction of Receptor, a cluster (of containers) with execution nodes and a hop node can be created by the docker-compose Makefile target.
-By default, it will create 1 hybrid node, 1 hop node, and 2 execution nodes.
-You can switch the type of AWX nodes between hybrid and control with this syntax.
+A cluster (of containers) with execution nodes and a hop node can be created by the docker-compose Makefile target.
+By default, it will create 1 hybrid node.
+You can switch the type of AWX nodes between hybrid and control with `MAIN_NODE_TYPE`.
 
 ```
-MAIN_NODE_TYPE=control COMPOSE_TAG=devel make docker-compose
+MAIN_NODE_TYPE=control EXECUTION_NODE_COUNT=2 COMPOSE_TAG=devel make docker-compose
 ```
 
 Running the above command will create a cluster of 1 control node, 1 hop node, and 2 execution nodes.
+A hop node is automatically created whenever there are 1 or more execution nodes.
 
 The number of nodes can be changed:
 
@@ -424,13 +442,11 @@ Now we are ready to configure and plumb OpenLDAP with AWX. To do this we have pr
 
 Note: The default configuration will utilize the non-tls connection. If you want to use the tls configuration you will need to work through TLS negotiation issues because the LDAP server is using a self signed certificate.
 
-Before we can run the playbook we need to understand that LDAP will be communicated to from within the AWX container. Because of this, we have to tell AWX how to route traffic to the LDAP container through the `LDAP Server URI` settings. The playbook requires a variable called container_reference to be set. The container_reference variable needs to be how your AWX container will be able to talk to the LDAP container. See the SAML section for some examples for how to select a `container_reference`.
-
-Once you have your container reference you can run the playbook like:
+You can run the playbook like:
 ```bash
 export CONTROLLER_USERNAME=<your username>
 export CONTROLLER_PASSWORD=<your password>
-ansible-playbook tools/docker-compose/ansible/plumb_ldap.yml -e container_reference=<your container_reference here>
+ansible-playbook tools/docker-compose/ansible/plumb_ldap.yml
 ```
 
 

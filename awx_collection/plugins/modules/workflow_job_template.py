@@ -58,7 +58,7 @@ options:
         - ask_tags
     organization:
       description:
-        - Organization the workflow job template exists in.
+        - Organization name, ID, or named URL the workflow job template exists in.
         - Used to help lookup the object, cannot be modified using this module.
         - If not provided, will lookup by name only, which does not work with duplicates.
       type: str
@@ -72,7 +72,7 @@ options:
       type: bool
     inventory:
       description:
-        - Inventory applied as a prompt, assuming job template prompts for inventory
+        - Name, ID, or named URL of inventory applied as a prompt, assuming job template prompts for inventory
       type: str
     limit:
       description:
@@ -517,68 +517,63 @@ EXAMPLES = '''
     workflow_nodes:
       - identifier: node101
         unified_job_template:
-          name: example-project
+          name: example-inventory
           inventory:
             organization:
               name: Default
           type: inventory_source
         related:
-          success_nodes: []
           failure_nodes:
             - identifier: node201
-          always_nodes: []
-          credentials: []
-      - identifier: node201
-        unified_job_template:
-          organization:
-            name: Default
-          name: job template 1
-          type: job_template
-        credentials: []
-        related:
-          success_nodes:
-            - identifier: node301
-          failure_nodes: []
-          always_nodes: []
-          credentials: []
-      - identifier: node202
+      - identifier: node102
         unified_job_template:
           organization:
             name: Default
           name: example-project
           type: project
         related:
-          success_nodes: []
-          failure_nodes: []
-          always_nodes: []
-          credentials: []
-      - identifier: node301
-        all_parents_must_converge: false
+          success_nodes:
+            - identifier: node201
+      - identifier: node201
         unified_job_template:
           organization:
             name: Default
-          name: job template 2
+          name: example-job template
           type: job_template
-        execution_environment:
-            name: My EE
         inventory:
-          name: Test inventory
+          name: Demo Inventory
           organization:
             name: Default
         related:
+          success_nodes:
+            - identifier: node401
+          failure_nodes:
+          -   identifier: node301
+          always_nodes: []
           credentials:
               - name: cyberark
                 organization:
                     name: Default
           instance_groups:
               - name: SunCavanaugh Cloud
-              - name: default
           labels:
               - name: Custom Label
-              - name: Another Custom Label
                 organization:
                     name: Default
-  register: result
+      - all_parents_must_converge: false
+        identifier: node301
+        unified_job_template:
+            description: Approval node for example
+            timeout: 900
+            type: workflow_approval
+            name: Approval Node for Demo
+        related:
+          success_nodes:
+            - identifier: node401
+      - identifier: node401
+        unified_job_template:
+          name: Cleanup Activity Stream
+          type: system_job_template
 
 '''
 
