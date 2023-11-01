@@ -7,6 +7,9 @@ class Inventories extends InstanceGroupsMixin(Base) {
     this.baseUrl = 'api/v2/inventories/';
 
     this.readAccessList = this.readAccessList.bind(this);
+    this.readHostVersion = this.readHostVersion.bind(this);
+    this.readPanoramaVersion = this.readPanoramaVersion.bind(this);
+    this.readfirewallsVersion = this.readfirewallsVersion.bind(this);
     this.readAccessOptions = this.readAccessOptions.bind(this);
     this.readHosts = this.readHosts.bind(this);
     this.readHostDetail = this.readHostDetail.bind(this);
@@ -16,6 +19,18 @@ class Inventories extends InstanceGroupsMixin(Base) {
     this.readInputInventories = this.readInputInventories.bind(this);
     this.associateInventory = this.associateInventory.bind(this);
     this.disassociateInventory = this.disassociateInventory.bind(this);
+  }
+
+  readHostVersion(data) {
+    return this.http.post(`${this.baseUrl}get/version/`, data);
+  }
+
+  readPanoramaVersion(data) {
+    return this.http.post(`${this.baseUrl}get/panorama/`, data);
+  }
+
+  readfirewallsVersion(data) {
+    return this.http.post(`${this.baseUrl}get/firewalls/`, data);
   }
 
   readAccessList(id, params) {

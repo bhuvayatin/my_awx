@@ -6000,3 +6000,25 @@ class ActivityStreamSerializer(BaseSerializer):
         if obj.setting:
             summary_fields['setting'] = [obj.setting]
         return summary_fields
+
+
+class GetVersionSerializer(serializers.Serializer):
+    host = serializers.CharField()
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+    # def validate(self, attrs):
+    #     name = attrs.get('name')
+    #     view = self.context.get('view', None)
+    #     obj = view.get_object()
+    #     if name == obj.name:
+    #         raise serializers.ValidationError(_('The original object is already named {}, a copy from it cannot have the same name.'.format(name)))
+    #     return attrs
+
+class GetPanoramaSerializer(serializers.Serializer):
+    host = serializers.CharField()
+    access_token = serializers.CharField()
+
+class GetFireWallsDataSerializer(serializers.Serializer):
+    host = serializers.CharField()
+    access_token = serializers.CharField()

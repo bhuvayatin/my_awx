@@ -25,6 +25,7 @@ import Users from 'screens/User';
 import WorkflowApprovals from 'screens/WorkflowApproval';
 import { Jobs } from 'screens/Job';
 import HostMetrics from 'screens/HostMetrics';
+import Firewalls from 'screens/Firewalls';
 
 function getRouteConfig(userProfile = {}) {
   let routeConfig = [
@@ -66,6 +67,11 @@ function getRouteConfig(userProfile = {}) {
           title: <Trans>Subscription Usage</Trans>,
           path: '/subscription_usage',
           screen: SubscriptionUsage,
+        },
+        {
+          title: <Trans>Update Firewalls</Trans>,
+          path: '/firewalls',
+          screen: Firewalls,
         },
       ],
     },

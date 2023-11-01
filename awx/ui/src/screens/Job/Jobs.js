@@ -32,6 +32,7 @@ function Jobs() {
       '/jobs': t`Jobs`,
       [`/jobs/${typeSegment}/${job.id}`]: `${job.id} - ${job.name}`,
       [`/jobs/${typeSegment}/${job.id}/output`]: t`Output`,
+      [`/jobs/${typeSegment}/${job.id}/result`]: t`Result`,
       [`/jobs/${typeSegment}/${job.id}/details`]: t`Details`,
     });
   }, []);
@@ -52,6 +53,9 @@ function Jobs() {
         </Route>
         <Route path={`${match.path}/:id/output`}>
           <TypeRedirect view="output" />
+        </Route>
+        <Route path={`${match.path}/:id/result`}>
+          <TypeRedirect view="result" />
         </Route>
         <Route path={`${match.path}/:typeSegment/:id`}>
           <Job setBreadcrumb={buildBreadcrumbConfig} />

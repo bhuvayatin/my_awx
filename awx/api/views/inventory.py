@@ -3,7 +3,13 @@
 
 # Python
 import logging
-
+import requests
+import xml.etree.ElementTree as ET
+import json
+import panos
+from datetime import datetime
+from requests.exceptions import Timeout
+from pandevice import firewall, panorama
 # Django
 from django.conf import settings
 from django.db.models import Q
@@ -11,6 +17,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 
 # Django REST Framework
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,6 +33,7 @@ from awx.api.generics import (
     SubListAttachDetachAPIView,
     ResourceAccessList,
     CopyAPIView,
+    APIView
 )
 from awx.api.views.labels import LabelSubListCreateAttachDetachView
 
@@ -38,6 +46,9 @@ from awx.api.serializers import (
     InstanceGroupSerializer,
     InventoryUpdateEventSerializer,
     JobTemplateSerializer,
+    GetVersionSerializer,
+    GetPanoramaSerializer,
+    GetFireWallsDataSerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -179,3 +190,138 @@ class InventoryLabelList(LabelSubListCreateAttachDetachView):
 class InventoryCopy(CopyAPIView):
     model = Inventory
     copy_return_serializer_class = InventorySerializer
+
+class GetVersion(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = GetVersionSerializer(data=request.data)
+        if serializer.is_valid():
+            host = serializer.validated_data.get('host', None)
+            username = serializer.validated_data.get('username', None)
+            password = serializer.validated_data.get('password', None)
+
+        PAN_HOST = f"https://{host}"
+        # Get API Key
+        url = f"{PAN_HOST}/api?type=keygen&user={username}&password={password}"
+
+        try:
+            response = requests.get(url, verify=False, timeout=10)  # Add a timeout for the request
+            response.raise_for_status()  # This will raise an error for HTTP errors
+
+
+            root = ET.fromstring(response.content)
+            api_key_element = root.find("./result/key")
+
+            # Check if there's an error message in the XML response
+            error_message = root.find(".//line")
+            if error_message is not None and "Invalid credentials" in error_message.text:
+                return Response({"message":"Invalid credentials. Please check your username and password."})
+
+            api_key = api_key_element.text
+
+            # Get software version using the API key
+            url = f"{PAN_HOST}/api?type=op&cmd=<show><system><info></info></system></show>&key={api_key}"
+            response = requests.get(url, verify=False, timeout=10)
+
+            root = ET.fromstring(response.content)
+            sw_version = root.find("./result/system/sw-version").text
+
+            return Response({"message":f"Palo Alto Software Version: {sw_version}"})
+
+        except requests.HTTPError as e:
+            if e.response.status_code == 403:
+                return Response({"Error": "Invalid credentials. Please check your username and password."})
+            else:
+                return Response({"Error":f"HTTP Error {e}"})
+        except requests.ConnectionError:
+            return Response({"Error: Cannot connect to the server. Please check the IP address."})
+        except requests.Timeout:
+            return Response({"Error: Connection timed out."})
+        except ET.ParseError:
+            return Response({"Error parsing the response. Invalid XML received."})
+        except Exception as e:
+            return Response({"Error":f"An unexpected error occurred {e}"})
+
+class GetPanorama(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = GetPanoramaSerializer(data=request.data)
+        if serializer.is_valid():
+            host = serializer.validated_data.get('host', None)
+            access_token = serializer.validated_data.get('access_token', None)
+
+        url = f'{host}/restapi/v10.1/Panorama/DeviceGroups'
+
+        # Headers
+        headers = {
+            'X-PAN-KEY': access_token,
+        }
+        try:
+            response = requests.get(url, headers=headers, verify=False)
+            data = response.json()
+            # Check if the request was successful
+            return Response({"data": data})
+        except Exception as e:
+            return Response({"Error":"Invalid credentials. Please check your username and password."})
+
+
+class GetFireWallsData(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = GetFireWallsDataSerializer(data=request.data)
+        if serializer.is_valid():
+            host = serializer.validated_data.get('host', None)
+            access_token = serializer.validated_data.get('access_token', None)
+            try:
+                timeout_seconds = 10
+                p = panorama.Panorama(hostname=host, api_key=access_token, timeout=timeout_seconds)                
+                device_groups = p.refresh_devices()
+                all_device_groups = []
+                
+                for device_group in device_groups:
+                    device_group_info = {}
+                    device_group_info['name'] = str(device_group)
+                    firewalls = []
+                    for device in device_group.children:
+                        if isinstance(device, firewall.Firewall):
+                            firewall_info = {}
+                            firewall_info['Firewall_Serial'] = device.serial
+                            firewall_info['Firewall_State'] = device.state.connected
+                            
+                            system_info = device.op("show system info")
+                            
+                            firewall_info['Device_Name'] = system_info.find('.//devicename').text
+                            firewall_info['IP_Address'] = system_info.find('.//ip-address').text
+                            firewall_info['Software_Version'] = system_info.find('.//sw-version').text
+                            firewall_info['Certificate Expiry'] = system_info.find('.//device-certificate-status').text
+                            
+                            # Get HA information
+                            ha_info = device.op("show high-availability state")
+                            if ha_info.find('.//enabled').text == 'yes':
+                                firewall_info['HA_Group_ID'] = ha_info.find('.//group').text 
+                                peer_info_serial = ha_info.find('.//peer-info/serial')
+                                peer_info_ip = ha_info.find('.//peer-info/mgmt-ip')
+                                if peer_info_serial is not None and peer_info_ip is not None:
+                                    firewall_info['Peer_Firewall_Serial'] = peer_info_serial.text
+                                    firewall_info['Peer_Firewall_IP'] = peer_info_ip.text
+                                else:
+                                    firewall_info['Peer_Information'] = "Could not find peer information."
+                            else:
+                                firewall_info['HA_Information'] = "HA is not enabled on this firewall."
+                            
+                            firewalls.append(firewall_info)
+                    
+                    device_group_info['Firewalls'] = firewalls
+                    all_device_groups.append(device_group_info)
+                
+                return Response({"data":all_device_groups})
+            
+            # except TimeoutError:
+            #     return Response({"Error": "API request timed out. The API is taking too long to respond."}, status=status.HTTP_408_REQUEST_TIMEOUT)
+            except Exception as e:
+                return Response({"Error": "API request timed out. The API is taking too long to respond."}, status=status.HTTP_408_REQUEST_TIMEOUT)
+        else:
+            return Response({"Error":"Please enter a host and access token"}, status=status.HTTP_400_BAD_REQUEST)

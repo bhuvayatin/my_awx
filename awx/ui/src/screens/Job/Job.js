@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef, useState } from 'react';
 import {
   Route,
   Switch,
@@ -21,6 +21,7 @@ import { getJobModel } from 'util/jobs';
 import WorkflowOutputNavigation from 'components/WorkflowOutputNavigation';
 import JobDetail from './JobDetail';
 import JobOutput from './JobOutput';
+import JobResult from './JobResult';
 import { WorkflowOutput } from './WorkflowOutput';
 import useWsJob from './useWsJob';
 
@@ -38,6 +39,7 @@ export const JOB_URL_SEGMENT_MAP = {
 function Job({ setBreadcrumb }) {
   const { id, typeSegment } = useParams();
   const match = useRouteMatch();
+  const [result, setResult] = useState(null);
 
   const type = JOB_URL_SEGMENT_MAP[typeSegment];
 
@@ -82,7 +84,7 @@ function Job({ setBreadcrumb }) {
 
         jobDetailData.summary_fields.credentials = results;
       }
-
+      console.log("🚀 ~ file: Job.js:62 ~ useCallback ~ jobDetailData:", jobDetailData)
       setBreadcrumb(jobDetailData);
       let choices;
       if (jobDetailData.type === 'inventory_update') {
@@ -124,11 +126,12 @@ function Job({ setBreadcrumb }) {
         </>
       ),
       link: `/jobs`,
-      persistentFilterKey: 'jobs',
+      isBackButton: true,
       id: 99,
     },
     { name: t`Details`, link: `${match.url}/details`, id: 0 },
     { name: t`Output`, link: `${match.url}/output`, id: 1 },
+    { name: t`Result`, link: `${match.url}/result`, id: 2 },
   ];
   if (relatedJobs?.length > 0) {
     tabsArray.push({
@@ -139,7 +142,7 @@ function Job({ setBreadcrumb }) {
       id: 2,
       hasstyle: 'margin-left: auto',
     });
-  }
+ }
 
   if (isLoading) {
     return (
@@ -205,6 +208,13 @@ function Job({ setBreadcrumb }) {
                     eventSearchableKeys={eventSearchableKeys}
                   />
                 )}
+              </Route>,
+              <Route key="result" path="/jobs/:typeSegment/:id/result">
+                <JobResult
+                  job={job}
+                  result={result}
+                  setResult={setResult}
+                />
               </Route>,
               <Route key="not-found" path="*">
                 <ContentError isNotFound>

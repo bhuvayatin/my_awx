@@ -1,0 +1,25 @@
+---
+- name: Gather System Information
+  hosts: all
+  gather_facts: yes  # This option tells Ansible to gather facts about target hosts.
+
+  tasks:
+    - name: Display Hostname
+      debug:
+        msg: "Hostname is {{ ansible_hostname }}"
+
+    - name: Display Operating System
+      debug:
+        msg: "Operating System is {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Display IP Addresses
+      debug:
+        msg: "IP addresses: {{ ansible_all_ipv4_addresses }}"
+
+    - name: Display Memory Info
+      debug:
+        msg: "Memory: {{ ansible_memory_mb.real.total }} MB"
+
+    - name: Display CPU Info
+      debug:
+        msg: "CPU Cores: {{ ansible_processor_cores }}"

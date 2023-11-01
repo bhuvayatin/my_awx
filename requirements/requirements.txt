@@ -222,6 +222,8 @@ kubernetes==25.3.0
     # via openshift
 lockfile==0.12.2
     # via python-daemon
+pan-os-python
+pandevice
 lxml==4.9.1
     # via
     #   python3-saml

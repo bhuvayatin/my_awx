@@ -16,6 +16,9 @@ from awx.api.views.inventory import (
     InventoryInstanceGroupsList,
     InventoryLabelList,
     InventoryCopy,
+    GetVersion,
+    GetPanorama,
+    GetFireWallsData
 )
 from awx.api.views import (
     InventoryHostsList,
@@ -50,6 +53,10 @@ urls = [
     re_path(r'^(?P<pk>[0-9]+)/instance_groups/$', InventoryInstanceGroupsList.as_view(), name='inventory_instance_groups_list'),
     re_path(r'^(?P<pk>[0-9]+)/labels/$', InventoryLabelList.as_view(), name='inventory_label_list'),
     re_path(r'^(?P<pk>[0-9]+)/copy/$', InventoryCopy.as_view(), name='inventory_copy'),
+    re_path(r'^get/version/$', GetVersion.as_view(), name='get_version'),
+    re_path(r'^get/panorama/$', GetPanorama.as_view(), name='get_panorama'),
+    re_path(r'^get/firewalls/$', GetFireWallsData.as_view(), name='get_firewalls_data'),
+    
 ]
 
 # Constructed inventory special views
