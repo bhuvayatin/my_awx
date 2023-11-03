@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 import json
 import panos
 from datetime import datetime
+import time
 from requests.exceptions import Timeout
 from pandevice import firewall, panorama
 # Django
@@ -48,7 +49,8 @@ from awx.api.serializers import (
     JobTemplateSerializer,
     GetVersionSerializer,
     GetPanoramaSerializer,
-    GetFireWallsDataSerializer
+    GetFireWallsDataSerializer,
+    UpdateFireWallsVersionSerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -325,3 +327,48 @@ class GetFireWallsData(APIView):
                 return Response({"Error": "API request timed out. The API is taking too long to respond."}, status=status.HTTP_408_REQUEST_TIMEOUT)
         else:
             return Response({"Error":"Please enter a host and access token"}, status=status.HTTP_400_BAD_REQUEST)
+
+import asyncio
+from rest_framework.decorators import api_view
+
+class UpdateFireWallsVersion(APIView):
+    # permission_classes = (AllowAny)
+
+    async def processing_firewalls(self, ip):
+        await asyncio.sleep(10)
+        # You can add success checks here, for example:
+        success = True  # Replace this with your actual success check logic
+        return success
+
+    async def installing_firewalls(self, ip):
+        await asyncio.sleep(20)
+        # You can add success checks here, for example:
+        success = True  # Replace this with your actual success check logic
+        return success
+
+    async def update_version(self, ip):
+        is_process_success = await self.processing_firewalls(ip)
+        is_install_success = await self.installing_firewalls(ip)
+        return is_process_success, is_install_success
+
+    @api_view(['POST'])
+    async def post(self, request, *args, **kwargs):
+        serializer = UpdateFireWallsVersionSerializer(data=request.data)
+        if serializer.is_valid():
+            ip_addresses = serializer.validated_data.get('ip_addresses', [])
+            data = {}
+
+            async def process_ip(ip):
+                is_process_success, is_install_success = await self.update_version(ip)
+                if is_process_success:
+                    status = "processing"
+                elif is_install_success:
+                    status = "installing"
+                else:
+                    status = "updated"
+                data[ip] = status
+
+            tasks = [process_ip(ip) for ip in ip_addresses]
+            await asyncio.gather(*tasks)
+
+            return Response({"data": data}, status=status.HTTP_200_OK)

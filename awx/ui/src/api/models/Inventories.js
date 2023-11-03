@@ -10,6 +10,7 @@ class Inventories extends InstanceGroupsMixin(Base) {
     this.readHostVersion = this.readHostVersion.bind(this);
     this.readPanoramaVersion = this.readPanoramaVersion.bind(this);
     this.readfirewallsVersion = this.readfirewallsVersion.bind(this);
+    this.getupdatefirewall = this.getupdatefirewall.bind(this);
     this.readAccessOptions = this.readAccessOptions.bind(this);
     this.readHosts = this.readHosts.bind(this);
     this.readHostDetail = this.readHostDetail.bind(this);
@@ -31,6 +32,10 @@ class Inventories extends InstanceGroupsMixin(Base) {
 
   readfirewallsVersion(data) {
     return this.http.post(`${this.baseUrl}get/firewalls/`, data);
+  }
+
+  getupdatefirewall(data){
+    return this.http.post(`${this.baseUrl}updatefirewalls/`, data);
   }
 
   readAccessList(id, params) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import {
   TableComposable,
@@ -41,6 +41,7 @@ import { TextInput } from '@patternfly/react-core';
 import { InventoriesAPI, JobTemplatesAPI } from 'api';
 import StatusLabel from 'components/StatusLabel';
 import AlertModal from 'components/AlertModal';
+import { useWebsocketForIP } from 'hooks/useWebsocket';
 
 const ComposableTableTree = () => {
   const columnNames = {
@@ -56,49 +57,60 @@ const ComposableTableTree = () => {
   const childdata = [
     {
       name: 'device_group1',
-      firewalls: [
+      Firewalls: [
         {
-          device_name: 'PA_VN-86',
-          ip_address: '10.215.18.83',
+          Firewall_Serial: '007951000342260',
+          Device_Name: 'PA_VN-86',
+          IP_Address: '10.215.18.83',
           status: 'connected',
           hapair: '1d3',
-          version: '9.0.1',
+          Software_Version: '9.0.1',
+          Firewall_State: true,
         },
         {
-          device_name: 'PA_VN-87',
-          ip_address: '10.215.18.84',
+          Firewall_Serial: '007951000342261',
+          Device_Name: 'PA_VN-87',
+          IP_Address: '10.215.18.84',
           status: 'connected',
           hapair: '1d3',
-          version: '9.0.1',
+          Software_Version: '9.0.1',
+          Firewall_State: true,
         },
         {
-          device_name: 'PA_VN-88',
-          ip_address: '10.215.18.85',
+          Firewall_Serial: '007951000342262',
+          Device_Name: 'PA_VN-88',
+          IP_Address: '10.215.18.85',
           status: 'connected',
           hapair: '1d4',
-          version: '9.0.1',
+          Software_Version: '9.0.1',
+          Firewall_State: true,
         },
         {
-          device_name: 'PA_VN-89',
-          ip_address: '10.215.18.86',
+          Firewall_Serial: '007951000342263',
+          Device_Name: 'PA_VN-89',
+          IP_Address: '10.215.18.86',
           status: 'connected',
           hapair: '1d4',
-          version: '9.0.1',
+          Software_Version: '9.0.1',
+          Firewall_State: true,
         },
         {
-          device_name: 'PA_VN-90',
-          ip_address: '10.215.18.87',
+          Firewall_Serial: '007951000342264',
+          Device_Name: 'PA_VN-90',
+          IP_Address: '10.215.18.87',
           status: 'connected',
           hapair: '1d5',
-          version: '9.0.1',
+          Software_Version: '9.0.1',
+          Firewall_State: false,
         },
       ],
     },
     {
       name: '',
-      firewalls: [],
+      Firewalls: [],
     },
   ];
+
   const version_info = ['9.1.0', '9.1.1', '9.1.2', '9.1.3', '9.1.4'];
   const history = useHistory();
   const [expandedNodeName, setExpandedNodeName] = useState(null);
@@ -118,13 +130,16 @@ const ComposableTableTree = () => {
   const [software_version, setSoftware_version] = useState('');
   const [isopensoftware_version, setIsopenoftware_version] = useState(false);
 
-  const [getdata, setGetdata] = useState([]);
+  const [getdata, setGetdata] = useState(childdata);
+  const [issubmit, setIssubmit] = useState(false);
   // Calculate the start and end indices for the current page
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
 
   const [isLoading, setIsLoading] = useState(false);
+  const ws = useRef(null);
 
+  // const lastMessage = useWebsocketForIP(['10.215.18.83', '10.215.18.84', '10.215.18.85']);
   // Call Hooks to make list api call for the inventory
   const {
     result: { results },
@@ -164,6 +179,72 @@ const ComposableTableTree = () => {
     }
   };
 
+  // useEffect(() => {
+  //   if (issubmit) {
+  //     ws.current = new WebSocket(
+  //       `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
+  //         window.location.host
+  //       }${window.location.pathname}websocket/updatefirewall/`
+  //     );
+
+  //     const connect = () => {
+  //       const xrftoken = `; ${document.cookie}`
+  //         .split('; csrftoken=')
+  //         .pop()
+  //         .split(';')
+  //         .shift();
+  //       ws.current.send(
+  //         JSON.stringify({
+  //           ip_addresses: [
+  //             '10.215.18.83',
+  //             '10.215.18.84',
+  //             '10.215.18.85',
+  //             '10.215.18.86',
+  //             '10.215.18.87',
+  //           ],
+  //         })
+  //       );
+  //     };
+  //     ws.current.onopen = connect;
+
+  //     ws.current.onmessage = (e) => {
+  //       // setLastMessage(JSON.parse(e.data));
+
+  //       const ipstatus = JSON.parse(e.data);
+  //       const updatedChilddata = getdata.map((group) => {
+  //         const updatedFirewalls = group.Firewalls.map((firewall) => {
+  //           const ip = firewall.IP_Address;
+  //           const newStatus = ipstatus[ip] || firewall.status;
+  //           return { ...firewall, status: newStatus };
+  //         });
+
+  //         return { ...group, Firewalls: updatedFirewalls };
+  //       });
+  //       // console.log('updatedChilddata',updatedChilddata);
+  //       // setGetdata(updatedChilddata);
+  //     };
+
+  //     ws.current.onclose = (e) => {
+  //       if (e.code !== 1000) {
+  //         // eslint-disable-next-line no-console
+  //         console.debug('Socket closed. Reconnecting...', e);
+  //         setTimeout(() => {
+  //           connect();
+  //         }, 1000);
+  //       }
+  //     };
+
+  //     ws.current.onerror = (err) => {
+  //       // eslint-disable-next-line no-console
+  //       console.debug('Socket error: ', err, 'Disconnecting...');
+  //       ws.current.close();
+  //     };
+
+  //     return () => {
+  //       ws.current.close();
+  //     };
+  //   }
+  // }, [issubmit]);
   // call inventory detail
   useEffect(() => {
     async function fetchData() {
@@ -206,15 +287,7 @@ const ComposableTableTree = () => {
             try {
               // If parsing as JSON fails, try parsing as YAML
               const yamlObject = yaml.load(data?.variables);
-              console.log(
-                '🚀 ~ file: LegacyTableTree.js:142 ~ fetchData ~ yamlObject:',
-                yamlObject
-              );
               const jsonObject = yamlObject?.all?.children?.panoramas?.children;
-              console.log(
-                '🚀 ~ file: LegacyTableTree.js:240 ~ fetchData ~ ansibleHosts:',
-                jsonObject
-              );
               const ansibleHosts = [];
               const Username = JSON.parse(cleanedJsonString)?.all?.vars;
               SetAccess_token(Username);
@@ -235,6 +308,7 @@ const ComposableTableTree = () => {
               setGethostname(ansibleHosts);
             } catch (yamlError) {
               console.error('Error parsing data:', yamlError);
+              setGethostname([]);
             }
           }
         } else {
@@ -407,7 +481,7 @@ const ComposableTableTree = () => {
           {node.name}
         </Td>
         <Td dataLabel={columnNames.Firewall_Serial}>{node?.Firewall_Serial}</Td>
-        <Td dataLabel={columnNames.IP_Address}>{node?.ip_address}</Td>
+        <Td dataLabel={columnNames.IP_Address}>{node?.IP_Address}</Td>
         <Td dataLabel={columnNames.Firewall_State}>
           {node?.status && node?.status == 'Connected' && (
             <Label variant="outline" color={'green'} icon={<CheckCircleIcon />}>
@@ -439,7 +513,7 @@ const ComposableTableTree = () => {
     let children = parent?.Firewalls?.map((child) => ({
       name: child['Device_Name'],
       Firewall_Serial: child['Firewall_Serial'],
-      ip_address: child['IP_Address'],
+      IP_Address: child['IP_Address'],
       status: child['Firewall_State'] == true ? 'Connected' : 'Disconnected',
       // hapair: child['HA_Group_ID'],
       version: child['Software_Version'],
@@ -481,10 +555,6 @@ const ComposableTableTree = () => {
   };
   //   Get Value Of The Panoramas Devices
   const onSelecversion = (event, selection) => {
-    console.log(
-      '🚀 ~ file: LegacyTableTree.js:425 ~ onSelecversion ~ selection:',
-      selection
-    );
     setSelectedOption(selection);
     setIsOpenversion(false);
   };
@@ -510,77 +580,65 @@ const ComposableTableTree = () => {
   //   OnSubmit Create One Payload For POST API
 
   const handleSubmit = async () => {
-    const selectedRows = data.reduce((result, parent) => {
-      const parentRow = selectedNodeNames.includes(parent.name)
-        ? { parent: parent.name, child: [] }
-        : null;
-
-      const childRows = parent.children
-        ? parent.children
-            .filter((child) => selectedNodeNames.includes(child.name))
-            .map((child) => child.ip_address)
-        : [];
-
-      if (parentRow) {
-        const existingRow = result.find(
-          (row) => row.parent === parentRow.parent
-        );
-
-        if (existingRow) {
-          existingRow.child.push(...childRows);
-        } else {
-          parentRow.child = childRows;
+    const selectedRows = data?.reduce((result, parent) => {
+      if (selectedNodeNames.includes(parent.name)) {
+        const parentRow = { parent: parent.name, child: [] };
+    
+        const childRows = parent.children
+          ? parent.children
+              .filter((child) => selectedNodeNames.includes(child.name))
+              .map((child) => child.IP_Address)
+          : [];
+    
+        parentRow.child = childRows;
+        
+        // Only add to result if there are child rows
+        if (parentRow.child.length > 0) {
           result.push(parentRow);
         }
       } else {
-        result.push(
-          ...childRows.map((child) => ({
-            parent: parent.name,
-            child,
-          }))
+        const childRows = parent.children
+          ? parent.children
+              .filter((child) => selectedNodeNames.includes(child.name))
+              .map((child) => child.IP_Address)
+          : [];
+    
+        result.push(...childRows.map((child) => ({ parent: parent.name, child })));
+      }
+    
+      return result;
+    }, []);
+    
+
+    if (selectedRows && software_version) {
+      const mergedRows = selectedRows?.map((item) => item.child);
+      const payload = {
+        credential_passwords: {},
+        extra_vars: {
+          inventory_hostname: mergedRows,
+        },
+        panos_version_input: software_version,
+      };
+      try {
+        const { data } = await JobTemplatesAPI.launch(11, {
+          extra_vars: payload,
+        });
+        history.push({
+          pathname: `/jobs/playbook/${data.id}/fresult`,
+          state: { data: mergedRows },
+        });
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
+          error
         );
       }
-
-      return result;
-    }, []);
-
-    const mergedRows = selectedRows.reduce((result, row) => {
-      const existingRow = result.find((r) => r.parent === row.parent);
-
-      if (existingRow) {
-        if (Array.isArray(existingRow.child)) {
-          existingRow.child.push(row.child);
-        } else {
-          existingRow.child = [existingRow.child, row.child];
-        }
-      } else {
-        result.push({ parent: row.parent, child: [row.child] });
-      }
-
-      return result;
-    }, []);
-    const payload = {
-      mergedRows,
-      username,
-      password,
-      software_version,
-    };
-    try {
-      const { data } = await JobTemplatesAPI.launch(11, {
-        extra_vars: payload,
-      });
-      console.log(
-        '🚀 ~ file: InventoryTable.js:175 ~ handleSubmit ~ data:',
-        data
-      );
-      history.push(`/jobs/playbook/${data.id}/output`);
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
-        error
-      );
+    } else if (!selectedRows) {
+      alert('please select the Firewalls');
+    } else if (software_version == undefined || software_version == '') {
+      alert('please select the Software version');
     }
-    console.log(payload);
+    // setIssubmit(true);
   };
 
   return (

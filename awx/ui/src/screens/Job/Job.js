@@ -24,6 +24,7 @@ import JobOutput from './JobOutput';
 import JobResult from './JobResult';
 import { WorkflowOutput } from './WorkflowOutput';
 import useWsJob from './useWsJob';
+import FirewallResult from './FirewallResult';
 
 // maps the displayed url segments to actual api types
 export const JOB_URL_SEGMENT_MAP = {
@@ -84,7 +85,6 @@ function Job({ setBreadcrumb }) {
 
         jobDetailData.summary_fields.credentials = results;
       }
-      console.log("🚀 ~ file: Job.js:62 ~ useCallback ~ jobDetailData:", jobDetailData)
       setBreadcrumb(jobDetailData);
       let choices;
       if (jobDetailData.type === 'inventory_update') {
@@ -132,6 +132,8 @@ function Job({ setBreadcrumb }) {
     { name: t`Details`, link: `${match.url}/details`, id: 0 },
     { name: t`Output`, link: `${match.url}/output`, id: 1 },
     { name: t`Result`, link: `${match.url}/result`, id: 2 },
+    { name: t`Firewall Result`, link: `${match.url}/fresult`, id: 3 },
+
   ];
   if (relatedJobs?.length > 0) {
     tabsArray.push({
@@ -142,7 +144,7 @@ function Job({ setBreadcrumb }) {
       id: 2,
       hasstyle: 'margin-left: auto',
     });
- }
+  }
 
   if (isLoading) {
     return (
@@ -210,12 +212,12 @@ function Job({ setBreadcrumb }) {
                 )}
               </Route>,
               <Route key="result" path="/jobs/:typeSegment/:id/result">
-                <JobResult
-                  job={job}
-                  result={result}
-                  setResult={setResult}
-                />
+                <JobResult job={job} result={result} setResult={setResult} />
               </Route>,
+              <Route key="result" path="/jobs/:typeSegment/:id/fresult">
+                <FirewallResult />
+              </Route>,
+
               <Route key="not-found" path="*">
                 <ContentError isNotFound>
                   <Link to={`/jobs/${typeSegment}/${id}/details`}>

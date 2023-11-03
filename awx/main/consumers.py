@@ -10,7 +10,7 @@ from django.conf import settings
 from django.utils.encoding import force_bytes
 from django.contrib.auth.models import User
 
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer, AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from channels.db import database_sync_to_async
 
@@ -216,6 +216,40 @@ class EventConsumer(AsyncJsonWebsocketConsumer):
 
     async def internal_message(self, event):
         await self.send(event['text'])
+
+
+class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        pass
+    
+    async def processing_firewalls(self, ip):
+        await asyncio.sleep(10)
+        return True
+
+    async def installing_firewalls(self, ip):
+        await asyncio.sleep(20)
+        return True
+
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        ip_addresses = text_data_json.get('ip_addresses', [])
+        
+        response_data = {}
+        for i in ip_addresses:
+            response_data[i] = "waiting"
+
+        for ip in ip_addresses:
+            response_data[ip] = "processing"
+            await self.send(text_data=json.dumps(response_data))
+            is_process = await self.processing_firewalls(ip)
+            response_data[ip] = "installing"
+            await self.send(text_data=json.dumps(response_data))
+            is_install = await self.installing_firewalls(ip)
+            response_data[ip] = "updated"
+            await self.send(text_data=json.dumps(response_data))
 
 
 def run_sync(func):

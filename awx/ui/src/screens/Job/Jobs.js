@@ -12,7 +12,7 @@ import { JOB_TYPE_URL_SEGMENTS } from '../../constants';
 
 function TypeRedirect({ view }) {
   const { id } = useParams();
-  const { path } = useRouteMatch();
+  const { path } = useRouteMatch();fresult
   return <JobTypeRedirect id={id} path={path} view={view} />;
 }
 
@@ -34,6 +34,8 @@ function Jobs() {
       [`/jobs/${typeSegment}/${job.id}/output`]: t`Output`,
       [`/jobs/${typeSegment}/${job.id}/result`]: t`Result`,
       [`/jobs/${typeSegment}/${job.id}/details`]: t`Details`,
+      [`/jobs/${typeSegment}/${job.id}/fresult`]: t`Firewall Result`,
+
     });
   }, []);
 

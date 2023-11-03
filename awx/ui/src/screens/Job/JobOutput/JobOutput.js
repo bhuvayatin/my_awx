@@ -269,6 +269,7 @@ function JobOutput({ job, eventRelatedSearchableKeys, eventSearchableKeys }) {
     };
 
     connectJobSocket(job, (data) => {
+      console.log("🚀 ~ file: JobOutput.js:272 ~ connectJobSocket ~ data:", data)
       if (data.group_name === `${job.type}_events`) {
         batchedEvents.push(data);
         clearTimeout(batchTimeout);

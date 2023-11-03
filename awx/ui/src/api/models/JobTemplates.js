@@ -23,6 +23,7 @@ class JobTemplates extends SchedulesMixin(
   }
 
   launch(id, data) {
+    console.log("🚀 ~ file: JobTemplates.js:26 ~ launch ~ data:", data)
     return this.http.post(`${this.baseUrl}${id}/launch/`, data);
   }
 
