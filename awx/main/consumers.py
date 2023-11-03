@@ -9,7 +9,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.utils.encoding import force_bytes
 from django.contrib.auth.models import User
-
+from asgiref.sync import sync_to_async
+from django.db import connection
 from channels.generic.websocket import AsyncJsonWebsocketConsumer, AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from channels.db import database_sync_to_async
@@ -221,6 +222,7 @@ class EventConsumer(AsyncJsonWebsocketConsumer):
 class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
+        await self.send_initial_status()
 
     async def disconnect(self, close_code):
         pass
@@ -232,6 +234,15 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     async def installing_firewalls(self, ip):
         await asyncio.sleep(20)
         return True
+    
+    def send_initial_status(self):
+        from awx.main.models import UpdateFirewallStatus
+        statuses = UpdateFirewallStatus.objects.all()
+        response_data = {status.ip_address: status.status for status in statuses}
+        self.send(text_data=json.dumps(response_data))
+
+    async def async_send_initial_status(self):
+        await sync_to_async(self.send_initial_status)()
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -250,6 +261,26 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             is_install = await self.installing_firewalls(ip)
             response_data[ip] = "updated"
             await self.send(text_data=json.dumps(response_data))
+            
+            from awx.main.models import UpdateFirewallStatus
+            status = "updated"
+            firewall_status, created = UpdateFirewallStatus.objects.get_or_create(
+                job_id=97,
+                ip_address=ip,
+                defaults={'status': status}
+            )
+            print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',UpdateFirewallStatus.objects.all())
+            if not created:
+                firewall_status.status = status
+                await sync_to_async(firewall_status.save)()
+        async def send_initial_status(self):
+            async def inner_send_initial_status():
+                await self.async_send_initial_status()
+
+            with connection.cursor() as cursor:
+                cursor.execute('BEGIN')
+                inner_send_initial_status()
+                cursor.execute('COMMIT')
 
 
 def run_sync(func):
