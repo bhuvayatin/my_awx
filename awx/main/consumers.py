@@ -241,47 +241,102 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         return {status.ip_address: status.status for status in statuses}
 
     async def async_send_initial_status(self, job_id):
+        from awx.main.models import UpdateFirewallStatus
         response_data = await self.get_firewall_statuses(job_id)
         await self.send(text_data=json.dumps(response_data))
+        for response in response_data.keys():
+            firewall = await sync_to_async(UpdateFirewallStatus.objects.get)(
+                    job_id=job_id,
+                    ip_address=response
+            )
+            if firewall.status == "waiting":
+                firewall.status = "processing"
+                response_data[response] = "processing"
+                await sync_to_async(firewall.save)()
+                await self.send(text_data=json.dumps(response_data))
+                is_process = await self.processing_firewalls(firewall.ip_address)
+
+                firewall.status = "installing"
+                response_data[response] = "installing"
+                await sync_to_async(firewall.save)()
+                await self.send(text_data=json.dumps(response_data))
+                is_process = await self.installing_firewalls(firewall.ip_address)
+
+                firewall.status = "updated"
+                response_data[response] = "updated"
+                await sync_to_async(firewall.save)()
+                await self.send(text_data=json.dumps(response_data))
+            
+            if firewall.status == "processing":
+                # firewall.status = "processing"
+                # await sync_to_async(firewall.save)()
+                # await self.send(text_data=json.dumps(response_data))
+                is_process = await self.processing_firewalls(firewall.ip_address)
+
+                firewall.status = "installing"
+                response_data[response] = "installing"
+                await sync_to_async(firewall.save)()
+                await self.send(teinstallingxt_data=json.dumps(response_data))
+                is_process = await self.installing_firewalls(firewall.ip_address)
+
+                firewall.status = "updated"
+                response_data[response] = "updated"
+                await sync_to_async(firewall.save)()
+                await self.send(text_data=json.dumps(response_data))
+            
+            if firewall.status == "installing":
+                # firewall.status = "processing"
+                # await sync_to_async(firewall.save)()
+                # await self.send(text_data=json.dumps(response_data))
+                # is_process = await self.processing_firewalls(firewall.ip_address)
+
+                # firewall.status = "installing"
+                # await sync_to_async(firewall.save)()
+                # await self.send(teinstallingxt_data=json.dumps(response_data))
+                is_process = await self.installing_firewalls(firewall.ip_address)
+
+                firewall.status = "updated"
+                response_data[response] = "updated"
+                await sync_to_async(firewall.save)()
+                await self.send(text_data=json.dumps(response_data))
+
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         job_id = text_data_json.get('job_id')
         ip_addresses = text_data_json.get('ip_addresses', [])
         
-        await self.async_send_initial_status(job_id)
-        
         from awx.main.models import UpdateFirewallStatus
-        
-        response_data = {}
-        for i in ip_addresses:
-            response_data[i] = "waiting"
-            firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
-                job_id=job_id,
-                ip_address=i,
-                defaults={'status': "waiting"}
-            )
+        if ip_addresses and job_id:
+            response_data = {}
+            for i in ip_addresses:
+                response_data[i] = "waiting"
+                firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
+                    job_id=job_id,
+                    ip_address=i,
+                    defaults={'status': "waiting"}
+                )
 
-        for ip in ip_addresses:
-            response_data[ip] = "processing"
-            firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
-                job_id=job_id,
-                ip_address=ip
-            )
-            if not created:
-                firewall_status.status = "processing"
+            for ip in ip_addresses:
+                response_data[ip] = "processing"
+                firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
+                    job_id=job_id,
+                    ip_address=ip
+                )
+                if not created:
+                    firewall_status.status = "processing"
+                    await sync_to_async(firewall_status.save)()
+                await self.send(text_data=json.dumps(response_data))
+                is_process = await self.processing_firewalls(ip)
+                response_data[ip] = "installing"
+                firewall_status.status = "installing"
                 await sync_to_async(firewall_status.save)()
-            await self.send(text_data=json.dumps(response_data))
-            is_process = await self.processing_firewalls(ip)
-            response_data[ip] = "installing"
-            firewall_status.status = "installing"
-            await sync_to_async(firewall_status.save)()
-            await self.send(text_data=json.dumps(response_data))
-            is_install = await self.installing_firewalls(ip)
-            response_data[ip] = "updated"
-            firewall_status.status = "updated"
-            await sync_to_async(firewall_status.save)()
-            await self.send(text_data=json.dumps(response_data))
+                await self.send(text_data=json.dumps(response_data))
+                is_install = await self.installing_firewalls(ip)
+                response_data[ip] = "updated"
+                firewall_status.status = "updated"
+                await sync_to_async(firewall_status.save)()
+                await self.send(text_data=json.dumps(response_data))
             
             # from awx.main.models import UpdateFirewallStatus
             # status = "updated"
@@ -293,6 +348,8 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             # if not created:
             #     firewall_status.status = status
             #     await sync_to_async(firewall_status.save)()
+        else:
+            await self.async_send_initial_status(job_id)
 
 
 def run_sync(func):
