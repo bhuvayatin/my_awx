@@ -249,33 +249,50 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         job_id = text_data_json.get('job_id')
         ip_addresses = text_data_json.get('ip_addresses', [])
         
-        if job_id is not None:
-            await self.async_send_initial_status(job_id)
+        await self.async_send_initial_status(job_id)
+        
+        from awx.main.models import UpdateFirewallStatus
         
         response_data = {}
         for i in ip_addresses:
             response_data[i] = "waiting"
+            firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
+                job_id=job_id,
+                ip_address=i,
+                defaults={'status': "waiting"}
+            )
 
         for ip in ip_addresses:
             response_data[ip] = "processing"
+            firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
+                job_id=job_id,
+                ip_address=ip
+            )
+            if not created:
+                firewall_status.status = "processing"
+                await sync_to_async(firewall_status.save)()
             await self.send(text_data=json.dumps(response_data))
             is_process = await self.processing_firewalls(ip)
             response_data[ip] = "installing"
+            firewall_status.status = "installing"
+            await sync_to_async(firewall_status.save)()
             await self.send(text_data=json.dumps(response_data))
             is_install = await self.installing_firewalls(ip)
             response_data[ip] = "updated"
+            firewall_status.status = "updated"
+            await sync_to_async(firewall_status.save)()
             await self.send(text_data=json.dumps(response_data))
             
-            from awx.main.models import UpdateFirewallStatus
-            status = "updated"
-            firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
-                job_id=97,
-                ip_address=ip,
-                defaults={'status': status}
-            )
-            if not created:
-                firewall_status.status = status
-                await sync_to_async(firewall_status.save)()
+            # from awx.main.models import UpdateFirewallStatus
+            # status = "updated"
+            # firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
+            #     job_id=97,
+            #     ip_address=ip,
+            #     defaults={'status': status}
+            # )
+            # if not created:
+            #     firewall_status.status = status
+            #     await sync_to_async(firewall_status.save)()
 
 
 def run_sync(func):
