@@ -254,19 +254,21 @@ class GetPanorama(APIView):
             host = serializer.validated_data.get('host', None)
             access_token = serializer.validated_data.get('access_token', None)
 
-        url = f'{host}/restapi/v10.1/Panorama/DeviceGroups'
+            url = f'{host}/restapi/v10.1/Panorama/DeviceGroups'
 
-        # Headers
-        headers = {
-            'X-PAN-KEY': access_token,
-        }
-        try:
-            response = requests.get(url, headers=headers, verify=False)
-            data = response.json()
-            # Check if the request was successful
-            return Response({"data": data})
-        except Exception as e:
-            return Response({"Error":"Invalid credentials. Please check your username and password."})
+            # Headers
+            headers = {
+                'X-PAN-KEY': access_token,
+            }
+            try:
+                response = requests.get(url, headers=headers, verify=False)
+                data = response.json()
+                # Check if the request was successful
+                return Response({"data": data})
+            except Exception as e:
+                return Response({"Error":"Invalid credentials. Please check your username and password."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"Error":"Please check your host and access_token."}, status=status.HTTP_400_BAD_REQUEST)
+            
 
 
 class GetFireWallsData(APIView):

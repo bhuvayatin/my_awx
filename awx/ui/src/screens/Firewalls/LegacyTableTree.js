@@ -578,20 +578,76 @@ const ComposableTableTree = () => {
   // };
 
   //   OnSubmit Create One Payload For POST API
-
+  function callsocket(ip_address, id) {
+    console.log('🚀 ~ file: LegacyTableTree.js:582 ~ callsocket ~ id:', id);
+    console.log(
+      '🚀 ~ file: LegacyTableTree.js:582 ~ callsocket ~ ip_address:',
+      ip_address
+    );
+    ws.current = new WebSocket(
+      `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
+        window.location.host
+      }${window.location.pathname}websocket/updatefirewall/`
+    );
+    const connect = () => {
+      const xrftoken = `; ${document.cookie}`
+        .split('; csrftoken=')
+        .pop()
+        .split(';')
+        .shift();
+      ws.current.send(
+        JSON.stringify({
+          ip_addresses: ip_address,
+          job_id: id,
+        })
+      );
+    };
+    ws.current.onopen = connect;
+    ws.current.onmessage = (e) => {
+      // setLastMessage(JSON.parse(e.data));
+      const ipstatus = JSON.parse(e.data);
+      const updatedChilddata = getdata.map((group) => {
+        const updatedFirewalls = group.Firewalls.map((firewall) => {
+          const ip = firewall.IP_Address;
+          const newStatus = ipstatus[ip] || firewall.status;
+          return { ...firewall, status: newStatus };
+        });
+        return { ...group, Firewalls: updatedFirewalls };
+      });
+      console.log('updatedChilddata', updatedChilddata);
+      // setGetdata(updatedChilddata);
+    };
+    ws.current.onclose = (e) => {
+      if (e.code !== 1000) {
+        // eslint-disable-next-line no-console
+        console.debug('Socket closed. Reconnecting...', e);
+        setTimeout(() => {
+          connect();
+        }, 1000);
+      }
+    };
+    ws.current.onerror = (err) => {
+      // eslint-disable-next-line no-console
+      console.debug('Socket error: ', err, 'Disconnecting...');
+      ws.current.close();
+    };
+    return () => {
+      ws.current.close();
+    };
+  }
   const handleSubmit = async () => {
     const selectedRows = data?.reduce((result, parent) => {
       if (selectedNodeNames.includes(parent.name)) {
         const parentRow = { parent: parent.name, child: [] };
-    
+
         const childRows = parent.children
           ? parent.children
               .filter((child) => selectedNodeNames.includes(child.name))
               .map((child) => child.IP_Address)
           : [];
-    
+
         parentRow.child = childRows;
-        
+
         // Only add to result if there are child rows
         if (parentRow.child.length > 0) {
           result.push(parentRow);
@@ -602,13 +658,14 @@ const ComposableTableTree = () => {
               .filter((child) => selectedNodeNames.includes(child.name))
               .map((child) => child.IP_Address)
           : [];
-    
-        result.push(...childRows.map((child) => ({ parent: parent.name, child })));
+
+        result.push(
+          ...childRows.map((child) => ({ parent: parent.name, child }))
+        );
       }
-    
+
       return result;
     }, []);
-    
 
     if (selectedRows && software_version) {
       const mergedRows = selectedRows?.map((item) => item.child);
@@ -620,13 +677,13 @@ const ComposableTableTree = () => {
         panos_version_input: software_version,
       };
       try {
-        const { data } = await JobTemplatesAPI.launch(7, {
+        const { data } = await JobTemplatesAPI.launch(11, {
           extra_vars: payload,
         });
-        history.push({
-          pathname: `/jobs/playbook/${data.id}/fresult`,
-          state: { data: mergedRows },
-        });
+        callsocket(mergedRows, data?.id);
+        history.push(
+          `/jobs/playbook/${data.id}/fresult?variableName=${data.id}`
+        );
       } catch (error) {
         console.log(
           '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
