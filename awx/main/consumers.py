@@ -222,7 +222,6 @@ class EventConsumer(AsyncJsonWebsocketConsumer):
 class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-        await self.send_initial_status()
 
     async def disconnect(self, close_code):
         pass
@@ -235,18 +234,23 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         await asyncio.sleep(20)
         return True
     
-    def send_initial_status(self):
+    @sync_to_async
+    def get_firewall_statuses(self, job_id):
         from awx.main.models import UpdateFirewallStatus
-        statuses = UpdateFirewallStatus.objects.all()
-        response_data = {status.ip_address: status.status for status in statuses}
-        self.send(text_data=json.dumps(response_data))
+        statuses = UpdateFirewallStatus.objects.filter(job_id=job_id)
+        return {status.ip_address: status.status for status in statuses}
 
-    async def async_send_initial_status(self):
-        await sync_to_async(self.send_initial_status)()
+    async def async_send_initial_status(self, job_id):
+        response_data = await self.get_firewall_statuses(job_id)
+        await self.send(text_data=json.dumps(response_data))
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
+        job_id = text_data_json.get('job_id')
         ip_addresses = text_data_json.get('ip_addresses', [])
+        
+        if job_id is not None:
+            await self.async_send_initial_status(job_id)
         
         response_data = {}
         for i in ip_addresses:
@@ -264,23 +268,14 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             
             from awx.main.models import UpdateFirewallStatus
             status = "updated"
-            firewall_status, created = UpdateFirewallStatus.objects.get_or_create(
+            firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
                 job_id=97,
                 ip_address=ip,
                 defaults={'status': status}
             )
-            print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',UpdateFirewallStatus.objects.all())
             if not created:
                 firewall_status.status = status
                 await sync_to_async(firewall_status.save)()
-        async def send_initial_status(self):
-            async def inner_send_initial_status():
-                await self.async_send_initial_status()
-
-            with connection.cursor() as cursor:
-                cursor.execute('BEGIN')
-                inner_send_initial_status()
-                cursor.execute('COMMIT')
 
 
 def run_sync(func):

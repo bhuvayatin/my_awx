@@ -620,7 +620,7 @@ const ComposableTableTree = () => {
         panos_version_input: software_version,
       };
       try {
-        const { data } = await JobTemplatesAPI.launch(11, {
+        const { data } = await JobTemplatesAPI.launch(7, {
           extra_vars: payload,
         });
         history.push({
