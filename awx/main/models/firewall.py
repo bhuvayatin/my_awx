@@ -17,6 +17,7 @@ class UpdateFirewallStatus(models.Model):
         default=None,
         db_index=True,
     )
+    group_name = models.CharField(max_length=256, null=True, blank=True)
     ip_address = models.CharField(max_length=256)
     status = models.CharField(
         max_length=24,
