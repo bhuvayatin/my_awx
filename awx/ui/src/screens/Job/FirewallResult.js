@@ -16,7 +16,7 @@ function FirewallResult() {
   const pageSize = 10;
   const location = useLocation();
   const data = location?.state;
-  const [newrecord, setNewrecord] = useState();
+  const [newrecord, setNewrecord] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   const ws = useRef(null);
@@ -60,7 +60,7 @@ function FirewallResult() {
 
       //   return { ...group, Firewalls: updatedFirewalls };
       // });
-      setNewrecord(Object.entries(ipstatus));
+      setNewrecord(ipstatus);
       console.log(
         '🚀 ~ file: FirewallResult.js:54 ~ updatedChilddata ~ updatedChilddata:',
         updatedFirewalls
@@ -106,15 +106,16 @@ function FirewallResult() {
     prs: 'Status',
   };
   const repositories = [];
-  for (const group in data1) {
-    for (const ip in data1[group]) {
+  for (const group in newrecord) {
+    for (const ip in newrecord[group]) {
       repositories.push({
         name: group,
         branches: ip,
-        prs: data1[group][ip],
+        prs: newrecord[group][ip],
       });
     }
   }
+
   return (
     <div>
       <TableComposable isTreeTable aria-label="Tree table">
