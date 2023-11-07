@@ -240,20 +240,18 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         from awx.main.models import UpdateFirewallStatus
         statuses = UpdateFirewallStatus.objects.filter(job_id=job_id)
         result = defaultdict(dict)
-        res = dict()
+        res = {status.ip_address: status.status for status in statuses}
         for _status in statuses:
-            res[_status.ip_address] = _status.status
             if _status.group_name:
                 result[_status.group_name][_status.ip_address] = _status.status
         return result, res
 
     async def async_send_initial_status(self, job_id):
         from awx.main.models import UpdateFirewallStatus
-        res, response_data  = await self.get_firewall_statuses(job_id)
-        await self.send(text_data=json.dumps(res))
-        result = {}
+        result, response_data  = await self.get_firewall_statuses(job_id)
+        await self.send(text_data=json.dumps(result))
         for response in response_data.keys():
-            firewall, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
+            firewall = await sync_to_async(UpdateFirewallStatus.objects.get)(
                     job_id=job_id,
                     ip_address=response
             )
@@ -323,12 +321,12 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     response_data[group_name] = {}
                 
                 for i in child:
-                    response_data[group_name][i] = "waiting"
                     firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
                         job_id=job_id,
                         ip_address=i,
                         defaults={'group_name': group_name, 'status': "waiting"}
                     )
+                    response_data[group_name][i] = "waiting"
 
             for _ip in ip_address:
                 group_name = _ip['parent']
