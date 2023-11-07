@@ -1,15 +1,24 @@
+import { Pagination } from '@patternfly/react-core';
+import {
+  Table,
+  TableComposable,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from '@patternfly/react-table';
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 
 function FirewallResult() {
   const { id } = useParams();
-  console.log(
-    '🚀 ~ file: FirewallResult.js:6 ~ FirewallResult ~ variableName:',
-    id
-  );
+  const pageSize = 10;
   const location = useLocation();
   const data = location?.state;
   const [newrecord, setNewrecord] = useState();
+  const [currentPage, setCurrentPage] = useState(1);
+
   const ws = useRef(null);
   useEffect(() => {
     ws.current = new WebSocket(
@@ -26,7 +35,7 @@ function FirewallResult() {
         .shift();
       ws.current.send(
         JSON.stringify({
-          job_id: id,
+          job_id: parseInt(id),
         })
       );
     };
@@ -36,7 +45,10 @@ function FirewallResult() {
       // setLastMessage(JSON.parse(e.data));
 
       const ipstatus = JSON.parse(e.data);
-      console.log("🚀 ~ file: FirewallResult.js:39 ~ useEffect ~ ipstatus:", ipstatus)
+      console.log(
+        '🚀 ~ file: FirewallResult.js:39 ~ useEffect ~ ipstatus:',
+        ipstatus
+      );
       // const updatedChilddata = getdata.map((group) => {
       const updatedFirewalls = data?.data?.map((firewall) => {
         const ip = firewall;
@@ -78,14 +90,57 @@ function FirewallResult() {
     };
     // }
   }, []);
+  const data1 = {
+    device_group1: {
+      '10.215.18.83': 'updated',
+      '10.215.18.84': 'updated',
+      '10.215.18.85': 'installing',
+    },
+    'No Device Group': {
+      '10.215.18.183': 'waiting',
+    },
+  };
+  const columnNames = {
+    name: 'Group',
+    branches: 'IP Address',
+    prs: 'Status',
+  };
+  const repositories = [];
+  for (const group in data1) {
+    for (const ip in data1[group]) {
+      repositories.push({
+        name: group,
+        branches: ip,
+        prs: data1[group][ip],
+      });
+    }
+  }
   return (
     <div>
-      FirewallResult{' '}
-      {newrecord?.map(([ip, status]) => (
-        <p>
-          {ip}-------{status}
-        </p>
-      ))}
+      <TableComposable isTreeTable aria-label="Tree table">
+        <Thead>
+          <Tr>
+            <Th>{columnNames.name}</Th>
+            <Th>{columnNames.branches}</Th>
+            <Th>{columnNames.prs}</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {repositories.map((repo, index) => (
+            <Tr key={index}>
+              <Td dataLabel={columnNames.name}>{repo.name}</Td>
+              <Td dataLabel={columnNames.branches}>{repo.branches}</Td>
+              <Td dataLabel={columnNames.prs}>{repo.prs}</Td>
+            </Tr>
+          ))}
+        </Tbody>
+        <Pagination
+          itemCount={repositories?.length}
+          perPage={pageSize}
+          page={currentPage}
+          onSetPage={(_, page) => setCurrentPage(page)}
+        />
+      </TableComposable>
     </div>
   );
 }

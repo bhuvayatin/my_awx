@@ -107,7 +107,17 @@ const ComposableTableTree = () => {
     },
     {
       name: '',
-      Firewalls: [],
+      Firewalls: [
+        {
+          Firewall_Serial: '00795100034228',
+          Device_Name: 'PA_VN-867',
+          IP_Address: '10.215.18.183',
+          status: 'connected',
+          hapair: '1d5',
+          Software_Version: '9.0.1',
+          Firewall_State: true,
+        },
+      ],
     },
   ];
 
@@ -179,73 +189,6 @@ const ComposableTableTree = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (issubmit) {
-  //     ws.current = new WebSocket(
-  //       `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
-  //         window.location.host
-  //       }${window.location.pathname}websocket/updatefirewall/`
-  //     );
-
-  //     const connect = () => {
-  //       const xrftoken = `; ${document.cookie}`
-  //         .split('; csrftoken=')
-  //         .pop()
-  //         .split(';')
-  //         .shift();
-  //       ws.current.send(
-  //         JSON.stringify({
-  //           ip_addresses: [
-  //             '10.215.18.83',
-  //             '10.215.18.84',
-  //             '10.215.18.85',
-  //             '10.215.18.86',
-  //             '10.215.18.87',
-  //           ],
-  //         })
-  //       );
-  //     };
-  //     ws.current.onopen = connect;
-
-  //     ws.current.onmessage = (e) => {
-  //       // setLastMessage(JSON.parse(e.data));
-
-  //       const ipstatus = JSON.parse(e.data);
-  //       const updatedChilddata = getdata.map((group) => {
-  //         const updatedFirewalls = group.Firewalls.map((firewall) => {
-  //           const ip = firewall.IP_Address;
-  //           const newStatus = ipstatus[ip] || firewall.status;
-  //           return { ...firewall, status: newStatus };
-  //         });
-
-  //         return { ...group, Firewalls: updatedFirewalls };
-  //       });
-  //       // console.log('updatedChilddata',updatedChilddata);
-  //       // setGetdata(updatedChilddata);
-  //     };
-
-  //     ws.current.onclose = (e) => {
-  //       if (e.code !== 1000) {
-  //         // eslint-disable-next-line no-console
-  //         console.debug('Socket closed. Reconnecting...', e);
-  //         setTimeout(() => {
-  //           connect();
-  //         }, 1000);
-  //       }
-  //     };
-
-  //     ws.current.onerror = (err) => {
-  //       // eslint-disable-next-line no-console
-  //       console.debug('Socket error: ', err, 'Disconnecting...');
-  //       ws.current.close();
-  //     };
-
-  //     return () => {
-  //       ws.current.close();
-  //     };
-  //   }
-  // }, [issubmit]);
-  // call inventory detail
   useEffect(() => {
     async function fetchData() {
       try {
@@ -559,30 +502,14 @@ const ComposableTableTree = () => {
     setIsOpenversion(false);
   };
 
-  // const handleSubmit = () => {
-  //   const selectedRows = data.flatMap((parent) => {
-  //     const parentRow = selectedNodeNames.includes(parent.name)
-  //       ? { parent: parent.name, child: null }
-  //       : null;
-
-  //     const childRows = parent.children
-  //       ? parent.children
-  //           .filter((child) => selectedNodeNames.includes(child.name))
-  //           .map((child) => ({ parent: parent.name, child: child.name }))
-  //       : [];
-
-  //     return parentRow ? [parentRow, ...childRows] : childRows;
-  //   });
-
-  //   console.log(selectedRows);
-  // };
-
   //   OnSubmit Create One Payload For POST API
   function callsocket(ip_address, id) {
-    console.log('🚀 ~ file: LegacyTableTree.js:582 ~ callsocket ~ id:', id);
     console.log(
-      '🚀 ~ file: LegacyTableTree.js:582 ~ callsocket ~ ip_address:',
-      ip_address
+      'fffffff---------------------------------------',
+      JSON.stringify({
+        ip_address: ip_address,
+        job_id: parseInt(id),
+      })
     );
     ws.current = new WebSocket(
       `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
@@ -597,8 +524,8 @@ const ComposableTableTree = () => {
         .shift();
       ws.current.send(
         JSON.stringify({
-          ip_addresses: ip_address,
-          job_id: id,
+          ip_address: ip_address,
+          job_id: parseInt(id),
         })
       );
     };
@@ -635,68 +562,141 @@ const ComposableTableTree = () => {
       ws.current.close();
     };
   }
+
   const handleSubmit = async () => {
-    const selectedRows = data?.reduce((result, parent) => {
-      if (selectedNodeNames.includes(parent.name)) {
-        const parentRow = { parent: parent.name, child: [] };
+    const selectedRows = data.reduce((result, parent) => {
+      const parentRow = selectedNodeNames.includes(parent.name)
+        ? { parent: parent.name, child: [] }
+        : null;
 
-        const childRows = parent.children
-          ? parent.children
-              .filter((child) => selectedNodeNames.includes(child.name))
-              .map((child) => child.IP_Address)
-          : [];
+      const childRows = parent.children
+        ? parent.children
+            .filter((child) => selectedNodeNames.includes(child.name))
+            .map((child) => child.IP_Address)
+        : [];
 
-        parentRow.child = childRows;
+      if (parentRow) {
+        const existingRow = result.find(
+          (row) => row.parent === parentRow.parent
+        );
 
-        // Only add to result if there are child rows
-        if (parentRow.child.length > 0) {
+        if (existingRow) {
+          existingRow.child.push(...childRows);
+        } else {
+          parentRow.child = childRows;
           result.push(parentRow);
         }
       } else {
-        const childRows = parent.children
-          ? parent.children
-              .filter((child) => selectedNodeNames.includes(child.name))
-              .map((child) => child.IP_Address)
-          : [];
-
         result.push(
-          ...childRows.map((child) => ({ parent: parent.name, child }))
+          ...childRows.map((child) => ({
+            parent: parent.name,
+            child,
+          }))
         );
       }
 
       return result;
     }, []);
 
-    if (selectedRows && software_version) {
-      const mergedRows = selectedRows?.map((item) => item.child);
-      const payload = {
-        credential_passwords: {},
-        extra_vars: {
-          inventory_hostname: mergedRows,
-        },
-        panos_version_input: software_version,
-      };
-      try {
-        const { data } = await JobTemplatesAPI.launch(11, {
-          extra_vars: payload,
-        });
-        callsocket(mergedRows, data?.id);
-        history.push(
-          `/jobs/playbook/${data.id}/fresult?variableName=${data.id}`
-        );
-      } catch (error) {
-        console.log(
-          '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
-          error
-        );
+    const mergedRows = selectedRows.reduce((result, row) => {
+      const existingRow = result.find((r) => r.parent === row.parent);
+
+      if (existingRow) {
+        if (Array.isArray(existingRow.child)) {
+          existingRow.child.push(row.child);
+        } else {
+          existingRow.child = [existingRow.child, row.child];
+        }
+      } else {
+        result.push({ parent: row.parent, child: [row.child] });
       }
-    } else if (!selectedRows) {
-      alert('please select the Firewalls');
-    } else if (software_version == undefined || software_version == '') {
-      alert('please select the Software version');
+
+      return result;
+    }, []);
+    const payload_ip = selectedRows?.map((item) => item.child);
+    const payload = {
+      credential_passwords: {},
+      extra_vars: {
+        inventory_hostname: payload_ip,
+      },
+      panos_version_input: software_version,
+    };
+    try {
+      const { data } = await JobTemplatesAPI.launch(11, {
+        extra_vars: payload,
+      });
+      callsocket(mergedRows, data?.id);
+      history.push(`/jobs/playbook/${data.id}/fresult?variableName=${data.id}`);
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
+        error
+      );
     }
-    // setIssubmit(true);
+    console.log(payload);
   };
+  // const handleSubmit = async () => {
+  //   const selectedRows = data?.reduce((result, parent) => {
+  //     if (selectedNodeNames.includes(parent.name)) {
+  //       const parentRow = { parent: parent.name, child: [] };
+
+  //       const childRows = parent.children
+  //         ? parent.children
+  //             .filter((child) => selectedNodeNames.includes(child.name))
+  //             .map((child) => child.IP_Address)
+  //         : [];
+
+  //       parentRow.child = childRows;
+
+  //       // Only add to result if there are child rows
+  //       if (parentRow.child.length > 0) {
+  //         result.push(parentRow);
+  //       }
+  //     } else {
+  //       const childRows = parent.children
+  //         ? parent.children
+  //             .filter((child) => selectedNodeNames.includes(child.name))
+  //             .map((child) => child.IP_Address)
+  //         : [];
+
+  //       result.push(
+  //         ...childRows.map((child) => ({ parent: parent.name, child }))
+  //       );
+  //     }
+
+  //     return result;
+  //   }, []);
+
+  //   if (selectedRows && software_version) {
+  //     const mergedRows = selectedRows?.map((item) => item.child);
+  //     const payload = {
+  //       credential_passwords: {},
+  //       extra_vars: {
+  //         inventory_hostname: mergedRows,
+  //       },
+  //       panos_version_input: software_version,
+  //     };
+  //     try {
+  //       const { data } = await JobTemplatesAPI.launch(11, {
+  //         extra_vars: payload,
+  //       });
+  //       callsocket(mergedRows, data?.id);
+  //       history.push(
+  //         `/jobs/playbook/${data.id}/fresult?variableName=${data.id}`
+  //       );
+  //     } catch (error) {
+  //       console.log(
+  //         '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
+  //         error
+  //       );
+  //     }
+  //   } else if (!selectedRows) {
+  //     alert('please select the Firewalls');
+  //   } else if (software_version == undefined || software_version == '') {
+  //     alert('please select the Software version');
+  //   }
+  //   // setIssubmit(true);
+  // };
 
   return (
     <>
