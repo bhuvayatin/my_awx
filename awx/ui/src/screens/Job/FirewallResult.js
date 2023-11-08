@@ -1,4 +1,10 @@
-import { Pagination } from '@patternfly/react-core';
+import { Label, Pagination } from '@patternfly/react-core';
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  DownloadIcon,
+  SyncAltIcon,
+} from '@patternfly/react-icons';
 import {
   Table,
   TableComposable,
@@ -10,6 +16,7 @@ import {
 } from '@patternfly/react-table';
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import styled, { keyframes } from 'styled-components';
 
 function FirewallResult() {
   const { id } = useParams();
@@ -115,7 +122,17 @@ function FirewallResult() {
       });
     }
   }
-
+  const Spin = keyframes`
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(1turn);
+  }
+`;
+  const RunningIcon = styled(SyncAltIcon)`
+    animation: ${Spin} 1.75s linear infinite;
+  `;
   return (
     <div>
       <TableComposable isTreeTable aria-label="Tree table">
@@ -131,7 +148,40 @@ function FirewallResult() {
             <Tr key={index}>
               <Td dataLabel={columnNames.name}>{repo.name}</Td>
               <Td dataLabel={columnNames.branches}>{repo.branches}</Td>
-              <Td dataLabel={columnNames.prs}>{repo.prs}</Td>
+              <Td dataLabel={columnNames.prs}>
+                {repo?.prs == 'updated' && (
+                  <Label
+                    variant="outline"
+                    color={'green'}
+                    icon={<CheckCircleIcon />}
+                  >
+                    {repo?.prs}
+                  </Label>
+                )}{' '}
+                {repo?.prs == 'waiting' && (
+                  <Label variant="outline" color={'gray'} icon={<ClockIcon />}>
+                    {repo?.prs}
+                  </Label>
+                )}
+                {repo?.prs == 'processing' && (
+                  <Label
+                    variant="outline"
+                    color={'blue'}
+                    icon={<RunningIcon />}
+                  >
+                    {repo?.prs}
+                  </Label>
+                )}{' '}
+                {repo?.prs == 'installing' && (
+                  <Label
+                    variant="outline"
+                    color={'purple'}
+                    icon={<DownloadIcon />}
+                  >
+                    {repo?.prs}
+                  </Label>
+                )}
+              </Td>
             </Tr>
           ))}
         </Tbody>

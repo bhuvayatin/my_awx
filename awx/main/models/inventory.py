@@ -55,7 +55,7 @@ from awx.main.utils.execution_environments import to_container_path, get_control
 from awx.main.utils.licensing import server_product_name
 
 
-__all__ = ['Inventory', 'Host', 'Group', 'InventorySource', 'InventoryUpdate', 'SmartInventoryMembership', 'HostMetric', 'HostMetricSummaryMonthly', 'UpdateFirewallStatus']
+__all__ = ['Inventory', 'Host', 'Group', 'InventorySource', 'InventoryUpdate', 'SmartInventoryMembership', 'HostMetric', 'HostMetricSummaryMonthly']
 
 logger = logging.getLogger('awx.main.models.inventory')
 

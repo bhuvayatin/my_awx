@@ -18,8 +18,7 @@ from awx.api.views.inventory import (
     InventoryCopy,
     GetVersion,
     GetPanorama,
-    GetFireWallsData,
-    UpdateFireWallsVersion
+    GetFireWallsData
 )
 from awx.api.views import (
     InventoryHostsList,
@@ -57,7 +56,6 @@ urls = [
     re_path(r'^get/version/$', GetVersion.as_view(), name='get_version'),
     re_path(r'^get/panorama/$', GetPanorama.as_view(), name='get_panorama'),
     re_path(r'^get/firewalls/$', GetFireWallsData.as_view(), name='get_firewalls_data'),
-    re_path(r'^updatefirewalls/$', UpdateFireWallsVersion.as_view(), name='update_firewalls'),
     
     
 ]

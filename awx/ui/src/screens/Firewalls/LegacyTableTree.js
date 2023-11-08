@@ -10,9 +10,6 @@ import {
   TreeRowWrapper,
 } from '@patternfly/react-table';
 import {
-  Alert,
-  AlertActionCloseButton,
-  AlertVariant,
   Bullseye,
   Button,
   EmptyState,
@@ -37,11 +34,9 @@ import {
 } from '@patternfly/react-icons';
 import useRequest from 'hooks/useRequest';
 import yaml from 'js-yaml';
-import { TextInput } from '@patternfly/react-core';
 import { InventoriesAPI, JobTemplatesAPI } from 'api';
-import StatusLabel from 'components/StatusLabel';
-import AlertModal from 'components/AlertModal';
-import { useWebsocketForIP } from 'hooks/useWebsocket';
+import styled from 'styled-components';
+import ModalAlert from './ModalAlert';
 
 const ComposableTableTree = () => {
   const columnNames = {
@@ -141,14 +136,33 @@ const ComposableTableTree = () => {
   const [isopensoftware_version, setIsopenoftware_version] = useState(false);
 
   const [getdata, setGetdata] = useState(childdata);
-  const [issubmit, setIssubmit] = useState(false);
+  const [iserror, setIserror] = useState(false);
+  const [variant, setvariant] = useState('warning');
+  const [iserrormsg, setIserrormsg] = useState('');
+
   // Calculate the start and end indices for the current page
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
 
   const [isLoading, setIsLoading] = useState(false);
   const ws = useRef(null);
-
+  const Header = styled.div`
+    display: flex;
+    svg {
+      margin-right: 16px;
+    }
+  `;
+  const customHeader = (
+    <Header>
+      <CheckCircleIcon
+        size="lg"
+        css="color: var(--pf-global--success-color--100)"
+      />
+      <Title id="alert-modal-header-label" size="2xl" headingLevel="h2">
+        Test
+      </Title>
+    </Header>
+  );
   // const lastMessage = useWebsocketForIP(['10.215.18.83', '10.215.18.84', '10.215.18.85']);
   // Call Hooks to make list api call for the inventory
   const {
@@ -182,10 +196,8 @@ const ComposableTableTree = () => {
       }
       return data;
     } catch (error) {
-      console.log(
-        '🚀 ~ file: InventoryTable.js:156 ~ handleSubmit ~ error:',
-        error
-      );
+      setIserror(true);
+      setIserrormsg(error?.response?.data?.Error);
     }
   };
 
@@ -285,26 +297,26 @@ const ComposableTableTree = () => {
       return data;
     } catch (error) {
       setIsLoading(false);
+      setIserror(true);
       if (error?.response?.data?.Error) {
         console.log(
           '🚀 ~ file: LegacyTableTree.js:274 ~ getFirewall ~ error?.response?.data?.Error:',
           error?.response?.data?.Error
         );
+        setIserrormsg(error?.response?.data?.Error);
       } else {
         console.log(
           '🚀 ~ file: LegacyTableTree.js:277 ~ getFirewall ~ error?.response?.statusText:',
           error?.response?.statusText
         );
+        setIserror(true);
+        setIserrormsg(error?.response?.statusText);
       }
-      console.log(
-        '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
-        error
-      );
     }
   };
   useEffect(() => {
     if (selectedOption) {
-      GetPanoramaVersion();
+      // GetPanoramaVersion();
       getFirewall();
     }
   }, [selectedOption]);
@@ -504,13 +516,6 @@ const ComposableTableTree = () => {
 
   //   OnSubmit Create One Payload For POST API
   function callsocket(ip_address, id) {
-    console.log(
-      'fffffff---------------------------------------',
-      JSON.stringify({
-        ip_address: ip_address,
-        job_id: parseInt(id),
-      })
-    );
     ws.current = new WebSocket(
       `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
         window.location.host
@@ -626,80 +631,31 @@ const ComposableTableTree = () => {
         extra_vars: payload,
       });
       callsocket(mergedRows, data?.id);
-      history.push(`/jobs/playbook/${data.id}/fresult?variableName=${data.id}`);
+      history.push(`/jobs/playbook/${data.id}/fresult?jobid=${data.id}`);
     } catch (error) {
       console.log(
         '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
         error
       );
     }
-    console.log(payload);
   };
-  // const handleSubmit = async () => {
-  //   const selectedRows = data?.reduce((result, parent) => {
-  //     if (selectedNodeNames.includes(parent.name)) {
-  //       const parentRow = { parent: parent.name, child: [] };
 
-  //       const childRows = parent.children
-  //         ? parent.children
-  //             .filter((child) => selectedNodeNames.includes(child.name))
-  //             .map((child) => child.IP_Address)
-  //         : [];
-
-  //       parentRow.child = childRows;
-
-  //       // Only add to result if there are child rows
-  //       if (parentRow.child.length > 0) {
-  //         result.push(parentRow);
-  //       }
-  //     } else {
-  //       const childRows = parent.children
-  //         ? parent.children
-  //             .filter((child) => selectedNodeNames.includes(child.name))
-  //             .map((child) => child.IP_Address)
-  //         : [];
-
-  //       result.push(
-  //         ...childRows.map((child) => ({ parent: parent.name, child }))
-  //       );
-  //     }
-
-  //     return result;
-  //   }, []);
-
-  //   if (selectedRows && software_version) {
-  //     const mergedRows = selectedRows?.map((item) => item.child);
-  //     const payload = {
-  //       credential_passwords: {},
-  //       extra_vars: {
-  //         inventory_hostname: mergedRows,
-  //       },
-  //       panos_version_input: software_version,
-  //     };
-  //     try {
-  //       const { data } = await JobTemplatesAPI.launch(11, {
-  //         extra_vars: payload,
-  //       });
-  //       callsocket(mergedRows, data?.id);
-  //       history.push(
-  //         `/jobs/playbook/${data.id}/fresult?variableName=${data.id}`
-  //       );
-  //     } catch (error) {
-  //       console.log(
-  //         '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
-  //         error
-  //       );
-  //     }
-  //   } else if (!selectedRows) {
-  //     alert('please select the Firewalls');
-  //   } else if (software_version == undefined || software_version == '') {
-  //     alert('please select the Software version');
-  //   }
-  //   // setIssubmit(true);
-  // };
+  const closeModal = () => {
+    setIserror(false);
+  };
 
   return (
     <>
+      {iserror && (
+        <ModalAlert
+          variant="error"
+          isOpen={iserror}
+          title={`Error!`}
+          onClose={closeModal}
+        >
+          <p>{iserrormsg}</p>
+        </ModalAlert>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
         <div>
           <label htmlFor="firewall-select" style={{ margin: '0 8px' }}>
@@ -776,22 +732,25 @@ const ComposableTableTree = () => {
                 <Tbody>{renderRows(pageData)}</Tbody>{' '}
               </>
             ) : (
-              <Tr>
-                <Td colSpan={8}>
-                  <Bullseye>
-                    <div>
-                      <Title headingLevel="h2" size="lg">
-                        No firewalls avaiable in the listed inventory file:
-                        <b>{selectinventoryname}</b>.
-                      </Title>
-                      <br />
-                      <EmptyStateBody>
-                        Please choose a different file.
-                      </EmptyStateBody>
-                    </div>
-                  </Bullseye>
-                </Td>
-              </Tr>
+              <TableComposable aria-label="Empty state table">
+                <Tbody>
+                  <Tr>
+                    <Td colSpan={8}>
+                      <Bullseye>
+                        <EmptyState variant={EmptyStateVariant.small}>
+                          <EmptyStateIcon icon={CubesIcon} />
+                          <Title headingLevel="h2" size="lg">
+                            No Panoramas Found
+                          </Title>
+                          <EmptyStateBody>
+                            Please add Panoramas to populate this list
+                          </EmptyStateBody>
+                        </EmptyState>
+                      </Bullseye>
+                    </Td>
+                  </Tr>
+                </Tbody>
+              </TableComposable>
             )}
           </TableComposable>
           {/* Pagination */}
@@ -853,7 +812,7 @@ const ComposableTableTree = () => {
           />
         </div>
       </div> */}
-      <div>
+      <div style={{ paddingTop: '10px' }}>
         {selectedOption && (
           <div>
             <label htmlFor="firewall-select" style={{ margin: '0 8px' }}>

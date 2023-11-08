@@ -6022,8 +6022,3 @@ class GetPanoramaSerializer(serializers.Serializer):
 class GetFireWallsDataSerializer(serializers.Serializer):
     host = serializers.CharField()
     access_token = serializers.CharField()
-
-class UpdateFireWallsVersionSerializer(serializers.Serializer):
-    ip_address = serializers.ListField(
-        child=serializers.CharField()
-        )
