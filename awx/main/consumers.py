@@ -339,6 +339,8 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     )
                     
                     if not created:
+                        # TODO
+                        # download, solar wind mute, backup, install, reboot, commit, ping, login, solar wind unmute, success
                         status = "processing"
                         response_data[group_name][i] = status
                         firewall_status.status = status

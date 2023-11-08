@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 import json
 import panos
 from datetime import datetime
-import time
+from collections import defaultdict
 from pandevice import firewall, panorama
 # Django
 from django.conf import settings
@@ -272,6 +272,26 @@ class GetPanorama(APIView):
 class GetFireWallsData(APIView):
     # permission_classes = (AllowAny)
     
+    def etree_to_dict(self, t):
+        d = {t.tag: {} if t.attrib else None}
+        children = list(t)
+        if children:
+            dd = defaultdict(list)
+            for dc in map(self.etree_to_dict, children):
+                for k, v in dc.items():
+                    dd[k].append(v)
+            d = {t.tag: {k:v[0] if len(v) == 1 else v for k, v in dd.items()}}
+        if t.attrib:
+            d[t.tag].update(('@' + k, v) for k, v in t.attrib.items())
+        if t.text:
+            text = t.text.strip()
+            if children or t.attrib:
+                if text:
+                    d[t.tag]['#text'] = text
+            else:
+                d[t.tag] = text
+        return d
+
     def post(self, request, *args, **kwargs):
         serializer = GetFireWallsDataSerializer(data=request.data)
         if serializer.is_valid():
@@ -279,51 +299,37 @@ class GetFireWallsData(APIView):
             access_token = serializer.validated_data.get('access_token', None)
             try:
                 timeout_seconds = 10
-                p = panorama.Panorama(hostname=host, api_key=access_token, timeout=timeout_seconds)                
+                p = panorama.Panorama(hostname=host, api_key=access_token, timeout=timeout_seconds)
                 device_groups = p.refresh_devices()
-                all_device_groups = []
-                
-                for device_group in device_groups:
-                    device_group_info = {}
-                    device_group_info['name'] = str(device_group)
-                    firewalls = []
-                    for device in device_group.children:
-                        if isinstance(device, firewall.Firewall):
-                            firewall_info = {}
-                            firewall_info['Firewall_Serial'] = device.serial
-                            firewall_info['Firewall_State'] = device.state.connected
-                            
-                            system_info = device.op("show system info")
-                            
-                            firewall_info['Device_Name'] = system_info.find('.//devicename').text
-                            firewall_info['IP_Address'] = system_info.find('.//ip-address').text
-                            firewall_info['Software_Version'] = system_info.find('.//sw-version').text
-                            firewall_info['Certificate Expiry'] = system_info.find('.//device-certificate-status').text
-                            
-                            # Get HA information
-                            ha_info = device.op("show high-availability state")
-                            if ha_info.find('.//enabled').text == 'yes':
-                                firewall_info['HA_Group_ID'] = ha_info.find('.//group').text 
-                                peer_info_serial = ha_info.find('.//peer-info/serial')
-                                peer_info_ip = ha_info.find('.//peer-info/mgmt-ip')
-                                if peer_info_serial is not None and peer_info_ip is not None:
-                                    firewall_info['Peer_Firewall_Serial'] = peer_info_serial.text
-                                    firewall_info['Peer_Firewall_IP'] = peer_info_ip.text
-                                else:
-                                    firewall_info['Peer_Information'] = "Could not find peer information."
-                            else:
-                                firewall_info['HA_Information'] = "HA is not enabled on this firewall."
-                            
-                            firewalls.append(firewall_info)
-                    
-                    device_group_info['Firewalls'] = firewalls
-                    all_device_groups.append(device_group_info)
-                
-                return Response({"data":all_device_groups})
-            
-            # except TimeoutError:
-            #     return Response({"Error": "API request timed out. The API is taking too long to respond."}, status=status.HTTP_408_REQUEST_TIMEOUT)
             except Exception as e:
-                return Response({"Error": "API request timed out. The API is taking too long to respond."}, status=status.HTTP_408_REQUEST_TIMEOUT)
+                if "timed out" in str(e):
+                    print(f"API request timed out after {timeout_seconds} seconds.")
+                    return Response({"Error": "API request timed out. The API is taking too long to respond."}, status=status.HTTP_408_REQUEST_TIMEOUT)
+                else:
+                    print(f"An error occurred: {e}")
+                    return Response({"Error": f"An error occurred {e}"}, status=status.HTTP_400_BAD_REQUEST)
+
+            all_device_groups = []
+            for device_group in device_groups:
+                device_group_info = {}
+                device_group_info['name'] = str(device_group)
+                firewalls = []
+                for device in device_group.children:
+                    if isinstance(device, firewall.Firewall):
+                        firewall_info = {}
+                        system_info = device.op("show system info")
+                        system_info_dict = self.etree_to_dict(system_info)['response']['result']['system']
+
+                        ha_info = device.op("show high-availability state")
+                        ha_info_dict = self.etree_to_dict(ha_info)['response']['result']
+
+                        system_info_dict['peer_info_state'] = ha_info_dict
+                        
+                        firewall_info = system_info_dict
+                        firewalls.append(firewall_info)
+                device_group_info['firewalls'] = firewalls
+                all_device_groups.append(device_group_info)
+            
+            return Response({"data": all_device_groups})
         else:
             return Response({"Error":"Please enter a host and access token"}, status=status.HTTP_400_BAD_REQUEST)
