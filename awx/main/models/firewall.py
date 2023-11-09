@@ -6,8 +6,15 @@ __all__ = ['UpdateFirewallStatus']
 
 FIREWALL_STATUS_CHOICES = (
     ('waiting', 'waiting'),
-    ('processing', 'processing'),
+    ('downloading', 'downloading'),
+    ('solar_wind_mute', 'solar_wind_mute'),
+    ('backup', 'backup'),
     ('installing', 'installing'),
+    ('rebooting', 'rebooting'),
+    ('commit', 'commit'),
+    ('ping', 'ping'),
+    ('login', 'login'),
+    ('solar_wind_unmute', 'solar_wind_unmute'),
     ('updated', 'updated')
 )
 
