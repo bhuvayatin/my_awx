@@ -8,6 +8,7 @@ import {
   Tbody,
   Td,
   TreeRowWrapper,
+  InnerScrollContainer,
 } from '@patternfly/react-table';
 import {
   Bullseye,
@@ -37,15 +38,18 @@ import yaml from 'js-yaml';
 import { InventoriesAPI, JobTemplatesAPI } from 'api';
 import styled from 'styled-components';
 import ModalAlert from './ModalAlert';
+import DataModal from './DataModal';
 
 const ComposableTableTree = () => {
   const columnNames = {
     Firewall_Serial: 'Firewall Serial',
     name: 'Name',
     IP_Address: 'IP Address',
-    Firewall_State: 'Firewall_State',
+    Firewall_State: 'Firewall State',
     // HA_Group_ID: 'HA Group ID',
     Software_Version: 'Software Version',
+    Threat_Version: 'Apps And Threat',
+    Hapair_Status: 'Ha Pair Status',
   };
   const pageSize = 10;
   // Static Data JSON
@@ -116,6 +120,523 @@ const ComposableTableTree = () => {
     },
   ];
 
+  const newchilddata = [
+    {
+      name: 'XSOAR_Upgrade_testing',
+      firewalls: [
+        {
+          hostname: 'PA-VM_85',
+          'ip-address': '10.215.18.85',
+          'public-ip-address': 'unknown',
+          'ha-pair': '111',
+          netmask: '255.255.254.0',
+          'default-gateway': '10.215.18.1',
+          'is-dhcp': 'no',
+          'ipv6-address': 'unknown',
+          'ipv6-link-local-address': 'fe80::250:56ff:fe9e:1dd2/64',
+          'ipv6-default-gateway': 'None',
+          'mac-address': '00:50:56:9e:1d:d2',
+          time: 'Wed Nov  1 09:07:34 2023',
+          uptime: '41 days, 21:15:49',
+          devicename: 'PA-VM_85',
+          family: 'vm',
+          model: 'PA-VM',
+          serial: '007951000342260',
+          'vm-mac-base': '7C:89:C3:0A:8C:00',
+          'vm-mac-count': '256',
+          'vm-uuid': '421EA98F-619A-47C1-3100-86238DEB645B',
+          'vm-cpuid': 'ESX:57060500FFFB8B1F',
+          'vm-license': 'VM-100',
+          'vm-mode': 'VMware ESXi',
+          'cloud-mode': 'non-cloud',
+          'sw-version': '9.0.16-h3',
+          'global-protect-client-package-version': '0.0.0',
+          'app-version': '8766-8347',
+          'app-release-date': '2023/10/17 19:43:26 PDT',
+          'av-version': '4361-4874',
+          'av-release-date': '2023/02/13 14:15:56 PST',
+          'threat-version': '8766-8347',
+          'threat-release-date': '2023/10/17 19:43:26 PDT',
+          'wf-private-version': '0',
+          'wf-private-release-date': 'unknown',
+          'url-db': 'paloaltonetworks',
+          'wildfire-version': '0',
+          'wildfire-release-date': 'None',
+          'url-filtering-version': '20231101.20252',
+          'global-protect-datafile-version': 'unknown',
+          'global-protect-datafile-release-date': 'unknown',
+          'global-protect-clientless-vpn-version': '0',
+          'global-protect-clientless-vpn-release-date': 'None',
+          'logdb-version': '9.0.10',
+          plugin_versions: {
+            entry: {
+              pkginfo: 'vm_series-1.0.5',
+              '@name': 'vm_series',
+              '@version': '1.0.5',
+            },
+          },
+          'platform-family': 'vm',
+          'vpn-disable-mode': 'off',
+          'multi-vsys': 'off',
+          'operational-mode': 'normal',
+          'device-certificate-status': 'None',
+          peer_info_state: {
+            enabled: 'yes',
+            group: {
+              mode: 'Active-Passive',
+              'local-info': {
+                'url-compat': 'Mismatch',
+                'app-version': '8766-8347',
+                'gpclient-version': 'Not Installed',
+                'build-rel': '9.0.16-h3',
+                'ha2-port': 'ethernet1/3',
+                'av-version': '4361-4874',
+                'ha1-gateway': '10.215.18.1',
+                'url-version': '20231101.20252',
+                'active-passive': {
+                  'passive-link-state': 'shutdown',
+                  'monitor-fail-holddown': '1',
+                },
+                'platform-model': 'PA-VM',
+                'av-compat': 'Match',
+                'ha2-ipaddr': '192.168.1.1/24',
+                'vpnclient-compat': 'Match',
+                'ha1-ipaddr': '10.215.18.85/23',
+                'vm-license': 'vm100',
+                'ha2-macaddr': '00:50:56:9e:4d:8c',
+                'monitor-fail-holdup': '0',
+                priority: '10',
+                'preempt-hold': '1',
+                state: 'active',
+                version: '1',
+                'promotion-hold': '2000',
+                'threat-compat': 'Match',
+                'state-sync': 'Complete',
+                'vm-license-compat': 'Mismatch',
+                'addon-master-holdup': '500',
+                'heartbeat-interval': '2000',
+                'ha1-link-mon-intv': '3000',
+                'hello-interval': '8000',
+                'ha1-port': 'management',
+                'ha1-encrypt-imported': 'no',
+                'mgmt-ip': '10.215.18.85/23',
+                'vpnclient-version': 'Not Installed',
+                'preempt-flap-cnt': '0',
+                'nonfunc-flap-cnt': '0',
+                'threat-version': '8766-8347',
+                'ha1-macaddr': '00:50:56:9e:1d:d2',
+                'vm-license-type': 'vm100',
+                'state-duration': '3618766',
+                'max-flaps': '3',
+                'ha1-encrypt-enable': 'no',
+                'mgmt-ipv6': 'None',
+                'state-sync-type': 'ethernet',
+                preemptive: 'no',
+                'gpclient-compat': 'Match',
+                mode: 'Active-Passive',
+                'build-compat': 'Mismatch',
+                VMS: 'Compat Match',
+                'app-compat': 'Match',
+              },
+              'peer-info': {
+                'app-version': '8766-8347',
+                'gpclient-version': 'Not Installed',
+                'url-version': '0000.00.00.000',
+                'build-rel': '9.1.0',
+                'ha2-ipaddr': '192.168.1.2',
+                'platform-model': 'PA-VM',
+                'vm-license': 'VM-100',
+                'ha2-macaddr': '00:50:56:9e:a1:d1',
+                priority: '100',
+                state: 'passive',
+                version: '1',
+                'last-error-reason': 'User requested',
+                'conn-status': 'up',
+                'av-version': '4361-4874',
+                'vpnclient-version': 'Not Installed',
+                'mgmt-ip': '10.215.18.86/23',
+                'conn-ha2': {
+                  'conn-status': 'up',
+                  'conn-ka-enbled': 'no',
+                  'conn-primary': 'yes',
+                  'conn-desc': 'link status',
+                },
+                'threat-version': '8766-8347',
+                'ha1-macaddr': '00:50:56:9e:ae:f0',
+                'conn-ha1': {
+                  'conn-status': 'up',
+                  'conn-primary': 'yes',
+                  'conn-desc': 'heartbeat status',
+                },
+                'vm-license-type': 'VM-100',
+                'state-duration': '1213383',
+                'ha1-ipaddr': '10.215.18.86',
+                'mgmt-ipv6': 'None',
+                'last-error-state': 'suspended',
+                preemptive: 'no',
+                mode: 'Active-Passive',
+                VMS: '1.0.13',
+              },
+              'link-monitoring': {
+                'fail-cond': 'any',
+                enabled: 'yes',
+                groups: 'None',
+              },
+              'path-monitoring': {
+                vwire: 'None',
+                'fail-cond': 'any',
+                vlan: 'None',
+                enabled: 'yes',
+                vrouter: 'None',
+              },
+              'running-sync': 'not synchronized',
+              'running-sync-enabled': 'yes',
+            },
+          },
+        },
+        {
+          hostname: 'PA-VM_86',
+          'ip-address': '10.215.18.86',
+          'public-ip-address': 'unknown',
+          'ha-pair': '111',
+          netmask: '255.255.254.0',
+          'default-gateway': '10.215.18.1',
+          'is-dhcp': 'no',
+          'ipv6-address': 'unknown',
+          'ipv6-link-local-address': 'fe80::250:56ff:fe9e:aef0/64',
+          'ipv6-default-gateway': 'None',
+          'mac-address': '00:50:56:9e:ae:f0',
+          time: 'Wed Nov  1 09:07:35 2023',
+          uptime: '14 days, 1:07:19',
+          devicename: 'PA-VM_86',
+          family: 'vm',
+          model: 'PA-VM',
+          serial: '007951000342259',
+          'vm-mac-base': '7C:89:C1:89:7A:00',
+          'vm-mac-count': '256',
+          'vm-uuid': '421E1A8C-FEF5-7BDF-90D3-CD096E92F569',
+          'vm-cpuid': 'ESX:57060500FFFB8B1F',
+          'vm-license': 'VM-100',
+          'vm-mode': 'VMware ESXi',
+          'cloud-mode': 'non-cloud',
+          'sw-version': '9.1.0',
+          'global-protect-client-package-version': '0.0.0',
+          'app-version': '8766-8347',
+          'app-release-date': '2023/10/17 19:43:26 PDT',
+          'av-version': '4361-4874',
+          'av-release-date': 'None',
+          'threat-version': '8766-8347',
+          'threat-release-date': '2023/10/17 19:43:26 PDT',
+          'wf-private-version': '0',
+          'wf-private-release-date': 'unknown',
+          'url-db': 'paloaltonetworks',
+          'wildfire-version': '0',
+          'wildfire-release-date': 'None',
+          'url-filtering-version': '0000.00.00.000',
+          'global-protect-datafile-version': 'unknown',
+          'global-protect-datafile-release-date': 'unknown',
+          'global-protect-clientless-vpn-version': '0',
+          'global-protect-clientless-vpn-release-date': 'None',
+          'logdb-version': '9.1.21',
+          plugin_versions: {
+            entry: {
+              pkginfo: 'vm_series-1.0.13',
+              '@name': 'vm_series',
+              '@version': '1.0.13',
+            },
+          },
+          'platform-family': 'vm',
+          'vpn-disable-mode': 'off',
+          'multi-vsys': 'off',
+          'operational-mode': 'normal',
+          peer_info_state: {
+            enabled: 'yes',
+            group: {
+              mode: 'Active-Passive',
+              'local-info': {
+                'url-compat': 'Mismatch',
+                'app-version': '8766-8347',
+                'gpclient-version': 'Not Installed',
+                'build-rel': '9.1.0',
+                'ha2-port': 'ethernet1/3',
+                'av-version': '4361-4874',
+                'ha1-gateway': '10.215.18.1',
+                'url-version': '0000.00.00.000',
+                'active-passive': {
+                  'passive-link-state': 'shutdown',
+                  'monitor-fail-holddown': '1',
+                },
+                'platform-model': 'PA-VM',
+                'av-compat': 'Match',
+                'ha2-ipaddr': '192.168.1.2/24',
+                'vpnclient-compat': 'Match',
+                'ha1-ipaddr': '10.215.18.86/23',
+                'vm-license': 'VM-100',
+                'ha2-macaddr': '00:50:56:9e:a1:d1',
+                'monitor-fail-holdup': '0',
+                priority: '100',
+                'preempt-hold': '1',
+                state: 'passive',
+                version: '1',
+                'promotion-hold': '2000',
+                'threat-compat': 'Match',
+                'state-sync': 'Complete',
+                'addon-master-holdup': '500',
+                'heartbeat-interval': '2000',
+                'ha1-link-mon-intv': '3000',
+                'hello-interval': '8000',
+                'ha1-port': 'management',
+                'ha1-encrypt-imported': 'no',
+                'mgmt-ip': '10.215.18.86/23',
+                'vpnclient-version': 'Not Installed',
+                'preempt-flap-cnt': '0',
+                'nonfunc-flap-cnt': '0',
+                'threat-version': '8766-8347',
+                'ha1-macaddr': '00:50:56:9e:ae:f0',
+                'state-duration': '1213383',
+                'max-flaps': '3',
+                'ha1-encrypt-enable': 'no',
+                'mgmt-ipv6': 'None',
+                'state-sync-type': 'ethernet',
+                preemptive: 'no',
+                'gpclient-compat': 'Match',
+                mode: 'Active-Passive',
+                'build-compat': 'Mismatch',
+                VMS: 'Compat Match',
+                'app-compat': 'Match',
+              },
+              'peer-info': {
+                'app-version': '8766-8347',
+                'gpclient-version': 'Not Installed',
+                'url-version': '20231101.20252',
+                'build-rel': '9.0.16-h3',
+                'ha2-ipaddr': '192.168.1.1',
+                'platform-model': 'PA-VM',
+                'vm-license': 'vm100',
+                'ha2-macaddr': '00:50:56:9e:4d:8c',
+                priority: '10',
+                state: 'active',
+                version: '1',
+                'conn-status': 'up',
+                'av-version': '4361-4874',
+                'vpnclient-version': 'Not Installed',
+                'mgmt-ip': '10.215.18.85/23',
+                'conn-ha2': {
+                  'conn-status': 'up',
+                  'conn-ka-enbled': 'no',
+                  'conn-primary': 'yes',
+                  'conn-desc': 'link status',
+                },
+                'threat-version': '8766-8347',
+                'ha1-macaddr': '00:50:56:9e:1d:d2',
+                'conn-ha1': {
+                  'conn-status': 'up',
+                  'conn-primary': 'yes',
+                  'conn-desc': 'heartbeat status',
+                },
+                'state-duration': '1213389',
+                'ha1-ipaddr': '10.215.18.85',
+                'mgmt-ipv6': 'None',
+                preemptive: 'no',
+                mode: 'Active-Passive',
+                VMS: '1.0.5',
+              },
+              'link-monitoring': {
+                'fail-cond': 'any',
+                enabled: 'yes',
+                groups: 'None',
+              },
+              'path-monitoring': {
+                vwire: 'None',
+                'fail-cond': 'any',
+                vlan: 'None',
+                enabled: 'yes',
+                vrouter: 'None',
+              },
+              'running-sync': 'not synchronized',
+              'running-sync-enabled': 'yes',
+            },
+          },
+        },
+      ],
+    },
+    {
+      name: '',
+      firewalls: [
+        {
+          hostname: 'PA-VM_85',
+          'ip-address': '10.215.18.85',
+          'public-ip-address': 'unknown',
+          netmask: '255.255.254.0',
+          'ha-pair': '112',
+          'default-gateway': '10.215.18.1',
+          'is-dhcp': 'no',
+          'ipv6-address': 'unknown',
+          'ipv6-link-local-address': 'fe80::250:56ff:fe9e:1dd2/64',
+          'ipv6-default-gateway': 'None',
+          'mac-address': '00:50:56:9e:1d:d2',
+          time: 'Wed Nov  1 09:07:34 2023',
+          uptime: '41 days, 21:15:49',
+          devicename: 'PA-VM_85',
+          family: 'vm',
+          model: 'PA-VM',
+          serial: '007951000342260',
+          'vm-mac-base': '7C:89:C3:0A:8C:00',
+          'vm-mac-count': '256',
+          'vm-uuid': '421EA98F-619A-47C1-3100-86238DEB645B',
+          'vm-cpuid': 'ESX:57060500FFFB8B1F',
+          'vm-license': 'VM-100',
+          'vm-mode': 'VMware ESXi',
+          'cloud-mode': 'non-cloud',
+          'sw-version': '9.0.16-h3',
+          'global-protect-client-package-version': '0.0.0',
+          'app-version': '8766-8347',
+          'app-release-date': '2023/10/17 19:43:26 PDT',
+          'av-version': '4361-4874',
+          'av-release-date': '2023/02/13 14:15:56 PST',
+          'threat-version': '8766-8347',
+          'threat-release-date': '2023/10/17 19:43:26 PDT',
+          'wf-private-version': '0',
+          'wf-private-release-date': 'unknown',
+          'url-db': 'paloaltonetworks',
+          'wildfire-version': '0',
+          'wildfire-release-date': 'None',
+          'url-filtering-version': '20231101.20252',
+          'global-protect-datafile-version': 'unknown',
+          'global-protect-datafile-release-date': 'unknown',
+          'global-protect-clientless-vpn-version': '0',
+          'global-protect-clientless-vpn-release-date': 'None',
+          'logdb-version': '9.0.10',
+          plugin_versions: {
+            entry: {
+              pkginfo: 'vm_series-1.0.5',
+              '@name': 'vm_series',
+              '@version': '1.0.5',
+            },
+          },
+          'platform-family': 'vm',
+          'vpn-disable-mode': 'off',
+          'multi-vsys': 'off',
+          'operational-mode': 'normal',
+          'device-certificate-status': 'None',
+          peer_info_state: {
+            enabled: 'yes',
+            group: {
+              mode: 'Active-Passive',
+              'local-info': {
+                'url-compat': 'Mismatch',
+                'app-version': '8766-8347',
+                'gpclient-version': 'Not Installed',
+                'build-rel': '9.0.16-h3',
+                'ha2-port': 'ethernet1/3',
+                'av-version': '4361-4874',
+                'ha1-gateway': '10.215.18.1',
+                'url-version': '20231101.20252',
+                'active-passive': {
+                  'passive-link-state': 'shutdown',
+                  'monitor-fail-holddown': '1',
+                },
+                'platform-model': 'PA-VM',
+                'av-compat': 'Match',
+                'ha2-ipaddr': '192.168.1.1/24',
+                'vpnclient-compat': 'Match',
+                'ha1-ipaddr': '10.215.18.85/23',
+                'vm-license': 'vm100',
+                'ha2-macaddr': '00:50:56:9e:4d:8c',
+                'monitor-fail-holdup': '0',
+                priority: '10',
+                'preempt-hold': '1',
+                state: 'active',
+                version: '1',
+                'promotion-hold': '2000',
+                'threat-compat': 'Match',
+                'state-sync': 'Complete',
+                'vm-license-compat': 'Mismatch',
+                'addon-master-holdup': '500',
+                'heartbeat-interval': '2000',
+                'ha1-link-mon-intv': '3000',
+                'hello-interval': '8000',
+                'ha1-port': 'management',
+                'ha1-encrypt-imported': 'no',
+                'mgmt-ip': '10.215.18.85/23',
+                'vpnclient-version': 'Not Installed',
+                'preempt-flap-cnt': '0',
+                'nonfunc-flap-cnt': '0',
+                'threat-version': '8766-8347',
+                'ha1-macaddr': '00:50:56:9e:1d:d2',
+                'vm-license-type': 'vm100',
+                'state-duration': '3618766',
+                'max-flaps': '3',
+                'ha1-encrypt-enable': 'no',
+                'mgmt-ipv6': 'None',
+                'state-sync-type': 'ethernet',
+                preemptive: 'no',
+                'gpclient-compat': 'Match',
+                mode: 'Active-Passive',
+                'build-compat': 'Mismatch',
+                VMS: 'Compat Match',
+                'app-compat': 'Match',
+              },
+              'peer-info': {
+                'app-version': '8766-8347',
+                'gpclient-version': 'Not Installed',
+                'url-version': '0000.00.00.000',
+                'build-rel': '9.1.0',
+                'ha2-ipaddr': '192.168.1.2',
+                'platform-model': 'PA-VM',
+                'vm-license': 'VM-100',
+                'ha2-macaddr': '00:50:56:9e:a1:d1',
+                priority: '100',
+                state: 'passive',
+                version: '1',
+                'last-error-reason': 'User requested',
+                'conn-status': 'up',
+                'av-version': '4361-4874',
+                'vpnclient-version': 'Not Installed',
+                'mgmt-ip': '10.215.18.86/23',
+                'conn-ha2': {
+                  'conn-status': 'up',
+                  'conn-ka-enbled': 'no',
+                  'conn-primary': 'yes',
+                  'conn-desc': 'link status',
+                },
+                'threat-version': '8766-8347',
+                'ha1-macaddr': '00:50:56:9e:ae:f0',
+                'conn-ha1': {
+                  'conn-status': 'up',
+                  'conn-primary': 'yes',
+                  'conn-desc': 'heartbeat status',
+                },
+                'vm-license-type': 'VM-100',
+                'state-duration': '1213383',
+                'ha1-ipaddr': '10.215.18.86',
+                'mgmt-ipv6': 'None',
+                'last-error-state': 'suspended',
+                preemptive: 'no',
+                mode: 'Active-Passive',
+                VMS: '1.0.13',
+              },
+              'link-monitoring': {
+                'fail-cond': 'any',
+                enabled: 'yes',
+                groups: 'None',
+              },
+              'path-monitoring': {
+                vwire: 'None',
+                'fail-cond': 'any',
+                vlan: 'None',
+                enabled: 'yes',
+                vrouter: 'None',
+              },
+              'running-sync': 'not synchronized',
+              'running-sync-enabled': 'yes',
+            },
+          },
+        },
+      ],
+    },
+  ];
+
   const version_info = ['9.1.0', '9.1.1', '9.1.2', '9.1.3', '9.1.4'];
   const history = useHistory();
   const [expandedNodeName, setExpandedNodeName] = useState(null);
@@ -135,11 +656,11 @@ const ComposableTableTree = () => {
   const [software_version, setSoftware_version] = useState('');
   const [isopensoftware_version, setIsopenoftware_version] = useState(false);
 
-  const [getdata, setGetdata] = useState(childdata);
+  const [getdata, setGetdata] = useState(newchilddata);
   const [iserror, setIserror] = useState(false);
-  const [variant, setvariant] = useState('warning');
+  const [datamodal, setDatamodal] = useState(false);
   const [iserrormsg, setIserrormsg] = useState('');
-
+  const [socketdata, setSocketdata] = useState();
   // Calculate the start and end indices for the current page
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -412,8 +933,8 @@ const ComposableTableTree = () => {
         'aria-posinset': posinset,
         'aria-setsize': node.children ? node.children.length : 0,
         isChecked,
-        checkboxId: `checkbox_id_${node.name
-          .toLowerCase()
+        checkboxId: `checkbox_id_${node?.name
+          ?.toLowerCase()
           .replace(/\s+/g, '_')}`,
         icon,
       },
@@ -432,11 +953,21 @@ const ComposableTableTree = () => {
 
     return [
       <TreeRowWrapper key={rowIndex} row={{ props: treeRow.props }}>
-        <Td dataLabel={columnNames.name} treeRow={treeRow}>
+        <Td
+          dataLabel={columnNames.name}
+          treeRow={treeRow}
+          onClick={() => {
+            // setDatamodal(true);
+          }}
+        >
           {node.name}
         </Td>
         <Td dataLabel={columnNames.Firewall_Serial}>{node?.Firewall_Serial}</Td>
-        <Td dataLabel={columnNames.IP_Address}>{node?.IP_Address}</Td>
+        <Td dataLabel={columnNames.IP_Address}>
+          <a href={`https://${node?.IP_Address}`} target="_balnk">
+            {node?.IP_Address}
+          </a>
+        </Td>
         <Td dataLabel={columnNames.Firewall_State}>
           {node?.status && node?.status == 'Connected' && (
             <Label variant="outline" color={'green'} icon={<CheckCircleIcon />}>
@@ -449,8 +980,20 @@ const ComposableTableTree = () => {
             </Label>
           )}
         </Td>
-        {/* <Td dataLabel={columnNames.HA_Group_ID}>{node?.hapair}</Td> */}
-        <Td dataLabel={columnNames.Software_Version}>{node?.version}</Td>
+        <Td dataLabel={columnNames.Hapair_Status}>
+          {node?.Hapair_Status == 'active' && (
+            <Label color="green" icon={<CheckCircleIcon />}>
+              {node?.Hapair_Status}
+            </Label>
+          )}
+          {node?.Hapair_Status == 'passive' && (
+            <Label color="gold" icon={<MinusCircleIcon />}>
+              {node?.Hapair_Status}
+            </Label>
+          )}
+        </Td>
+        <Td dataLabel={columnNames.Threat_Version}>{node?.Threat_Version}</Td>
+        <Td dataLabel={columnNames.version}>{node?.version}</Td>
       </TreeRowWrapper>,
       ...childRows,
       ...renderRows(
@@ -465,13 +1008,15 @@ const ComposableTableTree = () => {
 
   // Get Data From Data JSON And Filter Accroding To Our Neew
   const data = getdata?.map((parent) => {
-    let children = parent?.Firewalls?.map((child) => ({
-      name: child['Device_Name'],
-      Firewall_Serial: child['Firewall_Serial'],
-      IP_Address: child['IP_Address'],
-      status: child['Firewall_State'] == true ? 'Connected' : 'Disconnected',
+    let children = parent?.firewalls?.map((child) => ({
+      name: child['devicename'],
+      Firewall_Serial: child['serial'],
+      IP_Address: child['ip-address'],
+      status: child['serial'] == true ? 'Connected' : 'Disconnected',
       // hapair: child['HA_Group_ID'],
-      version: child['Software_Version'],
+      version: child['sw-version'],
+      Threat_Version: child['threat-version'],
+      Hapair_Status: child['peer_info_state']['group']['peer-info']['state'],
     }));
     return {
       name: parent['name'] == '' ? 'No Device Group' : parent['name'],
@@ -538,16 +1083,7 @@ const ComposableTableTree = () => {
     ws.current.onmessage = (e) => {
       // setLastMessage(JSON.parse(e.data));
       const ipstatus = JSON.parse(e.data);
-      const updatedChilddata = getdata.map((group) => {
-        const updatedFirewalls = group.Firewalls.map((firewall) => {
-          const ip = firewall.IP_Address;
-          const newStatus = ipstatus[ip] || firewall.status;
-          return { ...firewall, status: newStatus };
-        });
-        return { ...group, Firewalls: updatedFirewalls };
-      });
-      console.log('updatedChilddata', updatedChilddata);
-      // setGetdata(updatedChilddata);
+      setSocketdata(ipstatus);
     };
     ws.current.onclose = (e) => {
       if (e.code !== 1000) {
@@ -630,8 +1166,21 @@ const ComposableTableTree = () => {
       const { data } = await JobTemplatesAPI.launch(11, {
         extra_vars: payload,
       });
-      callsocket(mergedRows, data?.id);
-      history.push(`/jobs/playbook/${data.id}/fresult?jobid=${data.id}`);
+      // callsocket(mergedRows, data?.id);
+      if (data) {
+        history.push({
+          pathname: `/jobs/playbook/${data.id}/fresult`,
+          state: { id: data?.id, ip: mergedRows },
+        });
+        // history.push({
+        // pathname: `/jobs/playbook/${data.id}/fresult?jobid=${data.id}`,
+        // state: { jobId: data.id },
+        // });
+      }
+      // history.push({
+      //   pathname: `/jobs/playbook/${data.id}/fresult?jobid=${data.id}`,
+      //   state: { mergedRows: mergedRows, id: data?.id },
+      // });
     } catch (error) {
       console.log(
         '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
@@ -642,6 +1191,7 @@ const ComposableTableTree = () => {
 
   const closeModal = () => {
     setIserror(false);
+    setDatamodal(false);
   };
 
   return (
@@ -656,6 +1206,7 @@ const ComposableTableTree = () => {
           <p>{iserrormsg}</p>
         </ModalAlert>
       )}
+      {datamodal && <DataModal isOpen={datamodal} onClose={closeModal} />}
       <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
         <div>
           <label htmlFor="firewall-select" style={{ margin: '0 8px' }}>
@@ -706,53 +1257,56 @@ const ComposableTableTree = () => {
       </div>
       {selectedOption ? (
         <>
-          <TableComposable isTreeTable aria-label="Tree table">
-            {isLoading ? (
-              <Tr>
-                <Td
-                  colSpan={2}
-                  align={'center'}
-                  style={{ display: 'flex', justifyContent: 'center' }}
-                >
-                  <Spinner size="lg" />
-                </Td>
-              </Tr>
-            ) : getdata?.length > 0 ? (
-              <>
-                <Thead>
-                  <Tr>
-                    <Th width={20}>{columnNames.name}</Th>
-                    <Th width={20}>{columnNames.Firewall_Serial}</Th>
-                    <Th width={20}>{columnNames.IP_Address}</Th>
-                    <Th width={20}>{columnNames.Firewall_State}</Th>
-                    {/* <Th width={20}>{columnNames.HA_Group_ID}</Th> */}
-                    <Th width={20}>{columnNames.Software_Version}</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>{renderRows(pageData)}</Tbody>{' '}
-              </>
-            ) : (
-              <TableComposable aria-label="Empty state table">
-                <Tbody>
-                  <Tr>
-                    <Td colSpan={8}>
-                      <Bullseye>
-                        <EmptyState variant={EmptyStateVariant.small}>
-                          <EmptyStateIcon icon={CubesIcon} />
-                          <Title headingLevel="h2" size="lg">
-                            No Panoramas Found
-                          </Title>
-                          <EmptyStateBody>
-                            Please add Panoramas to populate this list
-                          </EmptyStateBody>
-                        </EmptyState>
-                      </Bullseye>
-                    </Td>
-                  </Tr>
-                </Tbody>
-              </TableComposable>
-            )}
-          </TableComposable>
+          <InnerScrollContainer>
+            <TableComposable isTreeTable aria-label="Tree table">
+              {isLoading ? (
+                <Tr>
+                  <Td
+                    colSpan={2}
+                    align={'center'}
+                    style={{ display: 'flex', justifyContent: 'center' }}
+                  >
+                    <Spinner size="lg" />
+                  </Td>
+                </Tr>
+              ) : getdata?.length > 0 ? (
+                <>
+                  <Thead>
+                    <Tr>
+                      <Th>{columnNames.name}</Th>
+                      <Th>{columnNames.Firewall_Serial}</Th>
+                      <Th>{columnNames.IP_Address}</Th>
+                      <Th>{columnNames.Firewall_State}</Th>
+                      <Th>{columnNames.Hapair_Status}</Th>
+                      <Th>{columnNames.Threat_Version}</Th>
+                      <Th>{columnNames.Software_Version}</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>{renderRows(pageData)}</Tbody>{' '}
+                </>
+              ) : (
+                <TableComposable aria-label="Empty state table">
+                  <Tbody>
+                    <Tr>
+                      <Td colSpan={8}>
+                        <Bullseye>
+                          <EmptyState variant={EmptyStateVariant.small}>
+                            <EmptyStateIcon icon={CubesIcon} />
+                            <Title headingLevel="h2" size="lg">
+                              No Panoramas Found
+                            </Title>
+                            <EmptyStateBody>
+                              Please add Panoramas to populate this list
+                            </EmptyStateBody>
+                          </EmptyState>
+                        </Bullseye>
+                      </Td>
+                    </Tr>
+                  </Tbody>
+                </TableComposable>
+              )}
+            </TableComposable>
+          </InnerScrollContainer>
           {/* Pagination */}
           {getdata?.length > 0 && (
             <Pagination
