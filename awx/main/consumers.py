@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from asgiref.sync import sync_to_async
 from django.db import connection
 from collections import defaultdict
+from enum import Enum
 from channels.generic.websocket import AsyncJsonWebsocketConsumer, AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from channels.db import database_sync_to_async
@@ -220,6 +221,19 @@ class EventConsumer(AsyncJsonWebsocketConsumer):
         await self.send(event['text'])
 
 
+class FirewallStatus(Enum):
+    WAITING = "waiting"
+    DOWNLOADING = "downloading"
+    SOLAR_WIND_MUTE = "solar_wind_mute"
+    BACKUP = "backup"
+    INSTALLING = "installing"
+    REBOOTING = "rebooting"
+    COMMIT = "commit"
+    PING = "ping"
+    LOGIN = "login"
+    SOLAR_WIND_UNMUTE = "solar_wind_unmute"
+    UPDATED = "updated"
+
 class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
@@ -258,16 +272,30 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     async def login_firewalls(self, ip):
         await asyncio.sleep(10)
         return True
+
+    async def updated_firewalls(self, ip):
+        pass
     
     async def solar_wind_unmute_firewalls(self, ip):
         await asyncio.sleep(10)
         return True
     
     async def change_next_status(self, firewall, response_data, group_name, i, status):
-        response_data[group_name][i] = status
-        firewall.status = status
+        response_data[group_name][i] = status.value
+        firewall.status = status.value
         await sync_to_async(firewall.save)()
         await self.send(text_data=json.dumps(response_data))
+    
+    async def change_firewall_status(self, firewall, result, group_name, ip, new_status):
+        await self.change_next_status(firewall, result, group_name, ip, new_status)
+        task_method = getattr(self, f"{new_status.value.lower()}_firewalls")
+        _result = await task_method(ip)
+        return _result
+    
+    async def process_firewall_status(self, firewall, result, group_name, ip, status_sequence):
+        for new_status in status_sequence:
+            _result = await self.change_firewall_status(firewall, result, group_name, ip, new_status)
+        return _result
 
 
     @sync_to_async
@@ -287,176 +315,116 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(result))
         for response in response_data.keys():
             firewall = await sync_to_async(UpdateFirewallStatus.objects.get)(
-                    job_id=job_id,
-                    ip_address=response
+                job_id=job_id,
+                ip_address=response
             )
             if firewall.group_name not in result:
                 result[firewall.group_name] = {}
 
-            if firewall.status == "waiting":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "downloading")
-                is_process = await self.downloading_firewalls(response)
+            if firewall.status == FirewallStatus.WAITING.value:
+                status_sequence = [
+                    FirewallStatus.DOWNLOADING,
+                    FirewallStatus.SOLAR_WIND_MUTE,
+                    FirewallStatus.BACKUP,
+                    FirewallStatus.INSTALLING,
+                    FirewallStatus.REBOOTING,
+                    FirewallStatus.COMMIT,
+                    FirewallStatus.PING,
+                    FirewallStatus.LOGIN,
+                    FirewallStatus.SOLAR_WIND_UNMUTE,
+                    FirewallStatus.UPDATED
+                ]
+                await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
 
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_mute")
-                is_solar_wind_mute = await self.solar_wind_mute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "backup")
-                is_backup = await self.backup_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "installing")
-                is_install = await self.installing_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "rebooting")
-                is_reboot = await self.rebooting_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "commit")
-                is_commit = await self.commit_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "ping")
-                is_ping = await self.ping_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "login")
-                is_login = await self.login_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_unmute")
-                is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
-
-            elif firewall.status == "downloading":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_mute")
-                is_solar_wind_mute = await self.solar_wind_mute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "backup")
-                is_backup = await self.backup_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "installing")
-                is_install = await self.installing_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "rebooting")
-                is_reboot = await self.rebooting_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "commit")
-                is_commit = await self.commit_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "ping")
-                is_ping = await self.ping_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "login")
-                is_login = await self.login_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_unmute")
-                is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
-
-            elif firewall.status == "solar_wind_mute":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "backup")
-                is_backup = await self.backup_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "installing")
-                is_install = await self.installing_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "rebooting")
-                is_reboot = await self.rebooting_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "commit")
-                is_commit = await self.commit_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "ping")
-                is_ping = await self.ping_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "login")
-                is_login = await self.login_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_unmute")
-                is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
+            elif firewall.status == FirewallStatus.DOWNLOADING.value:
+                status_sequence = [
+                    FirewallStatus.SOLAR_WIND_MUTE,
+                    FirewallStatus.BACKUP,
+                    FirewallStatus.INSTALLING,
+                    FirewallStatus.REBOOTING,
+                    FirewallStatus.COMMIT,
+                    FirewallStatus.PING,
+                    FirewallStatus.LOGIN,
+                    FirewallStatus.SOLAR_WIND_UNMUTE,
+                    FirewallStatus.UPDATED
+                ]
+                await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
             
-            elif firewall.status == "backup":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "installing")
-                is_install = await self.installing_firewalls(response)
+            elif firewall.status == FirewallStatus.SOLAR_WIND_MUTE.value:
+                status_sequence = [
+                    FirewallStatus.BACKUP,
+                    FirewallStatus.INSTALLING,
+                    FirewallStatus.REBOOTING,
+                    FirewallStatus.COMMIT,
+                    FirewallStatus.PING,
+                    FirewallStatus.LOGIN,
+                    FirewallStatus.SOLAR_WIND_UNMUTE,
+                    FirewallStatus.UPDATED
+                ]
+                await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
 
-                await self.change_next_status(firewall, result, firewall.group_name, response, "rebooting")
-                is_reboot = await self.rebooting_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "commit")
-                is_commit = await self.commit_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "ping")
-                is_ping = await self.ping_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "login")
-                is_login = await self.login_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_unmute")
-                is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
+            elif firewall.status == FirewallStatus.BACKUP.value:
+                status_sequence = [
+                    FirewallStatus.INSTALLING,
+                    FirewallStatus.REBOOTING,
+                    FirewallStatus.COMMIT,
+                    FirewallStatus.PING,
+                    FirewallStatus.LOGIN,
+                    FirewallStatus.SOLAR_WIND_UNMUTE,
+                    FirewallStatus.UPDATED
+                ]
+                await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
             
-            elif firewall.status == "installing":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "rebooting")
-                is_reboot = await self.rebooting_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "commit")
-                is_commit = await self.commit_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "ping")
-                is_ping = await self.ping_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "login")
-                is_login = await self.login_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_unmute")
-                is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
-
-            elif firewall.status == "rebooting":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "commit")
-                is_commit = await self.commit_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "ping")
-                is_ping = await self.ping_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "login")
-                is_login = await self.login_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_unmute")
-                is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
+            elif firewall.status == FirewallStatus.INSTALLING.value:
+                status_sequence = [
+                    FirewallStatus.REBOOTING,
+                    FirewallStatus.COMMIT,
+                    FirewallStatus.PING,
+                    FirewallStatus.LOGIN,
+                    FirewallStatus.SOLAR_WIND_UNMUTE,
+                    FirewallStatus.UPDATED
+                ]
+                await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
             
-            elif firewall.status == "commit":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "ping")
-                is_ping = await self.ping_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "login")
-                is_login = await self.login_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_unmute")
-                is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
+            elif firewall.status == FirewallStatus.REBOOTING.value:
+                status_sequence = [
+                    FirewallStatus.COMMIT,
+                    FirewallStatus.PING,
+                    FirewallStatus.LOGIN,
+                    FirewallStatus.SOLAR_WIND_UNMUTE,
+                    FirewallStatus.UPDATED
+                ]
+                await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
             
-            elif firewall.status == "ping":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "login")
-                is_login = await self.login_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_unmute")
-                is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
+            elif firewall.status == FirewallStatus.COMMIT.value:
+                status_sequence = [
+                    FirewallStatus.PING,
+                    FirewallStatus.LOGIN,
+                    FirewallStatus.SOLAR_WIND_UNMUTE,
+                    FirewallStatus.UPDATED
+                ]
+                await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
             
-            elif firewall.status == "login":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "solar_wind_unmute")
-                is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(response)
-
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
+            elif firewall.status == FirewallStatus.PING.value:
+                status_sequence = [
+                    FirewallStatus.LOGIN,
+                    FirewallStatus.SOLAR_WIND_UNMUTE,
+                    FirewallStatus.UPDATED
+                ]
+                await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
             
-            elif firewall.status == "solar_wind_unmute":
-                await self.change_next_status(firewall, result, firewall.group_name, response, "updated")
+            elif firewall.status == FirewallStatus.LOGIN.value:
+                status_sequence = [
+                    FirewallStatus.SOLAR_WIND_UNMUTE,
+                    FirewallStatus.UPDATED
+                ]
+                await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
+            
+            elif firewall.status == FirewallStatus.SOLAR_WIND_UNMUTE.value:
+                status_sequence = [
+                    FirewallStatus.UPDATED
+                ]
+                await self.change_next_status(firewall, result, firewall.group_name, response, status_sequence)
 
 
     async def receive(self, text_data):
@@ -493,36 +461,19 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     )
                     
                     if not created:
-                        # TODO
-                        # download, solar wind mute, backup, install, reboot, commit, ping, login, solar wind unmute, success
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "downloading")
-                        is_process = await self.downloading_firewalls(i)
-
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "solar_wind_mute")
-                        is_solar_wind_mute = await self.solar_wind_mute_firewalls(i)
-
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "backup")
-                        is_backup = await self.backup_firewalls(i)
-
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "installing")
-                        is_install = await self.installing_firewalls(i)
-
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "rebooting")
-                        is_reboot = await self.rebooting_firewalls(i)
-
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "commit")
-                        is_commit = await self.commit_firewalls(i)
-
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "ping")
-                        is_ping = await self.ping_firewalls(i)
-
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "login")
-                        is_login = await self.login_firewalls(i)
-
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "solar_wind_unmute")
-                        is_solar_wind_unmute = await self.solar_wind_unmute_firewalls(i)
-
-                        await self.change_next_status(firewall_status, response_data, group_name, i, "updated")
+                        status_sequence = [
+                            FirewallStatus.DOWNLOADING,
+                            FirewallStatus.SOLAR_WIND_MUTE,
+                            FirewallStatus.BACKUP,
+                            FirewallStatus.INSTALLING,
+                            FirewallStatus.REBOOTING,
+                            FirewallStatus.COMMIT,
+                            FirewallStatus.PING,
+                            FirewallStatus.LOGIN,
+                            FirewallStatus.SOLAR_WIND_UNMUTE,
+                            FirewallStatus.UPDATED
+                        ]
+                        await self.process_firewall_status(firewall_status, response_data, group_name, i, status_sequence)
         else:
             await self.async_send_initial_status(job_id)
 
