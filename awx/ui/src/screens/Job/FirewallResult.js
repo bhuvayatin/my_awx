@@ -275,7 +275,7 @@ function FirewallResult() {
                     {repo?.prs}
                   </Label>
                 )}
-                {repo?.prs == 'ping' && (
+                {repo?.prs == 'login' && (
                   <Label
                     variant="outline"
                     color={'blue'}
@@ -284,7 +284,7 @@ function FirewallResult() {
                     {repo?.prs}
                   </Label>
                 )}
-                {repo?.prs == 'ping' && (
+                {repo?.prs == 'solar_wind_unmute' && (
                   <Label
                     variant="outline"
                     color={'blue'}
