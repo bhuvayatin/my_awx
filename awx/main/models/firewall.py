@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 __all__ = ['UpdateFirewallStatus']
@@ -31,3 +32,5 @@ class UpdateFirewallStatus(models.Model):
         choices=FIREWALL_STATUS_CHOICES,
         default="waiting"
         )
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)

@@ -301,7 +301,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     @sync_to_async
     def get_firewall_statuses(self, job_id):
         from awx.main.models import UpdateFirewallStatus
-        statuses = UpdateFirewallStatus.objects.filter(job_id=job_id)
+        statuses = UpdateFirewallStatus.objects.filter(job_id=job_id).order_by('-updated_at')
         result = defaultdict(dict)
         res = {status.ip_address: status.status for status in statuses}
         for _status in statuses:
@@ -421,9 +421,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                 await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
             
             elif firewall.status == FirewallStatus.SOLAR_WIND_UNMUTE.value:
-                status_sequence = [
-                    FirewallStatus.UPDATED
-                ]
+                status_sequence =FirewallStatus.UPDATED
                 await self.change_next_status(firewall, result, firewall.group_name, response, status_sequence)
 
 
