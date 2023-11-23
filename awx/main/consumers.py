@@ -309,7 +309,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                 result[_status.group_name][_status.ip_address] = _status.status
         return result, res
 
-    async def async_send_initial_status(self, job_id, sequence):
+    async def async_send_initial_status(self, job_id):
         from awx.main.models import UpdateFirewallStatus
         result, response_data  = await self.get_firewall_statuses(job_id)
         await self.send(text_data=json.dumps(result))
@@ -435,7 +435,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                 # await self.change_next_status(firewall, result, firewall.group_name, response, status_sequence)
                 tasks.append(self.change_next_status(firewall, result, firewall.group_name, response, status_sequence))
         
-        if sequence:
+        if firewall.sequence:
             await asyncio.gather(*tasks)
         else:
             for task in tasks:
@@ -447,7 +447,6 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         job_id = text_data_json.get('job_id')
         sequence = text_data_json.get('sequence')
-        # sequence = True
         ip_address = text_data_json.get('ip_address', [])
 
         if ip_address and job_id:
@@ -463,7 +462,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
                         job_id=job_id,
                         ip_address=i,
-                        defaults={'group_name': group_name, 'status': "waiting"}
+                        defaults={'group_name': group_name, 'status': "waiting", 'sequence': sequence}
                     )
                     response_data[group_name][i] = "waiting"
 
@@ -500,7 +499,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                 for task in tasks:
                     await task
         else:
-            await self.async_send_initial_status(job_id, sequence)
+            await self.async_send_initial_status(job_id)
 
 
 def run_sync(func):
