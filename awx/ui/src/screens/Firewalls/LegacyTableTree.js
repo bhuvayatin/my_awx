@@ -13,6 +13,7 @@ import {
 import {
   Bullseye,
   Button,
+  Checkbox,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
@@ -465,7 +466,7 @@ const ComposableTableTree = () => {
       firewalls: [
         {
           hostname: 'PA-VM_85',
-          'ip-address': '10.215.18.85',
+          'ip-address': '10.215.18.180',
           'public-ip-address': 'unknown',
           netmask: '255.255.254.0',
           'ha-pair': '112',
@@ -661,6 +662,7 @@ const ComposableTableTree = () => {
   const [datamodal, setDatamodal] = useState(false);
   const [iserrormsg, setIserrormsg] = useState('');
   const [socketdata, setSocketdata] = useState();
+  const [isChecked, setIsChecked] = useState(false);
   // Calculate the start and end indices for the current page
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -1170,7 +1172,7 @@ const ComposableTableTree = () => {
       if (data) {
         history.push({
           pathname: `/jobs/playbook/${data.id}/fresult`,
-          state: { id: data?.id, ip: mergedRows },
+          state: { id: data?.id, ip: mergedRows, sequence:isChecked },
         });
         // history.push({
         // pathname: `/jobs/playbook/${data.id}/fresult?jobid=${data.id}`,
@@ -1192,6 +1194,13 @@ const ComposableTableTree = () => {
   const closeModal = () => {
     setIserror(false);
     setDatamodal(false);
+  };
+  const handleCheckboxChange = (isChecked) => {
+    // Perform any additional logic here
+    console.log('Checkbox is now:', isChecked);
+
+    // Update the state
+    setIsChecked(isChecked);
   };
 
   return (
@@ -1368,26 +1377,36 @@ const ComposableTableTree = () => {
       </div> */}
       <div style={{ paddingTop: '10px' }}>
         {selectedOption && (
-          <div>
-            <label htmlFor="firewall-select" style={{ margin: '0 8px' }}>
-              Select Software Version:
-            </label>
-            <Select
-              id="firewall-select"
-              variant={SelectVariant.single}
-              onSelect={onSelectsoftwareversion}
-              onToggle={onTogglesoftwareversion}
-              isOpen={isopensoftware_version}
-              selections={software_version}
-              placeholderText="Select a Version"
-              width={250}
-            >
-              {version_info.map((option, index) => (
-                <SelectOption key={index} value={option} isPlaceholder={false}>
-                  {option}
-                </SelectOption>
-              ))}
-            </Select>
+          <div style={{display:'flex',justifyContent:'space-between', padding:'10px',alignItems:'center'}}>
+            <div>
+              <label htmlFor="firewall-select" style={{ margin: '0 8px' }}>
+                Select Software Version:
+              </label>
+              <Select
+                id="firewall-select"
+                variant={SelectVariant.single}
+                onSelect={onSelectsoftwareversion}
+                onToggle={onTogglesoftwareversion}
+                isOpen={isopensoftware_version}
+                selections={software_version}
+                placeholderText="Select a Version"
+                width={250}
+              >
+                {version_info.map((option, index) => (
+                  <SelectOption
+                    key={index}
+                    value={option}
+                    isPlaceholder={false}
+                  >
+                    {option}
+                  </SelectOption>
+                ))}
+              </Select>
+            </div>
+            <div>
+            <Checkbox id="body-check-1" label="Enable MultiThread" isChecked={isChecked} onChange={handleCheckboxChange}/>
+
+            </div>
           </div>
         )}
       </div>

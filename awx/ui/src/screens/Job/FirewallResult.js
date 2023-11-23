@@ -24,11 +24,12 @@ function FirewallResult() {
   const pageSize = 10;
   const location = useLocation();
   const data = location?.state;
+  console.log("🚀 ~ file: FirewallResult.js:27 ~ FirewallResult ~ data:", data)
   const [newrecord, setNewrecord] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   const ws = useRef(null);
-  function callsocket(ip_address, id) {
+  function callsocket(ip_address, id,sequence) {
     ws.current = new WebSocket(
       `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
         window.location.host
@@ -44,6 +45,7 @@ function FirewallResult() {
         JSON.stringify({
           ip_address: ip_address,
           job_id: parseInt(id),
+          sequence:sequence
         })
       );
     };
@@ -73,8 +75,8 @@ function FirewallResult() {
   }
   useEffect(() => {
     if (data?.id && data?.ip) {
-      callsocket(data?.ip, data?.id);
-      history.replace(`/jobs/playbook/${data.id}/fresult?jobid=${data.id}`);
+      callsocket(data?.ip, data?.id, data?.sequence);
+      history.replace(`/jobs/playbook/${data.id}/fresult?jobid=${data.id}&issquence=${data.sequence}`);
     } else {
       ws.current = new WebSocket(
         `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
