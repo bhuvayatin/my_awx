@@ -6022,3 +6022,7 @@ class GetPanoramaSerializer(serializers.Serializer):
 class GetFireWallsDataSerializer(serializers.Serializer):
     host = serializers.CharField()
     access_token = serializers.CharField()
+
+
+class GetDataByIdSerializer(serializers.Serializer):
+    id = serializers.IntegerField()

@@ -48,7 +48,8 @@ from awx.api.serializers import (
     JobTemplateSerializer,
     GetVersionSerializer,
     GetPanoramaSerializer,
-    GetFireWallsDataSerializer
+    GetFireWallsDataSerializer,
+    GetDataByIdSerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -333,3 +334,17 @@ class GetFireWallsData(APIView):
             return Response({"data": all_device_groups})
         else:
             return Response({"Error":"Please enter a host and access token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetDataById(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = GetDataByIdSerializer(data=request.data)
+        if serializer.is_valid():
+            id = serializer.validated_data.get('id', None)
+            data = []
+            # TODO 
+            # process in id and get data
+            return Response({"data": data})
+        return Response({"Error":"Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
