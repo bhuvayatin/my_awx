@@ -344,58 +344,61 @@ class GetInterFaceDetails(APIView):
     def post(self, request, *args, **kwargs):
         serializer = GetInterFaceDetailsSerializer(data=request.data)
         if serializer.is_valid():
-            ip = serializer.validated_data.get('ip', None)            
+            firewall_ip = serializer.validated_data.get('ip', None)            
+            
+            try:
+                # Suppress the InsecureRequestWarning
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-            # Suppress the InsecureRequestWarning
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                # Configure your firewall's API settings
+                api_key = 'key'
 
-            # Configure your firewall's API settings
-            firewall_ip = 'ip'
-            api_key = 'key'
+                # Construct the API URL for your desired operation (retrieve hardware information)
+                url_operation = f'https://{firewall_ip}/api/?type=op&cmd=<show><interface>all</interface></show>&key={api_key}'
 
-            # Construct the API URL for your desired operation (retrieve hardware information)
-            url_operation = f'https://{firewall_ip}/api/?type=op&cmd=<show><interface>all</interface></show>&key={api_key}'
+                # Send the API request for the desired operation with SSL certificate verification disabled
+                response_operation = requests.get(url_operation, verify=False)
 
-            # Send the API request for the desired operation with SSL certificate verification disabled
-            response_operation = requests.get(url_operation, verify=False)
+                # Check if the operation was successful (HTTP status code 200)
+                if response_operation.status_code == 200:
+                    # Parse the XML response using xmltodict
+                    xml_data = response_operation.text
+                    parsed_data = xmltodict.parse(xml_data)
 
-            # Check if the operation was successful (HTTP status code 200)
-            if response_operation.status_code == 200:
-                # Parse the XML response using xmltodict
-                xml_data = response_operation.text
-                parsed_data = xmltodict.parse(xml_data)
+                    # Extract the hardware information from the parsed dictionary
+                    hw_entries = parsed_data['response']['result']['hw']['entry']
 
-                # Extract the hardware information from the parsed dictionary
-                hw_entries = parsed_data['response']['result']['hw']['entry']
+                    # If there is only one entry, convert it to a list to ensure consistent structure
+                    if not isinstance(hw_entries, list):
+                        hw_entries = [hw_entries]
 
-                # If there is only one entry, convert it to a list to ensure consistent structure
-                if not isinstance(hw_entries, list):
-                    hw_entries = [hw_entries]
+                    # Store the information in a list of dictionaries
+                    interface_info_list = []
+                    for entry in hw_entries:
+                        interface_info = {
+                            'name': entry['name'],
+                            'duplex': entry['duplex'],
+                            'type': entry['type'],
+                            'state': entry['state'],
+                            'st': entry['st'],
+                            'mac': entry['mac'],
+                            'mode': entry['mode'],
+                            'speed': entry['speed'],
+                            'id': entry['id'],
+                        }
+                        interface_info_list.append(interface_info)
 
-                # Store the information in a list of dictionaries
-                interface_info_list = []
-                for entry in hw_entries:
-                    interface_info = {
-                        'name': entry['name'],
-                        'duplex': entry['duplex'],
-                        'type': entry['type'],
-                        'state': entry['state'],
-                        'st': entry['st'],
-                        'mac': entry['mac'],
-                        'mode': entry['mode'],
-                        'speed': entry['speed'],
-                        'id': entry['id'],
-                    }
-                    interface_info_list.append(interface_info)
+                    # Print the list of dictionaries
+                    #     for interface_info in interface_info_list:
+                    #         print(interface_info)
 
-                # Print the list of dictionaries
-                #     for interface_info in interface_info_list:
-                #         print(interface_info)
-
-            else:
-                interface_info_list = []
-                print(f"Operation failed. Status code: {response_operation.status_code}")
-                return Response({"Error":f"Operation failed. Status code: {response_operation.status_code}"}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    interface_info_list = []
+                    print(f"Operation failed. Status code: {response_operation.status_code}")
+                    return Response({"Error":f"Operation failed. Status code: {response_operation.status_code}"}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                # return Response({"Error":f"Operation failed. Status code: {response_operation.status_code}"}, status=status.HTTP_400_BAD_REQUEST)
+                pass
 
             interface_info_list = [
                     {
