@@ -663,6 +663,7 @@ const ComposableTableTree = () => {
   const [iserrormsg, setIserrormsg] = useState('');
   const [socketdata, setSocketdata] = useState();
   const [isChecked, setIsChecked] = useState(false);
+  const [ip_address, setIp_address]= useState();
   // Calculate the start and end indices for the current page
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -961,6 +962,7 @@ const ComposableTableTree = () => {
           onClick={() => {
             if (level == 2) {
               setDatamodal(true);
+              setIp_address(node?.IP_Address);
             }
           }}
         >
@@ -1277,7 +1279,7 @@ const ComposableTableTree = () => {
         </ModalAlert>
       )}
       {datamodal && (
-        <DataModal isOpen={datamodal} onClose={closeModal} data={mode} />
+        <DataModal isOpen={datamodal} onClose={closeModal} data={mode} ip={ip_address} />
       )}
       <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
         <div>

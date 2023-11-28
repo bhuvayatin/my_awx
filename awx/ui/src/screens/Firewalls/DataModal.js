@@ -1,10 +1,12 @@
 import 'styled-components/macro';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Title } from '@patternfly/react-core';
 import styled from 'styled-components';
 import { InventoriesAPI } from 'api';
 
-function DataModal({ onClose, isOpen, data }) {
+function DataModal({ onClose, isOpen, data, ip }) {
+  console.log('🚀 ~ file: DataModal.js:8 ~ DataModal ~ ip:', ip);
+  const [get_socket, setGet_socket] = useState();
   const Header = styled.div`
     display: flex;
     svg {
@@ -76,10 +78,10 @@ function DataModal({ onClose, isOpen, data }) {
 
   const output = [];
 
-  for (let i = 0; i < lan_switch.length; i += 2) {
+  for (let i = 0; i < get_socket?.length; i += 2) {
     output.push(
       <div key={i} style={{ display: 'flex', flexDirection: 'column' }}>
-        {lan_switch.length >= i && (
+        {get_socket?.length >= i && (
           <div
             style={{
               display: 'flex',
@@ -87,13 +89,13 @@ function DataModal({ onClose, isOpen, data }) {
               alignItems: 'center',
             }}
           >
-            {i + 1}
+            {get_socket[i]?.id}
             <div
               style={{
                 background:
-                  lan_switch[i]?.socket_status == 'connected'
+                  get_socket[i]?.state == 'up'
                     ? 'green'
-                    : lan_switch[i]?.socket_status == 'disconnected'
+                    : get_socket[i]?.state == 'down'
                     ? 'red'
                     : 'gray',
                 border: '1px solid',
@@ -133,7 +135,7 @@ function DataModal({ onClose, isOpen, data }) {
             </div>
           </div>
         )}
-        {lan_switch.length >= i + 2 && (
+        {get_socket?.length >= i + 2 && (
           <div
             style={{
               display: 'flex',
@@ -144,9 +146,9 @@ function DataModal({ onClose, isOpen, data }) {
             <div
               style={{
                 background:
-                  lan_switch[i + 1]?.socket_status == 'connected'
+                  get_socket[i + 1]?.state == 'up'
                     ? 'green'
-                    : lan_switch[i + 1]?.socket_status == 'disconnected'
+                    : get_socket[i + 1]?.state == 'down'
                     ? 'red'
                     : 'gray',
                 border: '1px solid',
@@ -184,7 +186,7 @@ function DataModal({ onClose, isOpen, data }) {
                 </g>
               </svg>
             </div>
-            {i + 2}
+            {get_socket[i + 1]?.id}
           </div>
         )}
       </div>
@@ -193,12 +195,14 @@ function DataModal({ onClose, isOpen, data }) {
 
   useEffect(() => {
     const payload = {
-      ip: '17.3.876.18',
+      ip,
     };
+    console.log("🚀 ~ file: DataModal.js:200 ~ useEffect ~ payload:", payload)
     const fetchData = async () => {
       try {
         const { data } = await InventoriesAPI.get_interface_details(payload);
         console.log('🚀 ~ file: DataModal.js:200 ~ fetchData ~ data:', data);
+        setGet_socket(data?.data);
         return data;
       } catch (error) {
         console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);

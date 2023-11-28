@@ -416,7 +416,7 @@ class GetInterFaceDetails(APIView):
                         'name': 'ethernet1/2',
                         'duplex': 'full',
                         'type': '0',
-                        'state': 'up',
+                        'state': 'down',
                         'st': '10000/full/up',
                         'mac': '00:50:56:9e:82:fd',
                         'mode': '(autoneg)',
@@ -427,12 +427,56 @@ class GetInterFaceDetails(APIView):
                         'name': 'ethernet1/3',
                         'duplex': 'full',
                         'type': '0',
-                        'state': 'up',
+                        'state': 'down',
                         'st': '10000/full/up',
                         'mac': '00:50:56:9e:4d:8c',
                         'mode': '(autoneg)',
                         'speed': '10000',
                         'id': '18'
+                    },
+                    {
+                        'name': 'ethernet1/3',
+                        'duplex': 'full',
+                        'type': '0',
+                        'state': 'up',
+                        'st': '10000/full/up',
+                        'mac': '00:50:56:9e:4d:8c',
+                        'mode': '(autoneg)',
+                        'speed': '10000',
+                        'id': '19'
+                    },
+                    {
+                        'name': 'ethernet1/3',
+                        'duplex': 'full',
+                        'type': '0',
+                        'state': 'up',
+                        'st': '10000/full/up',
+                        'mac': '00:50:56:9e:4d:8c',
+                        'mode': '(autoneg)',
+                        'speed': '10000',
+                        'id': '20'
+                    },
+                    {
+                        'name': 'ethernet1/3',
+                        'duplex': 'full',
+                        'type': '0',
+                        'state': 'down',
+                        'st': '10000/full/up',
+                        'mac': '00:50:56:9e:4d:8c',
+                        'mode': '(autoneg)',
+                        'speed': '10000',
+                        'id': '21'
+                    },
+                    {
+                        'name': 'ethernet1/3',
+                        'duplex': 'full',
+                        'type': '0',
+                        'state': 'down',
+                        'st': '10000/full/up',
+                        'mac': '00:50:56:9e:4d:8c',
+                        'mode': '(autoneg)',
+                        'speed': '10000',
+                        'id': '22'
                     }]
 
             # TODO 
