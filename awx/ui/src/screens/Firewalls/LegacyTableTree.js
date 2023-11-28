@@ -959,7 +959,9 @@ const ComposableTableTree = () => {
           dataLabel={columnNames.name}
           treeRow={treeRow}
           onClick={() => {
-            // setDatamodal(true);
+            if (level == 2) {
+              setDatamodal(true);
+            }
           }}
         >
           {node.name}
@@ -1172,7 +1174,7 @@ const ComposableTableTree = () => {
       if (data) {
         history.push({
           pathname: `/jobs/playbook/${data.id}/fresult`,
-          state: { id: data?.id, ip: mergedRows, sequence:isChecked },
+          state: { id: data?.id, ip: mergedRows, sequence: isChecked },
         });
         // history.push({
         // pathname: `/jobs/playbook/${data.id}/fresult?jobid=${data.id}`,
@@ -1203,6 +1205,65 @@ const ComposableTableTree = () => {
     setIsChecked(isChecked);
   };
 
+  // Mode Stict Data
+
+  const mode = [
+    {
+      mode: 'local',
+      status: true,
+      status_text: 'passive',
+    },
+    {
+      mode: 'peer(192.168.19.20)',
+      status: true,
+      status_text: 'active',
+    },
+    {
+      mode: 'running config',
+      status: false,
+      status_text: 'not sync',
+    },
+    {
+      mode: 'app version',
+      status: true,
+      status_text: 'match',
+    },
+    {
+      mode: 'threat version',
+      status: true,
+      status_text: 'match',
+    },
+    {
+      mode: 'antivirus version',
+      status: true,
+      status_text: 'match',
+    },
+    {
+      mode: 'PAN-OS version',
+      status: false,
+      status_text: 'mismatch',
+    },
+    {
+      mode: 'Golbalprotect version',
+      status: true,
+      status_text: 'match',
+    },
+    {
+      mode: 'HA1',
+      status: true,
+      status_text: 'up',
+    },
+    {
+      mode: 'HA2',
+      status: true,
+      status_text: 'up',
+    },
+    {
+      mode: 'plugin vm_series',
+      status: false,
+      status_text: 'mismatch',
+    },
+  ];
   return (
     <>
       {iserror && (
@@ -1215,7 +1276,9 @@ const ComposableTableTree = () => {
           <p>{iserrormsg}</p>
         </ModalAlert>
       )}
-      {datamodal && <DataModal isOpen={datamodal} onClose={closeModal} />}
+      {datamodal && (
+        <DataModal isOpen={datamodal} onClose={closeModal} data={mode} />
+      )}
       <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
         <div>
           <label htmlFor="firewall-select" style={{ margin: '0 8px' }}>
@@ -1377,7 +1440,14 @@ const ComposableTableTree = () => {
       </div> */}
       <div style={{ paddingTop: '10px' }}>
         {selectedOption && (
-          <div style={{display:'flex',justifyContent:'space-between', padding:'10px',alignItems:'center'}}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '10px',
+              alignItems: 'center',
+            }}
+          >
             <div>
               <label htmlFor="firewall-select" style={{ margin: '0 8px' }}>
                 Select Software Version:
@@ -1404,8 +1474,12 @@ const ComposableTableTree = () => {
               </Select>
             </div>
             <div>
-            <Checkbox id="body-check-1" label="Enable MultiThread" isChecked={isChecked} onChange={handleCheckboxChange}/>
-
+              <Checkbox
+                id="body-check-1"
+                label="Enable MultiThread"
+                isChecked={isChecked}
+                onChange={handleCheckboxChange}
+              />
             </div>
           </div>
         )}
