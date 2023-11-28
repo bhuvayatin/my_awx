@@ -7,6 +7,8 @@ import requests
 import xml.etree.ElementTree as ET
 import json
 import panos
+import xmltodict
+import urllib3
 from datetime import datetime
 from collections import defaultdict
 from pandevice import firewall, panorama
@@ -49,7 +51,7 @@ from awx.api.serializers import (
     GetVersionSerializer,
     GetPanoramaSerializer,
     GetFireWallsDataSerializer,
-    GetDataByIdSerializer
+    GetInterFaceDetailsSerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -336,15 +338,101 @@ class GetFireWallsData(APIView):
             return Response({"Error":"Please enter a host and access token"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GetDataById(APIView):
+class GetInterFaceDetails(APIView):
     # permission_classes = (AllowAny)
     
     def post(self, request, *args, **kwargs):
-        serializer = GetDataByIdSerializer(data=request.data)
+        serializer = GetInterFaceDetailsSerializer(data=request.data)
         if serializer.is_valid():
-            id = serializer.validated_data.get('id', None)
-            data = []
+            ip = serializer.validated_data.get('ip', None)            
+
+            # Suppress the InsecureRequestWarning
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+            # Configure your firewall's API settings
+            firewall_ip = 'ip'
+            api_key = 'key'
+
+            # Construct the API URL for your desired operation (retrieve hardware information)
+            url_operation = f'https://{firewall_ip}/api/?type=op&cmd=<show><interface>all</interface></show>&key={api_key}'
+
+            # Send the API request for the desired operation with SSL certificate verification disabled
+            response_operation = requests.get(url_operation, verify=False)
+
+            # Check if the operation was successful (HTTP status code 200)
+            if response_operation.status_code == 200:
+                # Parse the XML response using xmltodict
+                xml_data = response_operation.text
+                parsed_data = xmltodict.parse(xml_data)
+
+                # Extract the hardware information from the parsed dictionary
+                hw_entries = parsed_data['response']['result']['hw']['entry']
+
+                # If there is only one entry, convert it to a list to ensure consistent structure
+                if not isinstance(hw_entries, list):
+                    hw_entries = [hw_entries]
+
+                # Store the information in a list of dictionaries
+                interface_info_list = []
+                for entry in hw_entries:
+                    interface_info = {
+                        'name': entry['name'],
+                        'duplex': entry['duplex'],
+                        'type': entry['type'],
+                        'state': entry['state'],
+                        'st': entry['st'],
+                        'mac': entry['mac'],
+                        'mode': entry['mode'],
+                        'speed': entry['speed'],
+                        'id': entry['id'],
+                    }
+                    interface_info_list.append(interface_info)
+
+                # Print the list of dictionaries
+                #     for interface_info in interface_info_list:
+                #         print(interface_info)
+
+            else:
+                interface_info_list = []
+                print(f"Operation failed. Status code: {response_operation.status_code}")
+                return Response({"Error":f"Operation failed. Status code: {response_operation.status_code}"}, status=status.HTTP_400_BAD_REQUEST)
+
+            interface_info_list = [
+                    {
+                        'name': 'ethernet1/1',
+                        'duplex': 'full',
+                        'type': '0',
+                        'state': 'up',
+                        'st': '10000/full/up',
+                        'mac': '00:50:56:9e:98:6d',
+                        'mode': '(autoneg)',
+                        'speed': '10000',
+                        'id': '16'
+                    },
+                    {
+                        'name': 'ethernet1/2',
+                        'duplex': 'full',
+                        'type': '0',
+                        'state': 'up',
+                        'st': '10000/full/up',
+                        'mac': '00:50:56:9e:82:fd',
+                        'mode': '(autoneg)',
+                        'speed': '10000',
+                        'id': '17'
+                    },
+                    {
+                        'name': 'ethernet1/3',
+                        'duplex': 'full',
+                        'type': '0',
+                        'state': 'up',
+                        'st': '10000/full/up',
+                        'mac': '00:50:56:9e:4d:8c',
+                        'mode': '(autoneg)',
+                        'speed': '10000',
+                        'id': '18'
+                    }]
+
             # TODO 
             # process in id and get data
-            return Response({"data": data})
+            return Response({"data": interface_info_list})
         return Response({"Error":"Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)

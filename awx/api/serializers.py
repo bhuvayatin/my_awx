@@ -6024,5 +6024,5 @@ class GetFireWallsDataSerializer(serializers.Serializer):
     access_token = serializers.CharField()
 
 
-class GetDataByIdSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+class GetInterFaceDetailsSerializer(serializers.Serializer):
+    ip = serializers.CharField()

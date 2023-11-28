@@ -460,6 +460,8 @@ wrapt==1.15.0
     # via deprecated
 xmlsec==1.3.13
     # via python3-saml
+xmltodict==0.13.0
+    # via -r /awx_devel/requirements/requirements.in
 yarl==1.8.1
     # via aiohttp
 zipp==3.11.0
