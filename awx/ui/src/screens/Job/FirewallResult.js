@@ -16,6 +16,7 @@ import {
 } from '@patternfly/react-table';
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams, useHistory } from 'react-router-dom';
+import DataModal from 'screens/Firewalls/DataModal';
 import styled, { keyframes } from 'styled-components';
 
 function FirewallResult() {
@@ -24,12 +25,16 @@ function FirewallResult() {
   const pageSize = 10;
   const location = useLocation();
   const data = location?.state;
-  console.log("🚀 ~ file: FirewallResult.js:27 ~ FirewallResult ~ data:", data)
+  console.log('🚀 ~ file: FirewallResult.js:27 ~ FirewallResult ~ data:', data);
   const [newrecord, setNewrecord] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [datamodal, setDatamodal] = useState(false);
+  const [ip_address, setIp_address] = useState();
+  const closeModal = () => {
+    setDatamodal(false);
+  };
   const ws = useRef(null);
-  function callsocket(ip_address, id,sequence) {
+  function callsocket(ip_address, id, sequence) {
     ws.current = new WebSocket(
       `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
         window.location.host
@@ -45,7 +50,7 @@ function FirewallResult() {
         JSON.stringify({
           ip_address: ip_address,
           job_id: parseInt(id),
-          sequence:sequence
+          sequence: sequence,
         })
       );
     };
@@ -76,7 +81,9 @@ function FirewallResult() {
   useEffect(() => {
     if (data?.id && data?.ip) {
       callsocket(data?.ip, data?.id, data?.sequence);
-      history.replace(`/jobs/playbook/${data.id}/fresult?jobid=${data.id}&issquence=${data.sequence}`);
+      history.replace(
+        `/jobs/playbook/${data.id}/fresult?jobid=${data.id}&issquence=${data.sequence}`
+      );
     } else {
       ws.current = new WebSocket(
         `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
@@ -162,14 +169,17 @@ function FirewallResult() {
     name: 'Group',
     branches: 'IP Address',
     prs: 'Status',
+    device_name:'Name'
   };
   const repositories = [];
   for (const group in newrecord) {
     for (const ip in newrecord[group]) {
+      console.log("🚀 ~ file: FirewallResult.js:175 ~ newrecord:", newrecord[group][ip])
       repositories.push({
         name: group,
         branches: ip,
-        prs: newrecord[group][ip],
+        prs: newrecord[group][ip]?.status,
+        device_name:newrecord[group][ip]?.name,
       });
     }
   }
@@ -186,9 +196,13 @@ function FirewallResult() {
   `;
   return (
     <div>
+      {datamodal && (
+        <DataModal isOpen={datamodal} onClose={closeModal} ip={ip_address} />
+      )}
       <TableComposable isTreeTable aria-label="Tree table">
         <Thead>
           <Tr>
+            <Th>{columnNames.device_name}</Th>
             <Th>{columnNames.name}</Th>
             <Th>{columnNames.branches}</Th>
             <Th>{columnNames.prs}</Th>
@@ -197,8 +211,18 @@ function FirewallResult() {
         <Tbody>
           {repositories.map((repo, index) => (
             <Tr key={index}>
+              <Td dataLabel={columnNames.device_name}>{repo?.device_name}</Td>
               <Td dataLabel={columnNames.name}>{repo.name}</Td>
-              <Td dataLabel={columnNames.branches}>{repo.branches}</Td>
+              <Td dataLabel={columnNames.branches}>
+                <a
+                  onClick={() => {
+                    setDatamodal(true);
+                    setIp_address(repo?.branches);
+                  }}
+                >
+                  {repo.branches}{' '}
+                </a>
+              </Td>
               <Td dataLabel={columnNames.prs}>
                 {repo?.prs == 'updated' && (
                   <Label

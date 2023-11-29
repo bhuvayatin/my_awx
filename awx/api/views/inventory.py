@@ -471,7 +471,7 @@ class GetInterFaceDetails(APIView):
                         'name': 'ethernet1/3',
                         'duplex': 'full',
                         'type': '0',
-                        'state': 'down',
+                        'state': '',
                         'st': '10000/full/up',
                         'mac': '00:50:56:9e:4d:8c',
                         'mode': '(autoneg)',

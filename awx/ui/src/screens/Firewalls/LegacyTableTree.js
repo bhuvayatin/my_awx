@@ -465,7 +465,7 @@ const ComposableTableTree = () => {
       name: '',
       firewalls: [
         {
-          hostname: 'PA-VM_85',
+          hostname: 'PA-VM_87',
           'ip-address': '10.215.18.180',
           'public-ip-address': 'unknown',
           netmask: '255.255.254.0',
@@ -478,7 +478,7 @@ const ComposableTableTree = () => {
           'mac-address': '00:50:56:9e:1d:d2',
           time: 'Wed Nov  1 09:07:34 2023',
           uptime: '41 days, 21:15:49',
-          devicename: 'PA-VM_85',
+          devicename: 'PA-VM_87',
           family: 'vm',
           model: 'PA-VM',
           serial: '007951000342260',
@@ -657,13 +657,13 @@ const ComposableTableTree = () => {
   const [software_version, setSoftware_version] = useState('');
   const [isopensoftware_version, setIsopenoftware_version] = useState(false);
 
-  const [getdata, setGetdata] = useState(newchilddata);
+  const [getdata, setGetdata] = useState([newchilddata]);
   const [iserror, setIserror] = useState(false);
   const [datamodal, setDatamodal] = useState(false);
   const [iserrormsg, setIserrormsg] = useState('');
   const [socketdata, setSocketdata] = useState();
   const [isChecked, setIsChecked] = useState(false);
-  const [ip_address, setIp_address]= useState();
+  const [ip_address, setIp_address] = useState();
   // Calculate the start and end indices for the current page
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -956,21 +956,19 @@ const ComposableTableTree = () => {
 
     return [
       <TreeRowWrapper key={rowIndex} row={{ props: treeRow.props }}>
-        <Td
-          dataLabel={columnNames.name}
-          treeRow={treeRow}
-          onClick={() => {
-            if (level == 2) {
-              setDatamodal(true);
-              setIp_address(node?.IP_Address);
-            }
-          }}
-        >
+        <Td dataLabel={columnNames.name} treeRow={treeRow}>
           {node.name}
         </Td>
         <Td dataLabel={columnNames.Firewall_Serial}>{node?.Firewall_Serial}</Td>
         <Td dataLabel={columnNames.IP_Address}>
-          <a href={`https://${node?.IP_Address}`} target="_balnk">
+          <a
+            onClick={() => {
+              if (level == 2) {
+                setDatamodal(true);
+                setIp_address(node?.IP_Address);
+              }
+            }}
+          >
             {node?.IP_Address}
           </a>
         </Td>
@@ -1066,49 +1064,6 @@ const ComposableTableTree = () => {
   };
 
   //   OnSubmit Create One Payload For POST API
-  function callsocket(ip_address, id) {
-    ws.current = new WebSocket(
-      `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
-        window.location.host
-      }${window.location.pathname}websocket/updatefirewall/`
-    );
-    const connect = () => {
-      const xrftoken = `; ${document.cookie}`
-        .split('; csrftoken=')
-        .pop()
-        .split(';')
-        .shift();
-      ws.current.send(
-        JSON.stringify({
-          ip_address: ip_address,
-          job_id: parseInt(id),
-        })
-      );
-    };
-    ws.current.onopen = connect;
-    ws.current.onmessage = (e) => {
-      // setLastMessage(JSON.parse(e.data));
-      const ipstatus = JSON.parse(e.data);
-      setSocketdata(ipstatus);
-    };
-    ws.current.onclose = (e) => {
-      if (e.code !== 1000) {
-        // eslint-disable-next-line no-console
-        console.debug('Socket closed. Reconnecting...', e);
-        setTimeout(() => {
-          connect();
-        }, 1000);
-      }
-    };
-    ws.current.onerror = (err) => {
-      // eslint-disable-next-line no-console
-      console.debug('Socket error: ', err, 'Disconnecting...');
-      ws.current.close();
-    };
-    return () => {
-      ws.current.close();
-    };
-  }
 
   const handleSubmit = async () => {
     const selectedRows = data.reduce((result, parent) => {
@@ -1119,7 +1074,7 @@ const ComposableTableTree = () => {
       const childRows = parent.children
         ? parent.children
             .filter((child) => selectedNodeNames.includes(child.name))
-            .map((child) => child.IP_Address)
+            .map((child) => ({ ip: child.IP_Address, name: child.name }))
         : [];
 
       if (parentRow) {
@@ -1144,7 +1099,6 @@ const ComposableTableTree = () => {
 
       return result;
     }, []);
-
     const mergedRows = selectedRows.reduce((result, row) => {
       const existingRow = result.find((r) => r.parent === row.parent);
 
@@ -1178,15 +1132,7 @@ const ComposableTableTree = () => {
           pathname: `/jobs/playbook/${data.id}/fresult`,
           state: { id: data?.id, ip: mergedRows, sequence: isChecked },
         });
-        // history.push({
-        // pathname: `/jobs/playbook/${data.id}/fresult?jobid=${data.id}`,
-        // state: { jobId: data.id },
-        // });
       }
-      // history.push({
-      //   pathname: `/jobs/playbook/${data.id}/fresult?jobid=${data.id}`,
-      //   state: { mergedRows: mergedRows, id: data?.id },
-      // });
     } catch (error) {
       console.log(
         '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
@@ -1209,63 +1155,7 @@ const ComposableTableTree = () => {
 
   // Mode Stict Data
 
-  const mode = [
-    {
-      mode: 'local',
-      status: true,
-      status_text: 'passive',
-    },
-    {
-      mode: 'peer(192.168.19.20)',
-      status: true,
-      status_text: 'active',
-    },
-    {
-      mode: 'running config',
-      status: false,
-      status_text: 'not sync',
-    },
-    {
-      mode: 'app version',
-      status: true,
-      status_text: 'match',
-    },
-    {
-      mode: 'threat version',
-      status: true,
-      status_text: 'match',
-    },
-    {
-      mode: 'antivirus version',
-      status: true,
-      status_text: 'match',
-    },
-    {
-      mode: 'PAN-OS version',
-      status: false,
-      status_text: 'mismatch',
-    },
-    {
-      mode: 'Golbalprotect version',
-      status: true,
-      status_text: 'match',
-    },
-    {
-      mode: 'HA1',
-      status: true,
-      status_text: 'up',
-    },
-    {
-      mode: 'HA2',
-      status: true,
-      status_text: 'up',
-    },
-    {
-      mode: 'plugin vm_series',
-      status: false,
-      status_text: 'mismatch',
-    },
-  ];
+
   return (
     <>
       {iserror && (
@@ -1279,7 +1169,11 @@ const ComposableTableTree = () => {
         </ModalAlert>
       )}
       {datamodal && (
-        <DataModal isOpen={datamodal} onClose={closeModal} data={mode} ip={ip_address} />
+        <DataModal
+          isOpen={datamodal}
+          onClose={closeModal}
+          ip={ip_address}
+        />
       )}
       <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
         <div>

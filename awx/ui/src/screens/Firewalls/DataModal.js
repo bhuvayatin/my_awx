@@ -1,12 +1,14 @@
 import 'styled-components/macro';
 import React, { useEffect, useState } from 'react';
-import { Modal, Title } from '@patternfly/react-core';
+import { Modal, Spinner, Title } from '@patternfly/react-core';
 import styled from 'styled-components';
 import { InventoriesAPI } from 'api';
 
-function DataModal({ onClose, isOpen, data, ip }) {
+function DataModal({ onClose, isOpen, ip }) {
   console.log('🚀 ~ file: DataModal.js:8 ~ DataModal ~ ip:', ip);
   const [get_socket, setGet_socket] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+
   const Header = styled.div`
     display: flex;
     svg {
@@ -75,7 +77,63 @@ function DataModal({ onClose, isOpen, data, ip }) {
       socket_status: '',
     },
   ];
-
+  const mode = [
+    {
+      mode: 'local',
+      status: true,
+      status_text: 'passive',
+    },
+    {
+      mode: 'peer(192.168.19.20)',
+      status: true,
+      status_text: 'active',
+    },
+    {
+      mode: 'running config',
+      status: false,
+      status_text: 'not sync',
+    },
+    {
+      mode: 'app version',
+      status: true,
+      status_text: 'match',
+    },
+    {
+      mode: 'threat version',
+      status: true,
+      status_text: 'match',
+    },
+    {
+      mode: 'antivirus version',
+      status: true,
+      status_text: 'match',
+    },
+    {
+      mode: 'PAN-OS version',
+      status: false,
+      status_text: 'mismatch',
+    },
+    {
+      mode: 'Golbalprotect version',
+      status: true,
+      status_text: 'match',
+    },
+    {
+      mode: 'HA1',
+      status: true,
+      status_text: 'up',
+    },
+    {
+      mode: 'HA2',
+      status: true,
+      status_text: 'up',
+    },
+    {
+      mode: 'plugin vm_series',
+      status: false,
+      status_text: 'mismatch',
+    },
+  ];
   const output = [];
 
   for (let i = 0; i < get_socket?.length; i += 2) {
@@ -89,7 +147,7 @@ function DataModal({ onClose, isOpen, data, ip }) {
               alignItems: 'center',
             }}
           >
-            {get_socket[i]?.id}
+            {i+1}
             <div
               style={{
                 background:
@@ -186,7 +244,7 @@ function DataModal({ onClose, isOpen, data, ip }) {
                 </g>
               </svg>
             </div>
-            {get_socket[i + 1]?.id}
+            {i+2}
           </div>
         )}
       </div>
@@ -197,14 +255,17 @@ function DataModal({ onClose, isOpen, data, ip }) {
     const payload = {
       ip,
     };
-    console.log("🚀 ~ file: DataModal.js:200 ~ useEffect ~ payload:", payload)
+    console.log('🚀 ~ file: DataModal.js:200 ~ useEffect ~ payload:', payload);
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         const { data } = await InventoriesAPI.get_interface_details(payload);
         console.log('🚀 ~ file: DataModal.js:200 ~ fetchData ~ data:', data);
         setGet_socket(data?.data);
+        setIsLoading(false);
         return data;
       } catch (error) {
+        setIsLoading(false);
         console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
       }
     };
@@ -223,11 +284,16 @@ function DataModal({ onClose, isOpen, data, ip }) {
       onClose={onClose}
     >
       <div>
+        <a href={`https://${ip}`} target="_blank">
+          {ip}
+        </a>
         <h4 style={{ fontWeight: 'bold' }}>WLAN Interface</h4>
-        <div style={{ display: 'flex', margin: '10px 0' }}>{output}</div>
+        <div style={{ display: 'flex', margin: '10px 0' }}>
+          {isLoading ? <Spinner size="lg" /> : output}
+        </div>
         <hr />
         <h4 style={{ fontWeight: 'bold', margin: '10px 0' }}>Availability</h4>
-        {data?.map((item) => (
+        {mode?.map((item) => (
           <div style={flexContainerStyle}>
             <p style={{ textTransform: 'capitalize', width: '200px' }}>
               {item?.mode}
