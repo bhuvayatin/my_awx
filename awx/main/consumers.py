@@ -281,7 +281,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         return True
     
     async def change_next_status(self, firewall, response_data, group_name, i, status):
-        response_data[group_name][i] = status.value
+        response_data[group_name][i['ip']] = {"status": status.value, "name": i['name']}
         firewall.status = status.value
         await sync_to_async(firewall.save)()
         await self.send(text_data=json.dumps(response_data))
@@ -306,7 +306,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         res = {status.ip_address: status.status for status in statuses}
         for _status in statuses:
             if _status.group_name:
-                result[_status.group_name][_status.ip_address] = _status.status
+                result[_status.group_name][_status.ip_address] = {"status":_status.status, "name": _status.name}
         return result, res
 
     async def async_send_initial_status(self, job_id):
@@ -461,10 +461,10 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                 for i in child:
                     firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
                         job_id=job_id,
-                        ip_address=i,
-                        defaults={'group_name': group_name, 'status': "waiting", 'sequence': sequence}
+                        ip_address=i['ip'],
+                        defaults={'group_name': group_name, 'status': 'waiting', 'sequence': sequence, 'name': i['name']}
                     )
-                    response_data[group_name][i] = "waiting"
+                    response_data[group_name][i['ip']] = {"status":"waiting", "name":i['name']}
 
             tasks = []
             for _ip in ip_address:
@@ -474,7 +474,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                 for i in child:
                     firewall_status, created = await sync_to_async(UpdateFirewallStatus.objects.get_or_create)(
                         job_id=job_id,
-                        ip_address=i,
+                        ip_address=i['ip'],
                     )
                     
                     if not created:
