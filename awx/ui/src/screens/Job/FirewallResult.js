@@ -197,7 +197,7 @@ function FirewallResult() {
   return (
     <div>
       {datamodal && (
-        <DataModal isOpen={datamodal} onClose={closeModal} ip={ip_address} />
+        <DataModal isOpen={datamodal} onClose={closeModal} ip={ip_address}/>
       )}
       <TableComposable isTreeTable aria-label="Tree table">
         <Thead>

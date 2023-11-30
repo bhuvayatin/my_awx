@@ -657,11 +657,10 @@ const ComposableTableTree = () => {
   const [software_version, setSoftware_version] = useState('');
   const [isopensoftware_version, setIsopenoftware_version] = useState(false);
 
-  const [getdata, setGetdata] = useState([newchilddata]);
+  const [getdata, setGetdata] = useState(newchilddata);
   const [iserror, setIserror] = useState(false);
   const [datamodal, setDatamodal] = useState(false);
   const [iserrormsg, setIserrormsg] = useState('');
-  const [socketdata, setSocketdata] = useState();
   const [isChecked, setIsChecked] = useState(false);
   const [ip_address, setIp_address] = useState();
   // Calculate the start and end indices for the current page
@@ -669,24 +668,6 @@ const ComposableTableTree = () => {
   const endIndex = startIndex + pageSize;
 
   const [isLoading, setIsLoading] = useState(false);
-  const ws = useRef(null);
-  const Header = styled.div`
-    display: flex;
-    svg {
-      margin-right: 16px;
-    }
-  `;
-  const customHeader = (
-    <Header>
-      <CheckCircleIcon
-        size="lg"
-        css="color: var(--pf-global--success-color--100)"
-      />
-      <Title id="alert-modal-header-label" size="2xl" headingLevel="h2">
-        Test
-      </Title>
-    </Header>
-  );
   // const lastMessage = useWebsocketForIP(['10.215.18.83', '10.215.18.84', '10.215.18.85']);
   // Call Hooks to make list api call for the inventory
   const {
@@ -737,6 +718,7 @@ const ComposableTableTree = () => {
           try {
             const Username = JSON.parse(cleanedJsonString)?.all?.vars;
             SetAccess_token(Username);
+            localStorage.setItem('api_key', Username?.access_token);
             // Try parsing as JSON
             const jsonObject =
               JSON.parse(cleanedJsonString)?.all?.children?.panoramas?.children;
@@ -770,6 +752,7 @@ const ComposableTableTree = () => {
               const ansibleHosts = [];
               const Username = JSON.parse(cleanedJsonString)?.all?.vars;
               SetAccess_token(Username);
+              localStorage.setItem('api_key', Username?.access_token);
               for (const firewallName in jsonObject) {
                 const hosts = jsonObject[firewallName].hosts;
 
@@ -1155,7 +1138,6 @@ const ComposableTableTree = () => {
 
   // Mode Stict Data
 
-
   return (
     <>
       {iserror && (
@@ -1169,11 +1151,7 @@ const ComposableTableTree = () => {
         </ModalAlert>
       )}
       {datamodal && (
-        <DataModal
-          isOpen={datamodal}
-          onClose={closeModal}
-          ip={ip_address}
-        />
+        <DataModal isOpen={datamodal} onClose={closeModal} ip={ip_address} />
       )}
       <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
         <div>

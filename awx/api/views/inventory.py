@@ -500,7 +500,7 @@ class HighAvailability(APIView):
                 url_operation = f'https://{firewall_ip}/api/?type=op&cmd=<show><high-availability><all/></high-availability></show>&key={api_key}'
 
                 # Send the API request for the desired operation with SSL certificate verification disabled
-                response_operation = requests.get(url_operation, verify=False)
+                response_operation = requests.get(url_operation, verify=False, timeout=10)
                 
                 parsed_data = {}
                 

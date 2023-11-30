@@ -8,7 +8,10 @@ function DataModal({ onClose, isOpen, ip }) {
   console.log('🚀 ~ file: DataModal.js:8 ~ DataModal ~ ip:', ip);
   const [get_socket, setGet_socket] = useState();
   const [isLoading, setIsLoading] = useState(false);
-
+  const [availability, setAvailability] = useState();
+  console.log("🚀 ~ file: DataModal.js:12 ~ DataModal ~ availability:", availability)
+  const [isLoadingavail, setIsLoadingavail] = useState(false);
+  const api_key = localStorage.getItem('api_key');
   const Header = styled.div`
     display: flex;
     svg {
@@ -48,35 +51,7 @@ function DataModal({ onClose, isOpen, ip }) {
     borderRadius: '50%',
     background: 'green',
   };
-  const lan_switch = [
-    {
-      socket_status: 'connected',
-    },
-    {
-      socket_status: 'disconnected',
-    },
-    {
-      socket_status: 'disconnected',
-    },
-    {
-      socket_status: 'connected',
-    },
-    {
-      socket_status: '',
-    },
-    {
-      socket_status: '',
-    },
-    {
-      socket_status: '',
-    },
-    {
-      socket_status: '',
-    },
-    {
-      socket_status: '',
-    },
-  ];
+
   const mode = [
     {
       mode: 'local',
@@ -147,7 +122,7 @@ function DataModal({ onClose, isOpen, ip }) {
               alignItems: 'center',
             }}
           >
-            {i+1}
+            {i + 1}
             <div
               style={{
                 background:
@@ -244,7 +219,7 @@ function DataModal({ onClose, isOpen, ip }) {
                 </g>
               </svg>
             </div>
-            {i+2}
+            {i + 2}
           </div>
         )}
       </div>
@@ -254,8 +229,8 @@ function DataModal({ onClose, isOpen, ip }) {
   useEffect(() => {
     const payload = {
       ip,
+      api_key,
     };
-    console.log('🚀 ~ file: DataModal.js:200 ~ useEffect ~ payload:', payload);
     const fetchData = async () => {
       try {
         setIsLoading(true);
@@ -269,8 +244,22 @@ function DataModal({ onClose, isOpen, ip }) {
         console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
       }
     };
+    const high_availability = async () => {
+      try {
+        setIsLoadingavail(true);
+        const { data } = await InventoriesAPI.high_availability(payload);
+        console.log('🚀 ~ file: DataModal.js:200 ~ fetchData ~ data:', data);
+        setAvailability(data?.data);
+        setIsLoadingavail(false);
+        return data;
+      } catch (error) {
+        setIsLoadingavail(false);
+        console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
+      }
+    };
 
     fetchData();
+    high_availability();
   }, []);
   return (
     <Modal
@@ -293,26 +282,234 @@ function DataModal({ onClose, isOpen, ip }) {
         </div>
         <hr />
         <h4 style={{ fontWeight: 'bold', margin: '10px 0' }}>Availability</h4>
-        {mode?.map((item) => (
-          <div style={flexContainerStyle}>
-            <p style={{ textTransform: 'capitalize', width: '200px' }}>
-              {item?.mode}
-            </p>
-            <div
-              style={
-                item?.status == false && item?.status_text == 'passive'
-                  ? yellowdiv
-                  : (item?.status == true && item?.status_text == 'active') ||
-                    item?.status == true
-                  ? greendiv
-                  : reddiv
-              }
-            />
-            <p style={{ textTransform: 'capitalize', width: '150px' }}>
-              {item?.status_text}
-            </p>
-          </div>
-        ))}
+        {isLoadingavail ? (
+          <Spinner size="lg" />
+        ) : (
+          <>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                local
+              </p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'url-compat'
+                  ] == 'Match'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {availability?.response?.result?.group?.['local-info']?.['url-compat']}
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                peer(192.168.19.20)
+              </p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['peer-info']?.state
+               == 'active'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {availability?.response?.result?.group?.['peer-info']?.state}
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                running config
+              </p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['running-sync'] ==
+                  'not synchronized'
+                    ? reddiv
+                    : greendiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {availability?.response?.result?.group?.['running-sync']}
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                app version
+              </p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'app-compat'
+                  ] == 'Match'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {availability?.response?.result?.group?.['local-info']?.['app-compat']}
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                threat version
+              </p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'threat-compat'
+                  ] == 'Match'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'threat-compat'
+                  ]
+                }
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                antivirus version
+              </p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'av-compat'
+                  ] == 'Match'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {availability?.response?.result?.group?.['local-info']?.['av-compat']}
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                PAN-OS version
+              </p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'url-compat'
+                  ] == 'Match'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {availability?.response?.result?.group?.['local-info']?.['url-compat']}
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                Golbalprotect version
+              </p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'gpclient-compat'
+                  ] == 'Match'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'gpclient-compat'
+                  ]
+                }
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>HA1</p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['peer-info']?.['conn-ha1']?.[
+                    'conn-status'
+                  ] == 'up'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {
+                  availability?.response?.result?.group?.['peer-info']?.['conn-ha1']?.[
+                    'conn-status'
+                  ]
+                }
+              </p>
+            </div>
+
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>HA2</p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['peer-info']?.['conn-ha2']?.[
+                    'conn-status'
+                  ] == 'up'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {
+                  availability?.response?.result?.group?.['peer-info']?.['conn-ha2']?.[
+                    'conn-status'
+                  ]
+                }
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                plugin vm_series
+              </p>
+              <div
+                style={
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'vm-license-compat'
+                  ] == 'Match'
+                    ? greendiv
+                    : reddiv
+                }
+              />
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'vm-license-compat'
+                  ]
+                }
+              </p>
+            </div>
+          </>
+          // mode?.map((item) => (
+          //   <div style={flexContainerStyle}>
+          //     <p style={{ textTransform: 'capitalize', width: '200px' }}>
+          //       {item?.mode}
+          //     </p>
+          //     <div
+          //       style={
+          //         item?.status == false && item?.status_text == 'passive'
+          //           ? yellowdiv
+          //           : (item?.status == true && item?.status_text == 'active') ||
+          //             item?.status == true
+          //           ? greendiv
+          //           : reddiv
+          //       }
+          //     />
+          //     <p style={{ textTransform: 'capitalize', width: '150px' }}>
+          //       {item?.status_text}
+          //     </p>
+          //   </div>
+          // ))
+        )}
       </div>
     </Modal>
   );
