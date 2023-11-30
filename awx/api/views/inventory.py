@@ -344,14 +344,12 @@ class GetInterFaceDetails(APIView):
     def post(self, request, *args, **kwargs):
         serializer = GetInterFaceDetailsSerializer(data=request.data)
         if serializer.is_valid():
-            firewall_ip = serializer.validated_data.get('ip', None)            
+            firewall_ip = serializer.validated_data.get('ip', None)
+            api_key = serializer.validated_data.get('api_key', None)
             
             try:
                 # Suppress the InsecureRequestWarning
                 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-                # Configure your firewall's API settings
-                api_key = 'key'
 
                 # Construct the API URL for your desired operation (retrieve hardware information)
                 url_operation = f'https://{firewall_ip}/api/?type=op&cmd=<show><interface>all</interface></show>&key={api_key}'

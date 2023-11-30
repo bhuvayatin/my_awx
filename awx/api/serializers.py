@@ -6026,3 +6026,4 @@ class GetFireWallsDataSerializer(serializers.Serializer):
 
 class GetInterFaceDetailsSerializer(serializers.Serializer):
     ip = serializers.CharField()
+    api_key = serializers.CharField()
