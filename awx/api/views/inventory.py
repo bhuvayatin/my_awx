@@ -51,7 +51,8 @@ from awx.api.serializers import (
     GetVersionSerializer,
     GetPanoramaSerializer,
     GetFireWallsDataSerializer,
-    GetInterFaceDetailsSerializer
+    GetInterFaceDetailsSerializer,
+    HighAvailabilitySerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -335,7 +336,7 @@ class GetFireWallsData(APIView):
             
             return Response({"data": all_device_groups})
         else:
-            return Response({"Error":"Please enter a host and access token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetInterFaceDetails(APIView):
@@ -356,7 +357,7 @@ class GetInterFaceDetails(APIView):
 
                 # Send the API request for the desired operation with SSL certificate verification disabled
                 response_operation = requests.get(url_operation, verify=False, timeout=10)
-
+                
                 # Check if the operation was successful (HTTP status code 200)
                 if response_operation.status_code == 200:
                     # Parse the XML response using xmltodict
@@ -385,109 +386,106 @@ class GetInterFaceDetails(APIView):
                             'id': entry['id'],
                         }
                         interface_info_list.append(interface_info)
-
-                    # Print the list of dictionaries
-                    #     for interface_info in interface_info_list:
-                    #         print(interface_info)
+                    return Response({"data": interface_info_list})
 
                 else:
                     interface_info_list = []
                     print(f"Operation failed. Status code: {response_operation.status_code}")
                     return Response({"Error":f"Operation failed. Status code: {response_operation.status_code}"}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
-                # return Response({"Error":f"Operation failed. Status code: {response_operation.status_code}"}, status=status.HTTP_400_BAD_REQUEST)
+                # print("Exception is :>>>>>", str(e))
+                # return Response({"Error":f"Operation failed. Please check your host and key"}, status=status.HTTP_400_BAD_REQUEST)
                 pass
+            finally:
 
-            interface_info_list = [
-                    {
-                        'name': 'ethernet1/1',
-                        'duplex': 'full',
-                        'type': '0',
-                        'state': 'up',
-                        'st': '10000/full/up',
-                        'mac': '00:50:56:9e:98:6d',
-                        'mode': '(autoneg)',
-                        'speed': '10000',
-                        'id': '16'
-                    },
-                    {
-                        'name': 'ethernet1/2',
-                        'duplex': 'full',
-                        'type': '0',
-                        'state': 'down',
-                        'st': '10000/full/up',
-                        'mac': '00:50:56:9e:82:fd',
-                        'mode': '(autoneg)',
-                        'speed': '10000',
-                        'id': '17'
-                    },
-                    {
-                        'name': 'ethernet1/3',
-                        'duplex': 'full',
-                        'type': '0',
-                        'state': 'down',
-                        'st': '10000/full/up',
-                        'mac': '00:50:56:9e:4d:8c',
-                        'mode': '(autoneg)',
-                        'speed': '10000',
-                        'id': '18'
-                    },
-                    {
-                        'name': 'ethernet1/3',
-                        'duplex': 'full',
-                        'type': '0',
-                        'state': 'up',
-                        'st': '10000/full/up',
-                        'mac': '00:50:56:9e:4d:8c',
-                        'mode': '(autoneg)',
-                        'speed': '10000',
-                        'id': '19'
-                    },
-                    {
-                        'name': 'ethernet1/3',
-                        'duplex': 'full',
-                        'type': '0',
-                        'state': 'up',
-                        'st': '10000/full/up',
-                        'mac': '00:50:56:9e:4d:8c',
-                        'mode': '(autoneg)',
-                        'speed': '10000',
-                        'id': '20'
-                    },
-                    {
-                        'name': 'ethernet1/3',
-                        'duplex': 'full',
-                        'type': '0',
-                        'state': 'down',
-                        'st': '10000/full/up',
-                        'mac': '00:50:56:9e:4d:8c',
-                        'mode': '(autoneg)',
-                        'speed': '10000',
-                        'id': '21'
-                    },
-                    {
-                        'name': 'ethernet1/3',
-                        'duplex': 'full',
-                        'type': '0',
-                        'state': '',
-                        'st': '10000/full/up',
-                        'mac': '00:50:56:9e:4d:8c',
-                        'mode': '(autoneg)',
-                        'speed': '10000',
-                        'id': '22'
-                    }]
+                interface_info_list = [
+                        {
+                            'name': 'ethernet1/1',
+                            'duplex': 'full',
+                            'type': '0',
+                            'state': 'up',
+                            'st': '10000/full/up',
+                            'mac': '00:50:56:9e:98:6d',
+                            'mode': '(autoneg)',
+                            'speed': '10000',
+                            'id': '16'
+                        },
+                        {
+                            'name': 'ethernet1/2',
+                            'duplex': 'full',
+                            'type': '0',
+                            'state': 'down',
+                            'st': '10000/full/up',
+                            'mac': '00:50:56:9e:82:fd',
+                            'mode': '(autoneg)',
+                            'speed': '10000',
+                            'id': '17'
+                        },
+                        {
+                            'name': 'ethernet1/3',
+                            'duplex': 'full',
+                            'type': '0',
+                            'state': 'down',
+                            'st': '10000/full/up',
+                            'mac': '00:50:56:9e:4d:8c',
+                            'mode': '(autoneg)',
+                            'speed': '10000',
+                            'id': '18'
+                        },
+                        {
+                            'name': 'ethernet1/3',
+                            'duplex': 'full',
+                            'type': '0',
+                            'state': 'up',
+                            'st': '10000/full/up',
+                            'mac': '00:50:56:9e:4d:8c',
+                            'mode': '(autoneg)',
+                            'speed': '10000',
+                            'id': '19'
+                        },
+                        {
+                            'name': 'ethernet1/3',
+                            'duplex': 'full',
+                            'type': '0',
+                            'state': 'up',
+                            'st': '10000/full/up',
+                            'mac': '00:50:56:9e:4d:8c',
+                            'mode': '(autoneg)',
+                            'speed': '10000',
+                            'id': '20'
+                        },
+                        {
+                            'name': 'ethernet1/3',
+                            'duplex': 'full',
+                            'type': '0',
+                            'state': 'down',
+                            'st': '10000/full/up',
+                            'mac': '00:50:56:9e:4d:8c',
+                            'mode': '(autoneg)',
+                            'speed': '10000',
+                            'id': '21'
+                        },
+                        {
+                            'name': 'ethernet1/3',
+                            'duplex': 'full',
+                            'type': '0',
+                            'state': '',
+                            'st': '10000/full/up',
+                            'mac': '00:50:56:9e:4d:8c',
+                            'mode': '(autoneg)',
+                            'speed': '10000',
+                            'id': '22'
+                        }]
+                return Response({"data": interface_info_list})
 
-            # TODO 
-            # process in id and get data
-            return Response({"data": interface_info_list})
-        return Response({"Error":"Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class HighAvailability(APIView):
     # permission_classes = (AllowAny)
     
     def post(self, request, *args, **kwargs):
-        serializer = GetInterFaceDetailsSerializer(data=request.data)
+        serializer = HighAvailabilitySerializer(data=request.data)
         if serializer.is_valid():
             firewall_ip = serializer.validated_data.get('ip', None)
             api_key = serializer.validated_data.get('api_key', None)
@@ -509,16 +507,19 @@ class HighAvailability(APIView):
                     # Parse the XML response using xmltodict
                     xml_data = response_operation.text
                     parsed_data = xmltodict.parse(xml_data)
-                    #rint(parsed_data)
-                    # Extract the hardware information from the parsed dictionary
+                    
+                    return Response({"data": parsed_data})
 
                 else:
-                    
                     print(f"Operation failed. Status code: {response_operation.status_code}")
+                    return Response({"Error":f"Operation failed. Status code: {response_operation.status_code}"}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
+                # print("Exception is :>>>>>", str(e))
+                # return Response({"Error":f"Operation failed. Please check your host and key"}, status=status.HTTP_400_BAD_REQUEST)
                 pass
 
-            parsed_data = {
+            finally:
+                parsed_data = {
                     "response": {
                         "@status": "success",
                         "result": {
@@ -634,4 +635,7 @@ class HighAvailability(APIView):
                         }
                     }
                     }
-            return Response({"data": parsed_data})
+                return Response({"data": parsed_data})
+
+        else:
+            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
