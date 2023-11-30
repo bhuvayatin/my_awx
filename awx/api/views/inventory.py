@@ -481,3 +481,157 @@ class GetInterFaceDetails(APIView):
             # process in id and get data
             return Response({"data": interface_info_list})
         return Response({"Error":"Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class HighAvailability(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = GetInterFaceDetailsSerializer(data=request.data)
+        if serializer.is_valid():
+            firewall_ip = serializer.validated_data.get('ip', None)
+            api_key = serializer.validated_data.get('api_key', None)
+
+            try:
+                # Suppress the InsecureRequestWarning
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+                # Construct the API URL for your desired operation (retrieve hardware information)
+                url_operation = f'https://{firewall_ip}/api/?type=op&cmd=<show><high-availability><all/></high-availability></show>&key={api_key}'
+
+                # Send the API request for the desired operation with SSL certificate verification disabled
+                response_operation = requests.get(url_operation, verify=False)
+                
+                parsed_data = {}
+                
+                # Check if the operation was successful (HTTP status code 200)
+                if response_operation.status_code == 200:
+                    # Parse the XML response using xmltodict
+                    xml_data = response_operation.text
+                    parsed_data = xmltodict.parse(xml_data)
+                    #rint(parsed_data)
+                    # Extract the hardware information from the parsed dictionary
+
+                else:
+                    
+                    print(f"Operation failed. Status code: {response_operation.status_code}")
+            except Exception as e:
+                pass
+
+            parsed_data = {
+                    "response": {
+                        "@status": "success",
+                        "result": {
+                        "enabled": "yes",
+                        "group": {
+                            "mode": "Active-Passive",
+                            "local-info": {
+                            "url-compat": "Mismatch",
+                            "app-version": "8766-8347",
+                            "gpclient-version": "Not Installed",
+                            "build-rel": "9.0.16-h3",
+                            "ha2-port": "ethernet1/3",
+                            "av-version": "4361-4874",
+                            "ha1-gateway": "10.215.18.1",
+                            "url-version": "20231129.20255",
+                            "active-passive": {
+                                "passive-link-state": "shutdown",
+                                "monitor-fail-holddown": "1"
+                            },
+                            "platform-model": "PA-VM",
+                            "av-compat": "Match",
+                            "ha2-ipaddr": "192.168.1.1/24",
+                            "vpnclient-compat": "Match",
+                            "ha1-ipaddr": "10.215.18.85/23",
+                            "vm-license": "vm100",
+                            "ha2-macaddr": "00:50:56:9e:4d:8c",
+                            "monitor-fail-holdup": "0",
+                            "priority": "10",
+                            "preempt-hold": "1",
+                            "state": "active",
+                            "version": "1",
+                            "promotion-hold": "2000",
+                            "threat-compat": "Match",
+                            "state-sync": "Complete",
+                            "vm-license-compat": "Mismatch",
+                            "addon-master-holdup": "500",
+                            "heartbeat-interval": "2000",
+                            "ha1-link-mon-intv": "3000",
+                            "hello-interval": "8000",
+                            "ha1-port": "management",
+                            "ha1-encrypt-imported": "no",
+                            "mgmt-ip": "10.215.18.85/23",
+                            "vpnclient-version": "Not Installed",
+                            "preempt-flap-cnt": "0",
+                            "nonfunc-flap-cnt": "0",
+                            "threat-version": "8766-8347",
+                            "ha1-macaddr": "00:50:56:9e:1d:d2",
+                            "vm-license-type": "vm100",
+                            "state-duration": "10444",
+                            "max-flaps": "3",
+                            "ha1-encrypt-enable": "no",
+                            "mgmt-ipv6": None,
+                            "state-sync-type": "ethernet",
+                            "preemptive": "no",
+                            "gpclient-compat": "Match",
+                            "mode": "Active-Passive",
+                            "build-compat": "Mismatch",
+                            "VMS": "Compat Match",
+                            "app-compat": "Match"
+                            },
+                            "peer-info": {
+                            "app-version": "8766-8347",
+                            "gpclient-version": "Not Installed",
+                            "url-version": "0000.00.00.000",
+                            "build-rel": "9.1.0",
+                            "ha2-ipaddr": "192.168.1.2",
+                            "platform-model": "PA-VM",
+                            "vm-license": "VM-100",
+                            "ha2-macaddr": "00:50:56:9e:a1:d1",
+                            "priority": "100",
+                            "state": "passive",
+                            "version": "1",
+                            "conn-status": "up",
+                            "av-version": "4361-4874",
+                            "vpnclient-version": "Not Installed",
+                            "mgmt-ip": "10.215.18.86/23",
+                            "conn-ha2": {
+                                "conn-status": "up",
+                                "conn-ka-enbled": "no",
+                                "conn-primary": "yes",
+                                "conn-desc": "link status"
+                            },
+                            "threat-version": "8766-8347",
+                            "ha1-macaddr": "00:50:56:9e:ae:f0",
+                            "conn-ha1": {
+                                "conn-status": "up",
+                                "conn-primary": "yes",
+                                "conn-desc": "heartbeat status"
+                            },
+                            "vm-license-type": "VM-100",
+                            "state-duration": "10430",
+                            "ha1-ipaddr": "10.215.18.86",
+                            "mgmt-ipv6": None,
+                            "preemptive": "no",
+                            "mode": "Active-Passive",
+                            "VMS": "1.0.13"
+                            },
+                            "link-monitoring": {
+                            "fail-cond": "any",
+                            "enabled": "yes",
+                            "groups": None
+                            },
+                            "path-monitoring": {
+                            "vwire": None,
+                            "fail-cond": "any",
+                            "vlan": None,
+                            "enabled": "yes",
+                            "vrouter": None
+                            },
+                            "running-sync": "not synchronized",
+                            "running-sync-enabled": "yes"
+                        }
+                        }
+                    }
+                    }
+            return Response({"data": parsed_data})
