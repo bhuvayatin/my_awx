@@ -1,6 +1,6 @@
 import 'styled-components/macro';
 import React, { useEffect, useState } from 'react';
-import { Modal, Spinner, Title } from '@patternfly/react-core';
+import { Button, Modal, Spinner, Title } from '@patternfly/react-core';
 import styled from 'styled-components';
 import { InventoriesAPI } from 'api';
 
@@ -9,7 +9,10 @@ function DataModal({ onClose, isOpen, ip }) {
   const [get_socket, setGet_socket] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [availability, setAvailability] = useState();
-  console.log("🚀 ~ file: DataModal.js:12 ~ DataModal ~ availability:", availability)
+  console.log(
+    '🚀 ~ file: DataModal.js:12 ~ DataModal ~ availability:',
+    availability
+  );
   const [isLoadingavail, setIsLoadingavail] = useState(false);
   const api_key = localStorage.getItem('api_key');
   const Header = styled.div`
@@ -21,7 +24,7 @@ function DataModal({ onClose, isOpen, ip }) {
   const customHeader = (
     <Header>
       <Title id="alert-modal-header-label" size="2xl" headingLevel="h2">
-        Details
+        Firewall Details
       </Title>
     </Header>
   );
@@ -227,40 +230,39 @@ function DataModal({ onClose, isOpen, ip }) {
   }
 
   useEffect(() => {
-    const payload = {
-      ip,
-      api_key,
-    };
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const { data } = await InventoriesAPI.get_interface_details(payload);
-        console.log('🚀 ~ file: DataModal.js:200 ~ fetchData ~ data:', data);
-        setGet_socket(data?.data);
-        setIsLoading(false);
-        return data;
-      } catch (error) {
-        setIsLoading(false);
-        console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
-      }
-    };
-    const high_availability = async () => {
-      try {
-        setIsLoadingavail(true);
-        const { data } = await InventoriesAPI.high_availability(payload);
-        console.log('🚀 ~ file: DataModal.js:200 ~ fetchData ~ data:', data);
-        setAvailability(data?.data);
-        setIsLoadingavail(false);
-        return data;
-      } catch (error) {
-        setIsLoadingavail(false);
-        console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
-      }
-    };
-
     fetchData();
     high_availability();
   }, []);
+  const payload = {
+    ip,
+    api_key,
+  };
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await InventoriesAPI.get_interface_details(payload);
+      console.log('🚀 ~ file: DataModal.js:200 ~ fetchData ~ data:', data);
+      setGet_socket(data?.data);
+      setIsLoading(false);
+      return data;
+    } catch (error) {
+      setIsLoading(false);
+      console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
+    }
+  };
+  const high_availability = async () => {
+    try {
+      setIsLoadingavail(true);
+      const { data } = await InventoriesAPI.high_availability(payload);
+      console.log('🚀 ~ file: DataModal.js:200 ~ fetchData ~ data:', data);
+      setAvailability(data?.data);
+      setIsLoadingavail(false);
+      return data;
+    } catch (error) {
+      setIsLoadingavail(false);
+      console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
+    }
+  };
   return (
     <Modal
       header={customHeader}
@@ -271,6 +273,21 @@ function DataModal({ onClose, isOpen, ip }) {
       title="Availability"
       ouiaId="alert-modal"
       onClose={onClose}
+      actions={[
+        <Button
+          key="confirm"
+          variant="primary"
+          onClick={() => {
+            fetchData();
+            high_availability();
+          }}
+        >
+          Refresh
+        </Button>,
+        <Button key="cancel" variant="link" onClick={onClose}>
+          Close
+        </Button>,
+      ]}
     >
       <div>
         <a href={`https://${ip}`} target="_blank">
@@ -288,29 +305,48 @@ function DataModal({ onClose, isOpen, ip }) {
           <>
             <div style={flexContainerStyle}>
               <p style={{ textTransform: 'capitalize', width: '200px' }}>
+                Mode
+              </p>
+
+              <p style={{ textTransform: 'capitalize', width: '150px' }}>
+                {availability?.response?.result?.group?.['local-info']?.mode}
+              </p>
+            </div>
+            <div style={flexContainerStyle}>
+              <p style={{ textTransform: 'capitalize', width: '200px' }}>
                 local
               </p>
               <div
                 style={
                   availability?.response?.result?.group?.['local-info']?.[
-                    'url-compat'
-                  ] == 'Match'
+                    'state'
+                  ] == 'active'
                     ? greendiv
                     : reddiv
                 }
               />
               <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {availability?.response?.result?.group?.['local-info']?.['url-compat']}
+                {
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'state'
+                  ]
+                }
               </p>
             </div>
             <div style={flexContainerStyle}>
               <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                peer(192.168.19.20)
+                peer(
+                {
+                  availability?.response?.result?.group?.['peer-info']?.[
+                    'ha1-ipaddr'
+                  ]
+                }
+                )
               </p>
               <div
                 style={
-                  availability?.response?.result?.group?.['peer-info']?.state
-               == 'active'
+                  availability?.response?.result?.group?.['peer-info']?.state ==
+                  'active'
                     ? greendiv
                     : reddiv
                 }
@@ -349,7 +385,11 @@ function DataModal({ onClose, isOpen, ip }) {
                 }
               />
               <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {availability?.response?.result?.group?.['local-info']?.['app-compat']}
+                {
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'app-compat'
+                  ]
+                }
               </p>
             </div>
             <div style={flexContainerStyle}>
@@ -387,24 +427,38 @@ function DataModal({ onClose, isOpen, ip }) {
                 }
               />
               <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {availability?.response?.result?.group?.['local-info']?.['av-compat']}
+                {
+                  availability?.response?.result?.group?.['local-info']?.[
+                    'av-compat'
+                  ]
+                }
               </p>
             </div>
             <div style={flexContainerStyle}>
               <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                PAN-OS version
+                PAN-OS version {/* need to compair for build  */}
               </p>
               <div
                 style={
                   availability?.response?.result?.group?.['local-info']?.[
-                    'url-compat'
-                  ] == 'Match'
+                    'build-rel'
+                  ] ==
+                  availability?.response?.result?.group?.['peer-info']?.[
+                    'build-rel'
+                  ]
                     ? greendiv
                     : reddiv
                 }
               />
               <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {availability?.response?.result?.group?.['local-info']?.['url-compat']}
+                {availability?.response?.result?.group?.['local-info']?.[
+                  'build-rel'
+                ] ==
+                availability?.response?.result?.group?.['peer-info']?.[
+                  'build-rel'
+                ]
+                  ? 'Match'
+                  : 'Mismatch'}
               </p>
             </div>
             <div style={flexContainerStyle}>
@@ -432,18 +486,18 @@ function DataModal({ onClose, isOpen, ip }) {
               <p style={{ textTransform: 'capitalize', width: '200px' }}>HA1</p>
               <div
                 style={
-                  availability?.response?.result?.group?.['peer-info']?.['conn-ha1']?.[
-                    'conn-status'
-                  ] == 'up'
+                  availability?.response?.result?.group?.['peer-info']?.[
+                    'conn-ha1'
+                  ]?.['conn-status'] == 'up'
                     ? greendiv
                     : reddiv
                 }
               />
               <p style={{ textTransform: 'capitalize', width: '150px' }}>
                 {
-                  availability?.response?.result?.group?.['peer-info']?.['conn-ha1']?.[
-                    'conn-status'
-                  ]
+                  availability?.response?.result?.group?.['peer-info']?.[
+                    'conn-ha1'
+                  ]?.['conn-status']
                 }
               </p>
             </div>
@@ -452,18 +506,18 @@ function DataModal({ onClose, isOpen, ip }) {
               <p style={{ textTransform: 'capitalize', width: '200px' }}>HA2</p>
               <div
                 style={
-                  availability?.response?.result?.group?.['peer-info']?.['conn-ha2']?.[
-                    'conn-status'
-                  ] == 'up'
+                  availability?.response?.result?.group?.['peer-info']?.[
+                    'conn-ha2'
+                  ]?.['conn-status'] == 'up'
                     ? greendiv
                     : reddiv
                 }
               />
               <p style={{ textTransform: 'capitalize', width: '150px' }}>
                 {
-                  availability?.response?.result?.group?.['peer-info']?.['conn-ha2']?.[
-                    'conn-status'
-                  ]
+                  availability?.response?.result?.group?.['peer-info']?.[
+                    'conn-ha2'
+                  ]?.['conn-status']
                 }
               </p>
             </div>
