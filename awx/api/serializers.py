@@ -6032,3 +6032,13 @@ class GetInterFaceDetailsSerializer(serializers.Serializer):
 class HighAvailabilitySerializer(serializers.Serializer):
     ip = serializers.CharField()
     api_key = serializers.CharField()
+
+
+class GeneralInformationSerializer(serializers.Serializer):
+    host = serializers.CharField()
+    access_token = serializers.CharField()
+
+
+class SessionInformationSerializer(serializers.Serializer):
+    host = serializers.CharField()
+    access_token = serializers.CharField()

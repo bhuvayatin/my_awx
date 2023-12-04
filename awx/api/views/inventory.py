@@ -52,7 +52,9 @@ from awx.api.serializers import (
     GetPanoramaSerializer,
     GetFireWallsDataSerializer,
     GetInterFaceDetailsSerializer,
-    HighAvailabilitySerializer
+    HighAvailabilitySerializer,
+    GeneralInformationSerializer,
+    SessionInformationSerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -636,6 +638,212 @@ class HighAvailability(APIView):
                     }
                     }
                 return Response({"data": parsed_data})
+
+        else:
+            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GeneralInformation(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = GeneralInformationSerializer(data=request.data)
+        if serializer.is_valid():
+            host = serializer.validated_data.get('host', None)
+            api_key = serializer.validated_data.get('api_key', None)
+
+            try:
+                # Define the API endpoint
+                url = f'https://{host}/api/'
+
+                # Define the parameters for the get request
+                params = {
+                    'type': 'op',
+                    'cmd': '<show><system><info></info></system></show>',
+                    'key': api_key
+                }
+
+                # Send the get request
+                response = requests.get(url, params=params, verify=False, timeout=10)
+
+                # Check the response
+                if response.status_code == 200:
+                    print('Successfully retrieved configuration')
+                    return Response({"data": response.text})
+                else:
+                    return Response({"Error":"Failed to retrieve configuration"}, status=status.HTTP_400_BAD_REQUEST)
+
+            except Exception as e:
+                print('Exception is : >>>>>>>>>>>>>',str(e))
+                # return Response({"Error":f"Operation failed. Please check your host and key"}, status=status.HTTP_400_BAD_REQUEST)
+                pass
+
+            finally:
+                general_information = {
+                    "response": {
+                        "@status": "success",
+                        "result": {
+                        "system": {
+                            "hostname": "PA-VM_85",
+                            "ip-address": "10.215.18.85",
+                            "public-ip-address": "unknown",
+                            "netmask": "255.255.254.0",
+                            "default-gateway": "10.215.18.1",
+                            "is-dhcp": "no",
+                            "ipv6-address": "unknown",
+                            "ipv6-link-local-address": "fe80::250:56ff:fe9e:1dd2/64",
+                            "ipv6-default-gateway": None,
+                            "mac-address": "00:50:56:9e:1d:d2",
+                            "time": "Thu Nov 30 18:41:49 2023",
+                            "uptime": "0 days, 9:31:22",
+                            "devicename": "PA-VM_85",
+                            "family": "vm",
+                            "model": "PA-VM",
+                            "serial": "007951000342260",
+                            "vm-mac-base": "7C:89:C3:0A:8C:00",
+                            "vm-mac-count": "256",
+                            "vm-uuid": "421EA98F-619A-47C1-3100-86238DEB645B",
+                            "vm-cpuid": "ESX:57060500FFFB8B1F",
+                            "vm-license": "VM-100",
+                            "vm-mode": "VMware ESXi",
+                            "cloud-mode": "non-cloud",
+                            "sw-version": "9.1.0",
+                            "global-protect-client-package-version": "0.0.0",
+                            "app-version": "8766-8347",
+                            "app-release-date": "2023/10/17 19:43:26 PDT",
+                            "av-version": "4361-4874",
+                            "av-release-date": "2023/02/13 14:15:56 PST",
+                            "threat-version": "8766-8347",
+                            "threat-release-date": "2023/10/17 19:43:26 PDT",
+                            "wf-private-version": "0",
+                            "wf-private-release-date": "unknown",
+                            "url-db": "paloaltonetworks",
+                            "wildfire-version": "0",
+                            "wildfire-release-date": None,
+                            "url-filtering-version": "0000.00.00.000",
+                            "global-protect-datafile-version": "unknown",
+                            "global-protect-datafile-release-date": "unknown",
+                            "global-protect-clientless-vpn-version": "0",
+                            "global-protect-clientless-vpn-release-date": None,
+                            "logdb-version": "9.1.21",
+                            "plugin_versions": {
+                            "entry": {
+                                "@name": "vm_series",
+                                "@version": "1.0.13",
+                                "pkginfo": "vm_series-1.0.13"
+                            }
+                            },
+                            "platform-family": "vm",
+                            "vpn-disable-mode": "off",
+                            "multi-vsys": "off",
+                            "operational-mode": "normal"
+                        }
+                        }
+                    }
+                    }
+                return Response({"data": general_information})
+
+        else:
+            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SessionInformation(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = SessionInformationSerializer(data=request.data)
+        if serializer.is_valid():
+            host = serializer.validated_data.get('host', None)
+            api_key = serializer.validated_data.get('api_key', None)
+
+            try:
+                # Define the API endpoint
+                url = f'https://{host}/api/'
+
+                # Define the parameters for the get request
+                params_session = {
+                    'type': 'op',
+                    'cmd': '<show><session><info></info></session></show>',
+                    'key': api_key
+                }
+
+                # Get the session info
+                response = requests.get(url, params=params_session, verify=False, timeout=10)
+                if response.status_code == 200:
+                    print('Successfully retrieved session information')
+                    return Response({"data": response.text})
+                else:
+                    return Response({"Error":"Failed to retrieve session information"}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                print('Exception is : >>>>>>>>>>>>>',str(e))
+                # return Response({"Error":f"Operation failed. Please check your host and key"}, status=status.HTTP_400_BAD_REQUEST)
+                pass
+            
+            finally:
+                session_information = {
+                    "response": {
+                        "@status": "success",
+                        "result": {
+                        "tmo-sctpshutdown": "60",
+                        "tcp-nonsyn-rej": "True",
+                        "tmo-tcpinit": "5",
+                        "tmo-tcp": "3600",
+                        "pps": "0",
+                        "tmo-tcp-delayed-ack": "250",
+                        "num-max": "256000",
+                        "age-scan-thresh": "80",
+                        "tmo-tcphalfclosed": "120",
+                        "num-active": "0",
+                        "tmo-sctp": "3600",
+                        "dis-def": "60",
+                        "num-mcast": "0",
+                        "icmp-unreachable-rate": "200",
+                        "tmo-tcptimewait": "15",
+                        "age-scan-ssf": "8",
+                        "tmo-udp": "30",
+                        "vardata-rate": "10485760",
+                        "age-scan-tmo": "10",
+                        "dis-sctp": "30",
+                        "dp": "*.dp0",
+                        "dis-tcp": "90",
+                        "tcp-reject-siw-thresh": "4",
+                        "num-udp": "0",
+                        "tmo-sctpcookie": "60",
+                        "tmo-icmp": "6",
+                        "max-pending-mcast": "0",
+                        "age-accel-thresh": "80",
+                        "tcp-diff-syn-rej": "True",
+                        "num-gtpc": "0",
+                        "oor-action": "drop",
+                        "tmo-def": "30",
+                        "num-predict": "0",
+                        "age-accel-en": "True",
+                        "age-accel-tsf": "2",
+                        "hw-offload": "True",
+                        "num-icmp": "0",
+                        "num-gtpu-active": "0",
+                        "tmo-cp": "30",
+                        "tcp-strict-rst": "True",
+                        "tmo-sctpinit": "5",
+                        "strict-checksum": "True",
+                        "tmo-tcp-unverif-rst": "30",
+                        "num-bcast": "0",
+                        "ipv6-fw": "True",
+                        "cps": "0",
+                        "num-installed": "0",
+                        "num-tcp": "0",
+                        "dis-udp": "60",
+                        "num-sctp-assoc": "0",
+                        "num-sctp-sess": "0",
+                        "tcp-reject-siw-enable": "False",
+                        "tmo-tcphandshake": "10",
+                        "hw-udp-offload": "True",
+                        "kbps": "0",
+                        "num-gtpu-pending": "0"
+                        }
+                    }
+                }
+                return Response({"data": session_information})
 
         else:
             return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

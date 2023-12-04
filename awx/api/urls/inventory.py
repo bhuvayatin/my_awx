@@ -20,7 +20,9 @@ from awx.api.views.inventory import (
     GetPanorama,
     GetFireWallsData,
     GetInterFaceDetails,
-    HighAvailability
+    HighAvailability,
+    GeneralInformation,
+    SessionInformation
 )
 from awx.api.views import (
     InventoryHostsList,
@@ -60,6 +62,8 @@ urls = [
     re_path(r'^get/firewalls/$', GetFireWallsData.as_view(), name='get_firewalls_data'),
     re_path(r'^get/interface_details/$', GetInterFaceDetails.as_view(), name='get_firewalls_data'),
     re_path(r'^get/high_availability/$', HighAvailability.as_view(), name='get_firewalls_data'),
+    re_path(r'^get/general_information/$', GeneralInformation.as_view(), name='get_general_information'),
+    re_path(r'^get/session_information/$', SessionInformation.as_view(), name='get_session_information'),
     
     
 ]
