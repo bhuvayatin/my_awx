@@ -250,6 +250,68 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         return True
 
     async def backup_firewalls(self, ip):
+
+        # Replace with your firewall details
+        hostname = '10.215.18.85'
+        api_key = 'LUFRPT1OcGRFZnlUZkNTdTNibU9XeVN4UFdxTmJlYzA9REp3U0w5QzZMc0N4bzFEK1U1cjI2Vk8vMmlEOEt6cEoyMlFYQXMvRTJkVCtHZ29Za0l6Q05tejFTdmg0MnJMbA=='
+        config_name = '10.215.18.85'
+
+        # Define the API endpoint
+        url = f'https://{hostname}/api/'
+
+        # Define the parameters for the export request
+        params_config = {
+            'type': 'export',
+            'category': 'configuration',
+            'action': 'save',
+            'key': api_key
+        }
+
+        params_device_state = {
+            'type': 'export',
+            'category': 'device-state',
+            'action': 'save',
+            'key': api_key
+        }
+        
+        # Function to send the export request and save the response
+        def export_and_save(params, filename):
+            import xml.etree.ElementTree as ET
+
+            # Create the root element
+            root = ET.Element("root")
+
+            # Create child elements
+            child1 = ET.SubElement(root, "child1")
+            child2 = ET.SubElement(root, "child2")
+
+            # Add some data to the child elements
+            child1.text = "Data for Child 1"
+            child2.text = "Data for Child 2"
+
+            # Create the XML tree
+            tree = ET.ElementTree(root)
+
+            # Write the tree to an XML string
+            xml_content = ET.tostring(root, encoding="utf-8", method="xml")
+
+            # Write the tree to an XML file
+            # tree.write(filename)
+
+            # with open(filename, 'wb') as file:
+            #     file.write(content)
+            # print(f'Successfully saved to {filename}')
+
+            return xml_content
+
+        file1 = f'backup_file/{config_name}_config_backup.xml'
+        # Export and save the configuration
+        xml_content1 = export_and_save(params_config, file1)
+
+        file2 = f'backup_file/{config_name}_device_state_backup.xml'
+        # Export and save the device state
+        xml_content2 = export_and_save(params_device_state, file2)
+        await self.send(text_data=json.dumps({'file1':xml_content1.decode("utf-8"), 'file2':xml_content2.decode("utf-8")}))
         await asyncio.sleep(10)
         return True
 
