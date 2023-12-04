@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 
-__all__ = ['UpdateFirewallStatus']
+__all__ = ['UpdateFirewallStatus', 'UpdateFirewallStatusLogs']
 
 
 FIREWALL_STATUS_CHOICES = (
@@ -36,3 +36,15 @@ class UpdateFirewallStatus(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     sequence = models.BooleanField(default=False)
     name = models.CharField(max_length=256, null=True)
+
+
+class UpdateFirewallStatusLogs(models.Model):
+    job_id = models.PositiveIntegerField(
+        null=True,
+        default=None,
+        db_index=True,
+    )
+    ip_address = models.CharField(max_length=256)
+    text = models.CharField(max_length=250, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)

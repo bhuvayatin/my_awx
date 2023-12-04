@@ -6042,3 +6042,14 @@ class GeneralInformationSerializer(serializers.Serializer):
 class SessionInformationSerializer(serializers.Serializer):
     host = serializers.CharField()
     access_token = serializers.CharField()
+
+
+class FirewallStatusInputSerializer(serializers.Serializer):
+    ip_address = serializers.CharField()
+    job_id = serializers.IntegerField()
+
+
+class FirewallStatusLogsSerializer(serializers.Serializer):
+    ip_address = serializers.CharField()
+    job_id = serializers.IntegerField()
+    text = serializers.CharField()

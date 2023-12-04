@@ -22,7 +22,8 @@ from awx.api.views.inventory import (
     GetInterFaceDetails,
     HighAvailability,
     GeneralInformation,
-    SessionInformation
+    SessionInformation,
+    FirewallStatusLogs
 )
 from awx.api.views import (
     InventoryHostsList,
@@ -64,6 +65,7 @@ urls = [
     re_path(r'^get/high_availability/$', HighAvailability.as_view(), name='get_firewalls_data'),
     re_path(r'^get/general_information/$', GeneralInformation.as_view(), name='get_general_information'),
     re_path(r'^get/session_information/$', SessionInformation.as_view(), name='get_session_information'),
+    re_path(r'^get/firewall_status_logs/$', FirewallStatusLogs.as_view(), name='get_firewall_status_logs'),
     
     
 ]

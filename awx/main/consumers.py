@@ -241,15 +241,43 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         pass
     
-    async def downloading_firewalls(self, ip):
+    async def downloading_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="downloading started"
+                )
         await asyncio.sleep(10)
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="downloading completed"
+                )
         return True
     
-    async def solar_wind_mute_firewalls(self, ip):
+    async def solar_wind_mute_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="solar_wind_mute started"
+                )
         await asyncio.sleep(10)
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="solar_wind_mute completed"
+                )
         return True
 
-    async def backup_firewalls(self, ip):
+    async def backup_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="backup started"
+                )
 
         # Replace with your firewall details
         hostname = '10.215.18.85'
@@ -311,35 +339,106 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         file2 = f'backup_file/{config_name}_device_state_backup.xml'
         # Export and save the device state
         xml_content2 = export_and_save(params_device_state, file2)
-        await self.send(text_data=json.dumps({'file1':xml_content1.decode("utf-8"), 'file2':xml_content2.decode("utf-8")}))
+        # await self.send(text_data=json.dumps({'file1':xml_content1.decode("utf-8"), 'file2':xml_content2.decode("utf-8")}))
         await asyncio.sleep(10)
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="backup completed"
+                )
         return True
 
-    async def installing_firewalls(self, ip):
+    async def installing_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="installing started"
+                )
         await asyncio.sleep(10)
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="installing completed"
+                )
         return True
     
-    async def rebooting_firewalls(self, ip):
+    async def rebooting_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="rebooting started"
+                )
         await asyncio.sleep(10)
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="rebooting completed"
+                )
         return True
     
-    async def commit_firewalls(self, ip):
+    async def commit_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="commit started"
+                )
         await asyncio.sleep(10)
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="commit completed"
+                )
         return True
     
-    async def ping_firewalls(self, ip):
+    async def ping_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="ping started"
+                )
         await asyncio.sleep(10)
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="ping completed"
+                )
         return True
     
-    async def login_firewalls(self, ip):
+    async def login_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="login started"
+                )
         await asyncio.sleep(10)
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="login completed"
+                )
         return True
 
     async def updated_firewalls(self, ip):
         pass
     
-    async def solar_wind_unmute_firewalls(self, ip):
+    async def solar_wind_unmute_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="solar_wind_unmute started"
+                )
         await asyncio.sleep(10)
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="solar_wind_unmute completed"
+                )
         return True
     
     async def change_next_status(self, firewall, response_data, group_name, i, status):
@@ -348,15 +447,15 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         await sync_to_async(firewall.save)()
         await self.send(text_data=json.dumps(response_data))
     
-    async def change_firewall_status(self, firewall, result, group_name, ip, new_status):
+    async def change_firewall_status(self, firewall, result, group_name, ip, new_status, job_id):
         await self.change_next_status(firewall, result, group_name, ip, new_status)
         task_method = getattr(self, f"{new_status.value.lower()}_firewalls")
-        _result = await task_method(ip)
+        _result = await task_method(ip, job_id)
         return _result
     
-    async def process_firewall_status(self, firewall, result, group_name, ip, status_sequence):
+    async def process_firewall_status(self, firewall, result, group_name, ip, status_sequence, job_id):
         for new_status in status_sequence:
-            _result = await self.change_firewall_status(firewall, result, group_name, ip, new_status)
+            _result = await self.change_firewall_status(firewall, result, group_name, ip, new_status, job_id)
         return _result
 
 
@@ -398,7 +497,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     FirewallStatus.UPDATED
                 ]
                 # await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence, job_id))
 
             elif firewall.status == FirewallStatus.DOWNLOADING.value:
                 status_sequence = [
@@ -413,7 +512,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     FirewallStatus.UPDATED
                 ]
                 # await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence, job_id))
             
             elif firewall.status == FirewallStatus.SOLAR_WIND_MUTE.value:
                 status_sequence = [
@@ -427,7 +526,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     FirewallStatus.UPDATED
                 ]
                 # await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence, job_id))
 
             elif firewall.status == FirewallStatus.BACKUP.value:
                 status_sequence = [
@@ -440,7 +539,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     FirewallStatus.UPDATED
                 ]
                 # await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence, job_id))
             
             elif firewall.status == FirewallStatus.INSTALLING.value:
                 status_sequence = [
@@ -452,7 +551,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     FirewallStatus.UPDATED
                 ]
                 # await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence, job_id))
             
             elif firewall.status == FirewallStatus.REBOOTING.value:
                 status_sequence = [
@@ -463,7 +562,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     FirewallStatus.UPDATED
                 ]
                 # await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence, job_id))
             
             elif firewall.status == FirewallStatus.COMMIT.value:
                 status_sequence = [
@@ -473,7 +572,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     FirewallStatus.UPDATED
                 ]
                 # await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence, job_id))
             
             elif firewall.status == FirewallStatus.PING.value:
                 status_sequence = [
@@ -482,7 +581,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     FirewallStatus.UPDATED
                 ]
                 # await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence, job_id))
             
             elif firewall.status == FirewallStatus.LOGIN.value:
                 status_sequence = [
@@ -490,7 +589,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     FirewallStatus.UPDATED
                 ]
                 # await self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.process_firewall_status(firewall, result, firewall.group_name, response, status_sequence, job_id))
             
             elif firewall.status == FirewallStatus.SOLAR_WIND_UNMUTE.value:
                 status_sequence =FirewallStatus.UPDATED
@@ -553,7 +652,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                             FirewallStatus.UPDATED
                         ]
                         # await self.process_firewall_status(firewall_status, response_data, group_name, i, status_sequence)
-                        tasks.append(self.process_firewall_status(firewall_status, response_data, group_name, i, status_sequence))
+                        tasks.append(self.process_firewall_status(firewall_status, response_data, group_name, i, status_sequence, job_id))
             
             if sequence:
                 await asyncio.gather(*tasks)
