@@ -1,39 +1,57 @@
 import 'styled-components/macro';
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, Spinner, Title } from '@patternfly/react-core';
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
+  Grid,
+  GridItem,
+  Modal,
+  Spinner,
+  Title,
+} from '@patternfly/react-core';
 import styled from 'styled-components';
 import { InventoriesAPI } from 'api';
+import { SyncAltIcon } from '@patternfly/react-icons';
+import { formatDateString } from 'util/dates';
+import { DateTime } from 'luxon';
 
 function DataModal({ onClose, isOpen, ip }) {
-  console.log('🚀 ~ file: DataModal.js:8 ~ DataModal ~ ip:', ip);
   const [get_socket, setGet_socket] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [availability, setAvailability] = useState();
-  console.log(
-    '🚀 ~ file: DataModal.js:12 ~ DataModal ~ availability:',
-    availability
-  );
+  const [sessiondata, setSessiondata] = useState();
+  const [general, setGeneral] = useState();
   const [isLoadingavail, setIsLoadingavail] = useState(false);
+  const [isLoadingsession, setIsLoadingsession] = useState(false);
+  const [isLoadinggen, setIsLoadinggen] = useState(false);
+
   const api_key = localStorage.getItem('api_key');
   const Header = styled.div`
     display: flex;
     svg {
-      margin-right: 16px;
+      margin-right: 16px",
     }
   `;
   const customHeader = (
     <Header>
       <Title id="alert-modal-header-label" size="2xl" headingLevel="h2">
-        Firewall Details
+        Firewall Details (
+        <a href={`https://${ip}`} target="_blank">
+          {ip}
+        </a>
+        )
       </Title>
     </Header>
   );
+
   // Style
   const flexContainerStyle = {
     display: 'flex',
     justifyContent: 'space-around', // Adjust as needed
     alignItems: 'center', // Adjust as needed
-    width: '450px',
     padding: '8px 20px',
   };
   const yellowdiv = {
@@ -55,69 +73,12 @@ function DataModal({ onClose, isOpen, ip }) {
     background: 'green',
   };
 
-  const mode = [
-    {
-      mode: 'local',
-      status: true,
-      status_text: 'passive',
-    },
-    {
-      mode: 'peer(192.168.19.20)',
-      status: true,
-      status_text: 'active',
-    },
-    {
-      mode: 'running config',
-      status: false,
-      status_text: 'not sync',
-    },
-    {
-      mode: 'app version',
-      status: true,
-      status_text: 'match',
-    },
-    {
-      mode: 'threat version',
-      status: true,
-      status_text: 'match',
-    },
-    {
-      mode: 'antivirus version',
-      status: true,
-      status_text: 'match',
-    },
-    {
-      mode: 'PAN-OS version',
-      status: false,
-      status_text: 'mismatch',
-    },
-    {
-      mode: 'Golbalprotect version',
-      status: true,
-      status_text: 'match',
-    },
-    {
-      mode: 'HA1',
-      status: true,
-      status_text: 'up',
-    },
-    {
-      mode: 'HA2',
-      status: true,
-      status_text: 'up',
-    },
-    {
-      mode: 'plugin vm_series',
-      status: false,
-      status_text: 'mismatch',
-    },
-  ];
   const output = [];
 
-  for (let i = 0; i < get_socket?.length; i += 2) {
+  for (let i = 0; i < 9; i += 2) {
     output.push(
       <div key={i} style={{ display: 'flex', flexDirection: 'column' }}>
-        {get_socket?.length >= i && (
+        {i <= 9 && get_socket?.length > 0 && (
           <div
             style={{
               display: 'flex',
@@ -171,7 +132,7 @@ function DataModal({ onClose, isOpen, ip }) {
             </div>
           </div>
         )}
-        {get_socket?.length >= i + 2 && (
+        {i + 2 <= 9 && get_socket?.length > 0 && (
           <div
             style={{
               display: 'flex',
@@ -228,10 +189,11 @@ function DataModal({ onClose, isOpen, ip }) {
       </div>
     );
   }
-
   useEffect(() => {
     fetchData();
     high_availability();
+    session_information();
+    general_information();
   }, []);
   const payload = {
     ip,
@@ -241,7 +203,6 @@ function DataModal({ onClose, isOpen, ip }) {
     try {
       setIsLoading(true);
       const { data } = await InventoriesAPI.get_interface_details(payload);
-      console.log('🚀 ~ file: DataModal.js:200 ~ fetchData ~ data:', data);
       setGet_socket(data?.data);
       setIsLoading(false);
       return data;
@@ -254,12 +215,35 @@ function DataModal({ onClose, isOpen, ip }) {
     try {
       setIsLoadingavail(true);
       const { data } = await InventoriesAPI.high_availability(payload);
-      console.log('🚀 ~ file: DataModal.js:200 ~ fetchData ~ data:', data);
       setAvailability(data?.data);
       setIsLoadingavail(false);
       return data;
     } catch (error) {
       setIsLoadingavail(false);
+      console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
+    }
+  };
+  const session_information = async () => {
+    try {
+      setIsLoadingsession(true);
+      const { data } = await InventoriesAPI.session_information(payload);
+      setSessiondata(data?.data);
+      setIsLoadingsession(false);
+      return data;
+    } catch (error) {
+      setIsLoadingsession(false);
+      console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
+    }
+  };
+  const general_information = async () => {
+    try {
+      setIsLoadinggen(true);
+      const { data } = await InventoriesAPI.general_information(payload);
+      setGeneral(data?.data);
+      setIsLoadinggen(false);
+      return data;
+    } catch (error) {
+      setIsLoadinggen(false);
       console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
     }
   };
@@ -269,301 +253,1075 @@ function DataModal({ onClose, isOpen, ip }) {
       aria-label={`Alert modal`}
       aria-labelledby="alert-modal-header-label"
       isOpen={isOpen}
-      variant="small"
-      title="Availability"
-      ouiaId="alert-modal"
+      // variant="small"
       onClose={onClose}
-      actions={[
-        <Button
-          key="confirm"
-          variant="primary"
-          onClick={() => {
-            fetchData();
-            high_availability();
-          }}
-        >
-          Refresh
-        </Button>,
-        <Button key="cancel" variant="link" onClick={onClose}>
-          Close
-        </Button>,
-      ]}
     >
       <div>
-        <a href={`https://${ip}`} target="_blank">
-          {ip}
-        </a>
-        <h4 style={{ fontWeight: 'bold' }}>WLAN Interface</h4>
-        <div style={{ display: 'flex', margin: '10px 0' }}>
-          {isLoading ? <Spinner size="lg" /> : output}
-        </div>
-        <hr />
-        <h4 style={{ fontWeight: 'bold', margin: '10px 0' }}>Availability</h4>
-        {isLoadingavail ? (
-          <Spinner size="lg" />
-        ) : (
-          <>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                Mode
-              </p>
+        <Grid hasGutter span={6}>
+          <GridItem>
+            <Card>
+              <CardHeader style={{ justifyContent: 'space-between' }}>
+                <CardTitle>Availability</CardTitle>
+                <div>
+                  <SyncAltIcon
+                    onClick={high_availability}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </div>
+              </CardHeader>
+              <CardBody>
+                {isLoadingavail ? (
+                  <Spinner size="lg" />
+                ) : (
+                  <>
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            Mode
+                          </td>
+                          <td></td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'local-info'
+                              ]?.mode
+                            }
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            local
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'local-info'
+                                ]?.['state'] == 'active'
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'local-info'
+                              ]?.['state']
+                            }
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            peer(
+                            {
+                              availability?.response?.result?.group?.[
+                                'peer-info'
+                              ]?.['ha1-ipaddr']
+                            }
+                            )
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'peer-info'
+                                ]?.state == 'active'
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'peer-info'
+                              ]?.state
+                            }
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            running config
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'running-sync'
+                                ] == 'not synchronized'
+                                  ? reddiv
+                                  : greendiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'running-sync'
+                              ]
+                            }
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            app version
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'local-info'
+                                ]?.['app-compat'] == 'Match'
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'local-info'
+                              ]?.['app-compat']
+                            }
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            threat version
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'local-info'
+                                ]?.['threat-compat'] == 'Match'
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'local-info'
+                              ]?.['threat-compat']
+                            }
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            antivirus version
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'local-info'
+                                ]?.['av-compat'] == 'Match'
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'local-info'
+                              ]?.['av-compat']
+                            }
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            PAN-OS version {/* need to compair for build  */}
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'local-info'
+                                ]?.['build-rel'] ==
+                                availability?.response?.result?.group?.[
+                                  'peer-info'
+                                ]?.['build-rel']
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {availability?.response?.result?.group?.[
+                              'local-info'
+                            ]?.['build-rel'] ==
+                            availability?.response?.result?.group?.[
+                              'peer-info'
+                            ]?.['build-rel']
+                              ? 'Match'
+                              : 'Mismatch'}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            Golbalprotect version
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'local-info'
+                                ]?.['gpclient-compat'] == 'Match'
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <p
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'local-info'
+                              ]?.['gpclient-compat']
+                            }
+                          </p>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            HA1
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'peer-info'
+                                ]?.['conn-ha1']?.['conn-status'] == 'up'
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'peer-info'
+                              ]?.['conn-ha1']?.['conn-status']
+                            }
+                          </td>
+                        </tr>
 
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {availability?.response?.result?.group?.['local-info']?.mode}
-              </p>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            HA2
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'peer-info'
+                                ]?.['conn-ha2']?.['conn-status'] == 'up'
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'peer-info'
+                              ]?.['conn-ha2']?.['conn-status']
+                            }
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              textTransform: 'capitalize',
+                              paddingRight: '20px',
+                            }}
+                          >
+                            plugin vm_series
+                          </td>
+                          <td>
+                            <div
+                              style={
+                                availability?.response?.result?.group?.[
+                                  'local-info'
+                                ]?.['vm-license-compat'] == 'Match'
+                                  ? greendiv
+                                  : reddiv
+                              }
+                            ></div>
+                          </td>
+                          <td
+                            style={{
+                              textTransform: 'capitalize',
+                              width: '150px',
+                              paddingLeft: '20px',
+                            }}
+                          >
+                            {
+                              availability?.response?.result?.group?.[
+                                'local-info'
+                              ]?.['vm-license-compat']
+                            }
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </>
+                )}
+              </CardBody>
+            </Card>
+            <Card style={{ marginTop: 20 }}>
+              <CardHeader style={{ justifyContent: 'space-between' }}>
+                <CardTitle>Interface</CardTitle>
+                <div>
+                  <SyncAltIcon
+                    onClick={fetchData}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </div>
+              </CardHeader>
+              <CardBody>
+                <div style={{ display: 'flex', margin: '10px 0' }}>
+                  {isLoading ? <Spinner size="lg" /> : output}
+                </div>
+              </CardBody>
+            </Card>
+            <Card style={{ marginTop: 20 }}>
+              <CardHeader style={{ justifyContent: 'space-between' }}>
+                <CardTitle>System Resources</CardTitle>
+                <div>
+                  <SyncAltIcon
+                    onClick={session_information}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </div>
+              </CardHeader>
+              <CardBody>
+                {isLoadingsession ? (
+                  <Spinner size="lg" />
+                ) : (
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td>Session Count</td>
+                        <td style={{ paddingLeft: 20 }}>
+                          <p>{`${sessiondata?.response?.result?.['num-active']} / ${sessiondata?.response?.result?.['num-max']}`}</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                )}
+              </CardBody>
+            </Card>
+          </GridItem>
+          <GridItem>
+            <div>
+              <Card>
+                <CardHeader style={{ justifyContent: 'space-between' }}>
+                  <CardTitle>General Information</CardTitle>
+                  <div>
+                    <SyncAltIcon
+                      onClick={general_information}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </div>
+                </CardHeader>
+                <CardBody>
+                  {isLoadinggen ? (
+                    <Spinner size="lg" />
+                  ) : (
+                    <div
+                      id="ext-comp-1026"
+                      className=" x-column-layout-ct"
+                      style={{
+                        height: 'auto',
+                        display: 'block',
+                        width: '541px',
+                      }}
+                    >
+                      <div
+                        className="x-column-inner"
+                        id="ext-gen183"
+                        style={{ width: '541px' }}
+                      >
+                        <div
+                          id="ext-comp-1027"
+                          className=" x-form-label-left x-column"
+                          style={{ display: 'block', width: '541px' }}
+                        >
+                          <div
+                            id="ext-comp-1028"
+                            itemId="$"
+                            className=" dashboard_widget"
+                          >
+                            <table>
+                              <tbody>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Device Name
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system
+                                        ?.hostname
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    MGT IP Address
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'ip-address'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    MGT Netmask
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system
+                                        ?.netmask
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    MGT Default Gateway
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'default-gateway'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    MGT IPv6 Address
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'ipv6-address'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    MGT IPv6 Link Local Address
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'ipv6-link-local-address'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    MGT IPv6 Default Gateway
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'ipv6-default-gateway'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    MGT MAC Address
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'mac-address'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Model
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system
+                                        ?.model
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Serial #
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system
+                                        ?.serial
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    CPU ID
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'vm-cpuid'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    UUID
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'vm-uuid'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    VM License
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'vm-license'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    VM Mode
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'vm-mode'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Software Version
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'sw-version'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    GlobalProtect Agent
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'global-protect-client-package-version'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Application Version
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'app-version'
+                                      ]
+                                    }
+                                    (
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'app-release-date'
+                                      ]
+                                    }
+                                    )
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Threat Version
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'threat-version'
+                                      ]
+                                    }
+                                    (
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'threat-release-date'
+                                      ]
+                                    }
+                                    )
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Antivirus Version
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'av-version'
+                                      ]
+                                    }{' '}
+                                    (
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'av-release-date'
+                                      ]
+                                    }
+                                    )
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    URL Filtering Version
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'url-filtering-version'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    GlobalProtect Clientless VPN Version
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system?.[
+                                        'global-protect-clientless-vpn-version'
+                                      ]
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Time
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system
+                                        ?.time
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Uptime
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system
+                                        ?.uptime
+                                    }
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td
+                                    className="label"
+                                    style={{
+                                      width: '150px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    Plugin VM-Series
+                                  </td>
+                                  <td
+                                    className="data"
+                                    style={{ paddingLeft: '10px' }}
+                                  >
+                                    {
+                                      general?.response?.result?.system
+                                        ?.plugin_versions?.entry?.pkginfo
+                                    }
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <div className="x-clear" id="ext-gen184"></div>
+                      </div>
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
             </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                local
-              </p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'state'
-                  ] == 'active'
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'state'
-                  ]
-                }
-              </p>
-            </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                peer(
-                {
-                  availability?.response?.result?.group?.['peer-info']?.[
-                    'ha1-ipaddr'
-                  ]
-                }
-                )
-              </p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['peer-info']?.state ==
-                  'active'
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {availability?.response?.result?.group?.['peer-info']?.state}
-              </p>
-            </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                running config
-              </p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['running-sync'] ==
-                  'not synchronized'
-                    ? reddiv
-                    : greendiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {availability?.response?.result?.group?.['running-sync']}
-              </p>
-            </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                app version
-              </p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'app-compat'
-                  ] == 'Match'
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'app-compat'
-                  ]
-                }
-              </p>
-            </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                threat version
-              </p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'threat-compat'
-                  ] == 'Match'
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'threat-compat'
-                  ]
-                }
-              </p>
-            </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                antivirus version
-              </p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'av-compat'
-                  ] == 'Match'
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'av-compat'
-                  ]
-                }
-              </p>
-            </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                PAN-OS version {/* need to compair for build  */}
-              </p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'build-rel'
-                  ] ==
-                  availability?.response?.result?.group?.['peer-info']?.[
-                    'build-rel'
-                  ]
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {availability?.response?.result?.group?.['local-info']?.[
-                  'build-rel'
-                ] ==
-                availability?.response?.result?.group?.['peer-info']?.[
-                  'build-rel'
-                ]
-                  ? 'Match'
-                  : 'Mismatch'}
-              </p>
-            </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                Golbalprotect version
-              </p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'gpclient-compat'
-                  ] == 'Match'
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'gpclient-compat'
-                  ]
-                }
-              </p>
-            </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>HA1</p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['peer-info']?.[
-                    'conn-ha1'
-                  ]?.['conn-status'] == 'up'
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {
-                  availability?.response?.result?.group?.['peer-info']?.[
-                    'conn-ha1'
-                  ]?.['conn-status']
-                }
-              </p>
-            </div>
-
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>HA2</p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['peer-info']?.[
-                    'conn-ha2'
-                  ]?.['conn-status'] == 'up'
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {
-                  availability?.response?.result?.group?.['peer-info']?.[
-                    'conn-ha2'
-                  ]?.['conn-status']
-                }
-              </p>
-            </div>
-            <div style={flexContainerStyle}>
-              <p style={{ textTransform: 'capitalize', width: '200px' }}>
-                plugin vm_series
-              </p>
-              <div
-                style={
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'vm-license-compat'
-                  ] == 'Match'
-                    ? greendiv
-                    : reddiv
-                }
-              />
-              <p style={{ textTransform: 'capitalize', width: '150px' }}>
-                {
-                  availability?.response?.result?.group?.['local-info']?.[
-                    'vm-license-compat'
-                  ]
-                }
-              </p>
-            </div>
-          </>
-          // mode?.map((item) => (
-          //   <div style={flexContainerStyle}>
-          //     <p style={{ textTransform: 'capitalize', width: '200px' }}>
-          //       {item?.mode}
-          //     </p>
-          //     <div
-          //       style={
-          //         item?.status == false && item?.status_text == 'passive'
-          //           ? yellowdiv
-          //           : (item?.status == true && item?.status_text == 'active') ||
-          //             item?.status == true
-          //           ? greendiv
-          //           : reddiv
-          //       }
-          //     />
-          //     <p style={{ textTransform: 'capitalize', width: '150px' }}>
-          //       {item?.status_text}
-          //     </p>
-          //   </div>
-          // ))
-        )}
+          </GridItem>
+        </Grid>
       </div>
     </Modal>
   );

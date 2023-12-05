@@ -3,6 +3,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   DownloadIcon,
+  FileIcon,
   SyncAltIcon,
 } from '@patternfly/react-icons';
 import {
@@ -18,6 +19,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams, useHistory } from 'react-router-dom';
 import DataModal from 'screens/Firewalls/DataModal';
 import styled, { keyframes } from 'styled-components';
+import Xmlmodal from './Xmlmodal';
 
 function FirewallResult() {
   const history = useHistory();
@@ -25,11 +27,12 @@ function FirewallResult() {
   const pageSize = 10;
   const location = useLocation();
   const data = location?.state;
-  console.log('🚀 ~ file: FirewallResult.js:27 ~ FirewallResult ~ data:', data);
+  console.log('🚀 ~ file: FirewallResult.js:27 ~ FirewallResult ~ data:', id, data);
   const [newrecord, setNewrecord] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [datamodal, setDatamodal] = useState(false);
   const [ip_address, setIp_address] = useState();
+  const [xmlmodal, setXmlmodal] = useState(false);
   const closeModal = () => {
     setDatamodal(false);
   };
@@ -155,31 +158,27 @@ function FirewallResult() {
       // }
     }
   }, []);
-  const data1 = {
-    device_group1: {
-      '10.215.18.83': 'updated',
-      '10.215.18.84': 'updated',
-      '10.215.18.85': 'installing',
-    },
-    'No Device Group': {
-      '10.215.18.183': 'waiting',
-    },
+  const closeDataModal = () => {
+    setXmlmodal(false);
   };
   const columnNames = {
     name: 'Group',
     branches: 'IP Address',
     prs: 'Status',
-    device_name:'Name'
+    device_name: 'Name',
   };
   const repositories = [];
   for (const group in newrecord) {
     for (const ip in newrecord[group]) {
-      console.log("🚀 ~ file: FirewallResult.js:175 ~ newrecord:", newrecord[group][ip])
+      console.log(
+        '🚀 ~ file: FirewallResult.js:175 ~ newrecord:',
+        newrecord[group][ip]
+      );
       repositories.push({
         name: group,
         branches: ip,
         prs: newrecord[group][ip]?.status,
-        device_name:newrecord[group][ip]?.name,
+        device_name: newrecord[group][ip]?.name,
       });
     }
   }
@@ -197,8 +196,13 @@ function FirewallResult() {
   return (
     <div>
       {datamodal && (
-        <DataModal isOpen={datamodal} onClose={closeModal} ip={ip_address}/>
+        <DataModal
+          isOpen={datamodal}
+          onClose={closeModal}
+          ip={ip_address}
+        />
       )}
+      {xmlmodal && <Xmlmodal isOpen={xmlmodal} onClose={closeDataModal} job_id={id} ip_address={ip_address}/>}
       <TableComposable isTreeTable aria-label="Tree table">
         <Thead>
           <Tr>
@@ -224,6 +228,7 @@ function FirewallResult() {
                 </a>
               </Td>
               <Td dataLabel={columnNames.prs}>
+                <div style={{display:'flex',alignItems:'center'}}>
                 {repo?.prs == 'updated' && (
                   <Label
                     variant="outline"
@@ -319,6 +324,13 @@ function FirewallResult() {
                     {repo?.prs}
                   </Label>
                 )}
+                <FileIcon
+                  onClick={() => {
+                    setXmlmodal(true);
+                    setIp_address(repo?.branches);
+                  }}
+                />
+                </div>
               </Td>
             </Tr>
           ))}

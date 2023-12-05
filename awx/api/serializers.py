@@ -6035,13 +6035,13 @@ class HighAvailabilitySerializer(serializers.Serializer):
 
 
 class GeneralInformationSerializer(serializers.Serializer):
-    host = serializers.CharField()
-    access_token = serializers.CharField()
+    ip = serializers.CharField()
+    api_key = serializers.CharField()
 
 
 class SessionInformationSerializer(serializers.Serializer):
-    host = serializers.CharField()
-    access_token = serializers.CharField()
+    ip = serializers.CharField()
+    api_key = serializers.CharField()
 
 
 class FirewallStatusInputSerializer(serializers.Serializer):

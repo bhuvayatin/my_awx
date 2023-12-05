@@ -21,6 +21,10 @@ class Inventories extends InstanceGroupsMixin(Base) {
     this.disassociateInventory = this.disassociateInventory.bind(this);
     this.get_interface_details = this.get_interface_details.bind(this);
     this.high_availability = this.high_availability.bind(this);
+    this.general_information = this.general_information.bind(this);
+    this.session_information = this.session_information.bind(this);
+    this.get_log = this.get_log.bind(this);
+
   }
 
   readHostVersion(data) {
@@ -42,6 +46,16 @@ class Inventories extends InstanceGroupsMixin(Base) {
   }
   get_interface_details(data) {
     return this.http.post(`${this.baseUrl}get/interface_details/`, data);
+  }
+  general_information(data) {
+    return this.http.post(`${this.baseUrl}get/general_information/`, data);
+  }
+  get_log(data){
+     return this.http.post(`${this.baseUrl}get/firewall_status_logs/`, data);
+  }
+  
+  session_information(data) {
+    return this.http.post(`${this.baseUrl}get/session_information/`, data);
   }
   high_availability(data) {
     return this.http.post(`${this.baseUrl}get/high_availability/`, data);

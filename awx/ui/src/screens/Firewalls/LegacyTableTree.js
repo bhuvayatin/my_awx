@@ -40,6 +40,9 @@ import { InventoriesAPI, JobTemplatesAPI } from 'api';
 import styled from 'styled-components';
 import ModalAlert from './ModalAlert';
 import DataModal from './DataModal';
+import AceEditor from 'react-ace';
+
+import 'ace-builds/src-noconflict/mode-xml';
 
 const ComposableTableTree = () => {
   const columnNames = {
@@ -1003,7 +1006,7 @@ const ComposableTableTree = () => {
       // hapair: child['HA_Group_ID'],
       version: child['sw-version'],
       Threat_Version: child['threat-version'],
-      Hapair_Status: child['peer_info_state']['group']['peer-info']['state'],
+      Hapair_Status: child['peer_info_state']['group']['local-info']['state'],
     }));
     return {
       name: parent['name'] == '' ? 'No Device Group' : parent['name'],
@@ -1123,9 +1126,30 @@ const ComposableTableTree = () => {
       );
     }
   };
+  var xmlContent = `
+<root>
+  <element attribute="value">Content</element>
+  <!-- More XML content here -->
+</root>
+`;
+useEffect(()=>{
+  fetchXmlContent()
+},[])
+const fetchXmlContent = async () => {
+  const response = await fetch('/home/yatin/Downloads/xmldata.xml');
+  const xmlText = await response.text();
+
+  // Parse the XML string using DOMParser
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+  const formattedXml = new XMLSerializer().serializeToString(xmlDoc);
+  console.log("🚀 ~ file: LegacyTableTree.js:1146 ~ fetchXmlContent ~ formattedXml:", formattedXml)
+};
 
   const closeModal = () => {
     setIserror(false);
+  };
+  const closeDataModal = () => {
     setDatamodal(false);
   };
   const handleCheckboxChange = (isChecked) => {
@@ -1151,7 +1175,11 @@ const ComposableTableTree = () => {
         </ModalAlert>
       )}
       {datamodal && (
-        <DataModal isOpen={datamodal} onClose={closeModal} ip={ip_address} />
+        <DataModal
+          isOpen={datamodal}
+          onClose={closeDataModal}
+          ip={ip_address}
+        />
       )}
       <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
         <div>
@@ -1366,6 +1394,13 @@ const ComposableTableTree = () => {
       >
         <Button onClick={handleSubmit}>Submit</Button>
       </div>
+      <AceEditor
+        mode="xml"
+        readOnly={true}
+        value={xmlContent}
+        editorProps={{ $blockScrolling: true }}
+        style={{ width: '100%', height: '500px' }}
+      />
     </>
   );
 };
