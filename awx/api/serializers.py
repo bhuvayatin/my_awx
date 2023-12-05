@@ -99,6 +99,7 @@ from awx.main.models import (
     CLOUD_INVENTORY_SOURCES,
 )
 from awx.main.models.base import VERBOSITY_CHOICES, NEW_JOB_TYPE_CHOICES
+from awx.main.models import UpdateFirewallBackupFile
 from awx.main.models.rbac import get_roles_on_resource, role_summary_fields_generator
 from awx.main.fields import ImplicitRoleField
 from awx.main.utils import (
@@ -6053,3 +6054,9 @@ class FirewallStatusLogsSerializer(serializers.Serializer):
     ip_address = serializers.CharField()
     job_id = serializers.IntegerField()
     text = serializers.CharField()
+
+
+class FirewallBackupFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UpdateFirewallBackupFile
+        fields = '__all__'

@@ -272,7 +272,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         return True
 
     async def backup_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs
+        from awx.main.models import UpdateFirewallStatusLogs, UpdateFirewallBackupFile
         firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
                     job_id=job_id,
                     ip_address=ip['ip'],
@@ -320,11 +320,10 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             # Create the XML tree
             tree = ET.ElementTree(root)
 
-            # Write the tree to an XML string
             xml_content = ET.tostring(root, encoding="utf-8", method="xml")
 
             # Write the tree to an XML file
-            # tree.write(filename)
+            tree.write(filename)
 
             # with open(filename, 'wb') as file:
             #     file.write(content)
@@ -336,10 +335,23 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         # Export and save the configuration
         xml_content1 = export_and_save(params_config, file1)
 
+        firewall_backup_file = await sync_to_async(UpdateFirewallBackupFile.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    file_name=file1,
+                    xml_content=xml_content1
+        )
+
         file2 = f'backup_file/{config_name}_device_state_backup.xml'
         # Export and save the device state
         xml_content2 = export_and_save(params_device_state, file2)
-        # await self.send(text_data=json.dumps({'file1':xml_content1.decode("utf-8"), 'file2':xml_content2.decode("utf-8")}))
+
+        firewall_backup_file = await sync_to_async(UpdateFirewallBackupFile.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    file_name=file2,
+                    xml_content=xml_content2
+        )
         await asyncio.sleep(10)
         firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
                     job_id=job_id,
@@ -423,8 +435,14 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                 )
         return True
 
-    async def updated_firewalls(self, ip):
-        pass
+    async def updated_firewalls(self, ip, job_id):
+        from awx.main.models import UpdateFirewallStatusLogs
+        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip['ip'],
+                    text="ip_addtess updated successfully"
+                )
+        return True
     
     async def solar_wind_unmute_firewalls(self, ip, job_id):
         from awx.main.models import UpdateFirewallStatusLogs

@@ -24,7 +24,7 @@ from awx.main.models.inventory import (  # noqa
     InventoryUpdate,
     SmartInventoryMembership,
 )
-from awx.main.models.firewall import UpdateFirewallStatus, UpdateFirewallStatusLogs
+from awx.main.models.firewall import UpdateFirewallStatus, UpdateFirewallStatusLogs, UpdateFirewallBackupFile
 from awx.main.models.jobs import (  # noqa
     Job,
     JobHostSummary,

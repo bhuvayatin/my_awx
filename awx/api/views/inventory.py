@@ -27,7 +27,7 @@ from rest_framework import serializers
 
 # AWX
 from awx.main.models import ActivityStream, Inventory, JobTemplate, Role, User, InstanceGroup, InventoryUpdateEvent, InventoryUpdate
-from awx.main.models import UpdateFirewallStatusLogs
+from awx.main.models import UpdateFirewallStatusLogs, UpdateFirewallBackupFile
 
 from awx.api.generics import (
     ListCreateAPIView,
@@ -57,7 +57,8 @@ from awx.api.serializers import (
     GeneralInformationSerializer,
     SessionInformationSerializer,
     FirewallStatusInputSerializer,
-    FirewallStatusLogsSerializer
+    FirewallStatusLogsSerializer,
+    FirewallBackupFileSerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -863,6 +864,22 @@ class FirewallStatusLogs(APIView):
 
             firewall_logs = UpdateFirewallStatusLogs.objects.filter(job_id=job_id, ip_address=ip_address)
             response_serializer = FirewallStatusLogsSerializer(firewall_logs, many=True)
+            return Response({"data": response_serializer.data})
+        else:
+            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FirewallBackupFile(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = FirewallStatusInputSerializer(data=request.data)
+        if serializer.is_valid():
+            ip_address = serializer.validated_data.get('ip_address', None)
+            job_id = serializer.validated_data.get('job_id', None)
+
+            firewall_backup_file = UpdateFirewallBackupFile.objects.filter(job_id=job_id, ip_address=ip_address)
+            response_serializer = FirewallBackupFileSerializer(firewall_backup_file, many=True)
             return Response({"data": response_serializer.data})
         else:
             return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

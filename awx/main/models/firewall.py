@@ -48,3 +48,16 @@ class UpdateFirewallStatusLogs(models.Model):
     text = models.CharField(max_length=250, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class UpdateFirewallBackupFile(models.Model):
+    job_id = models.PositiveIntegerField(
+        null=True,
+        default=None,
+        db_index=True,
+    )
+    ip_address = models.CharField(max_length=256)
+    file_name = models.CharField(max_length=250, null=True)
+    xml_content = models.TextField(null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
