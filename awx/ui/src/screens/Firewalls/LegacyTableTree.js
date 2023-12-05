@@ -40,7 +40,6 @@ import { InventoriesAPI, JobTemplatesAPI } from 'api';
 import styled from 'styled-components';
 import ModalAlert from './ModalAlert';
 import DataModal from './DataModal';
-import AceEditor from 'react-ace';
 
 import 'ace-builds/src-noconflict/mode-xml';
 
@@ -1126,12 +1125,6 @@ const ComposableTableTree = () => {
       );
     }
   };
-  var xmlContent = `
-<root>
-  <element attribute="value">Content</element>
-  <!-- More XML content here -->
-</root>
-`;
 useEffect(()=>{
   fetchXmlContent()
 },[])
@@ -1393,15 +1386,7 @@ const fetchXmlContent = async () => {
         }}
       >
         <Button onClick={handleSubmit}>Submit</Button>
-      </div>
-      <AceEditor
-        mode="xml"
-        readOnly={true}
-        value={xmlContent}
-        editorProps={{ $blockScrolling: true }}
-        style={{ width: '100%', height: '500px' }}
-      />
-    </>
+      </div>    </>
   );
 };
 
