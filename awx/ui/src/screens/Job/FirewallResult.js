@@ -27,11 +27,6 @@ function FirewallResult() {
   const pageSize = 10;
   const location = useLocation();
   const data = location?.state;
-  console.log(
-    '🚀 ~ file: FirewallResult.js:27 ~ FirewallResult ~ data:',
-    id,
-    data
-  );
   const [newrecord, setNewrecord] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [datamodal, setDatamodal] = useState(false);
@@ -117,14 +112,9 @@ function FirewallResult() {
         // setLastMessage(JSON.parse(e.data));
 
         const ipstatus = JSON.parse(e.data);
-        console.log(
-          '🚀 ~ file: FirewallResult.js:39 ~ useEffect ~ ipstatus:',
-          ipstatus
-        );
         // const updatedChilddata = getdata.map((group) => {
         const updatedFirewalls = data?.data?.map((firewall) => {
-          const ip = firewall;
-          //   console.log("🚀 ~ file: FirewallResult.js:53 ~ updatedFirewalls ~ ip:", ip)
+          const ip = firewall;//   console.log("🚀 ~ file: FirewallResult.js:53 ~ updatedFirewalls ~ ip:", ip)
           const newStatus = ipstatus[ip];
           //   console.log("🚀 ~ file: FirewallResult.js:55 ~ updatedFirewalls ~ newStatus:", newStatus)
           return { firewall, status: newStatus };
@@ -133,10 +123,6 @@ function FirewallResult() {
         //   return { ...group, Firewalls: updatedFirewalls };
         // });
         setNewrecord(ipstatus);
-        console.log(
-          '🚀 ~ file: FirewallResult.js:54 ~ updatedChilddata ~ updatedChilddata:',
-          updatedFirewalls
-        );
         // console.log('updatedChilddata',updatedChilddata);
         // setGetdata(updatedChilddata);
       };
@@ -175,10 +161,6 @@ function FirewallResult() {
   const repositories = [];
   for (const group in newrecord) {
     for (const ip in newrecord[group]) {
-      console.log(
-        '🚀 ~ file: FirewallResult.js:175 ~ newrecord:',
-        newrecord[group][ip]
-      );
       repositories.push({
         name: group,
         branches: ip,
@@ -343,6 +325,7 @@ function FirewallResult() {
                       setIp_address(repo?.branches);
                       setIslogmodal(true);
                     }}
+                    style={{margin:'0 5px'}}
                   />
                   <SyncAltIcon
                     onClick={() => {
