@@ -853,7 +853,7 @@ class SessionInformation(APIView):
 
 
 class FirewallStatusLogs(APIView):
-    permission_classes = (AllowAny)
+    # permission_classes = (AllowAny)
     
     def post(self, request, *args, **kwargs):
         serializer = FirewallStatusInputSerializer(data=request.data)
@@ -863,6 +863,6 @@ class FirewallStatusLogs(APIView):
 
             firewall_logs = UpdateFirewallStatusLogs.objects.filter(job_id=job_id, ip_address=ip_address)
             response_serializer = FirewallStatusLogsSerializer(firewall_logs, many=True)
-            return Response({"data": firewall_logs})
+            return Response({"data": response_serializer.data})
         else:
             return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
