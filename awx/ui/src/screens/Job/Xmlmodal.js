@@ -22,7 +22,7 @@ function Xmlmodal({ isOpen, onClose, job_id, ip_address }) {
   const get_log = async () => {
     var payload = {
       ip_address,
-      job_id,
+      job_id:parseInt(job_id),
     };
     try {
       const { data } = await InventoriesAPI.get_log(payload);
