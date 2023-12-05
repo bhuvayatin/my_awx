@@ -27,12 +27,17 @@ function FirewallResult() {
   const pageSize = 10;
   const location = useLocation();
   const data = location?.state;
-  console.log('🚀 ~ file: FirewallResult.js:27 ~ FirewallResult ~ data:', id, data);
+  console.log(
+    '🚀 ~ file: FirewallResult.js:27 ~ FirewallResult ~ data:',
+    id,
+    data
+  );
   const [newrecord, setNewrecord] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [datamodal, setDatamodal] = useState(false);
   const [ip_address, setIp_address] = useState();
   const [xmlmodal, setXmlmodal] = useState(false);
+  const [islogmodal, setIslogmodal] = useState(false);
   const closeModal = () => {
     setDatamodal(false);
   };
@@ -196,13 +201,17 @@ function FirewallResult() {
   return (
     <div>
       {datamodal && (
-        <DataModal
-          isOpen={datamodal}
-          onClose={closeModal}
-          ip={ip_address}
+        <DataModal isOpen={datamodal} onClose={closeModal} ip={ip_address} />
+      )}
+      {xmlmodal && (
+        <Xmlmodal
+          isOpen={xmlmodal}
+          onClose={closeDataModal}
+          job_id={id}
+          ip_address={ip_address}
+          islogmodal={islogmodal}
         />
       )}
-      {xmlmodal && <Xmlmodal isOpen={xmlmodal} onClose={closeDataModal} job_id={id} ip_address={ip_address}/>}
       <TableComposable isTreeTable aria-label="Tree table">
         <Thead>
           <Tr>
@@ -228,108 +237,120 @@ function FirewallResult() {
                 </a>
               </Td>
               <Td dataLabel={columnNames.prs}>
-                <div style={{display:'flex',alignItems:'center'}}>
-                {repo?.prs == 'updated' && (
-                  <Label
-                    variant="outline"
-                    color={'green'}
-                    icon={<CheckCircleIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'waiting' && (
-                  <Label variant="outline" color={'gray'} icon={<ClockIcon />}>
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'solar_wind_mute' && (
-                  <Label
-                    variant="outline"
-                    color={'blue'}
-                    icon={<RunningIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'downloading' && (
-                  <Label
-                    variant="outline"
-                    color={'purple'}
-                    icon={<DownloadIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'backup' && (
-                  <Label
-                    variant="outline"
-                    color={'blue'}
-                    icon={<RunningIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'installing' && (
-                  <Label
-                    variant="outline"
-                    color={'blue'}
-                    icon={<RunningIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'rebooting' && (
-                  <Label
-                    variant="outline"
-                    color={'blue'}
-                    icon={<RunningIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'commit' && (
-                  <Label
-                    variant="outline"
-                    color={'blue'}
-                    icon={<RunningIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'ping' && (
-                  <Label
-                    variant="outline"
-                    color={'blue'}
-                    icon={<RunningIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'login' && (
-                  <Label
-                    variant="outline"
-                    color={'blue'}
-                    icon={<RunningIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                {repo?.prs == 'solar_wind_unmute' && (
-                  <Label
-                    variant="outline"
-                    color={'blue'}
-                    icon={<RunningIcon />}
-                  >
-                    {repo?.prs}
-                  </Label>
-                )}
-                <FileIcon
-                  onClick={() => {
-                    setXmlmodal(true);
-                    setIp_address(repo?.branches);
-                  }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {repo?.prs == 'updated' && (
+                    <Label
+                      variant="outline"
+                      color={'green'}
+                      icon={<CheckCircleIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'waiting' && (
+                    <Label
+                      variant="outline"
+                      color={'gray'}
+                      icon={<ClockIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'solar_wind_mute' && (
+                    <Label
+                      variant="outline"
+                      color={'blue'}
+                      icon={<RunningIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'downloading' && (
+                    <Label
+                      variant="outline"
+                      color={'purple'}
+                      icon={<DownloadIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'backup' && (
+                    <Label
+                      variant="outline"
+                      color={'blue'}
+                      icon={<RunningIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'installing' && (
+                    <Label
+                      variant="outline"
+                      color={'blue'}
+                      icon={<RunningIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'rebooting' && (
+                    <Label
+                      variant="outline"
+                      color={'blue'}
+                      icon={<RunningIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'commit' && (
+                    <Label
+                      variant="outline"
+                      color={'blue'}
+                      icon={<RunningIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'ping' && (
+                    <Label
+                      variant="outline"
+                      color={'blue'}
+                      icon={<RunningIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'login' && (
+                    <Label
+                      variant="outline"
+                      color={'blue'}
+                      icon={<RunningIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'solar_wind_unmute' && (
+                    <Label
+                      variant="outline"
+                      color={'blue'}
+                      icon={<RunningIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  <FileIcon
+                    onClick={() => {
+                      setXmlmodal(true);
+                      setIp_address(repo?.branches);
+                      setIslogmodal(true);
+                    }}
+                  />
+                  <SyncAltIcon
+                    onClick={() => {
+                      setXmlmodal(true);
+                      setIp_address(repo?.branches);
+                      setIslogmodal(false);
+                    }}
+                  />
                 </div>
               </Td>
             </Tr>

@@ -24,6 +24,7 @@ class Inventories extends InstanceGroupsMixin(Base) {
     this.general_information = this.general_information.bind(this);
     this.session_information = this.session_information.bind(this);
     this.get_log = this.get_log.bind(this);
+    this.get_xml = this.get_xml.bind(this);
 
   }
 
@@ -53,7 +54,9 @@ class Inventories extends InstanceGroupsMixin(Base) {
   get_log(data){
      return this.http.post(`${this.baseUrl}get/firewall_status_logs/`, data);
   }
-  
+  get_xml(data){
+    return this.http.post(`${this.baseUrl}get/firewall_backup_file/`, data);
+ }
   session_information(data) {
     return this.http.post(`${this.baseUrl}get/session_information/`, data);
   }
