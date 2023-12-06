@@ -4,7 +4,7 @@ import time
 import hmac
 import asyncio
 import redis
-
+import requests
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.utils.encoding import force_bytes
@@ -241,6 +241,53 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         pass
     
+    # Function to send the export request and save the response
+    async def export_and_save(self, params, filename, job_id, ip):
+        from awx.main.models import UpdateFirewallBackupFile
+
+        # Define the API endpoint
+        url = f'https://{ip}/api/'
+        try:
+            response = requests.get(url, params=params, verify=False, timeout=10)
+            if response.status_code == 200:
+                firewall_backup_file = await sync_to_async(UpdateFirewallBackupFile.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip,
+                    file_name=filename,
+                    xml_content=response.content
+                )
+                with open(filename, 'wb') as file:
+                    file.write(response.content)
+                print(f'Successfully saved to {filename}')
+            else:
+                print(f'Failed to save to {filename}')
+        except Exception as e:
+            print(f'Failed to save to {filename}')
+        
+        # For Testing
+        finally:
+            import xml.etree.ElementTree as ET
+            root = ET.Element("root")
+            # Create child elements
+            child1 = ET.SubElement(root, "child1")
+            child2 = ET.SubElement(root, "child2")
+            # Add some data to the child elements
+            child1.text = "Data for Child 1"
+            child2.text = "Data for Child 2"
+            # Create the XML tree
+            tree = ET.ElementTree(root)
+
+            xml_content = ET.tostring(root, encoding="utf-8", method="xml")
+
+            # Write the tree to an XML file
+            tree.write(filename)
+            firewall_backup_file = await sync_to_async(UpdateFirewallBackupFile.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip,
+                    file_name=filename,
+                    xml_content=xml_content
+                )
+
     async def create_firewall_status_log(self, job_id, ip, text):
         from awx.main.models import UpdateFirewallStatusLogs
         firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
@@ -262,18 +309,8 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         return True
 
     async def backup_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallBackupFile
         await self.create_firewall_status_log(job_id, ip, "backup started")
-
-        # Replace with your firewall details
-        hostname = '10.215.18.85'
         api_key = 'LUFRPT1OcGRFZnlUZkNTdTNibU9XeVN4UFdxTmJlYzA9REp3U0w5QzZMc0N4bzFEK1U1cjI2Vk8vMmlEOEt6cEoyMlFYQXMvRTJkVCtHZ29Za0l6Q05tejFTdmg0MnJMbA=='
-        config_name = '10.215.18.85'
-
-        # Define the API endpoint
-        url = f'https://{hostname}/api/'
-
-        # Define the parameters for the export request
         params_config = {
             'type': 'export',
             'category': 'configuration',
@@ -287,57 +324,15 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             'action': 'save',
             'key': api_key
         }
-        
-        # Function to send the export request and save the response
-        def export_and_save(params, filename):
-            import xml.etree.ElementTree as ET
 
-            # Create the root element
-            root = ET.Element("root")
-
-            # Create child elements
-            child1 = ET.SubElement(root, "child1")
-            child2 = ET.SubElement(root, "child2")
-
-            # Add some data to the child elements
-            child1.text = "Data for Child 1"
-            child2.text = "Data for Child 2"
-
-            # Create the XML tree
-            tree = ET.ElementTree(root)
-
-            xml_content = ET.tostring(root, encoding="utf-8", method="xml")
-
-            # Write the tree to an XML file
-            tree.write(filename)
-
-            # with open(filename, 'wb') as file:
-            #     file.write(content)
-            # print(f'Successfully saved to {filename}')
-
-            return xml_content
-
-        file1 = f'backup_file/{config_name}_config_backup.xml'
+        file1 = f'backup_file/{ip}_config_backup.xml'
         # Export and save the configuration
-        xml_content1 = export_and_save(params_config, file1)
+        await self.export_and_save(params_config, file1, job_id, ip)
 
-        firewall_backup_file = await sync_to_async(UpdateFirewallBackupFile.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip,
-                    file_name=file1,
-                    xml_content=xml_content1
-        )
-
-        file2 = f'backup_file/{config_name}_device_state_backup.xml'
+        file2 = f'backup_file/{ip}_device_state_backup.xml'
         # Export and save the device state
-        xml_content2 = export_and_save(params_device_state, file2)
+        await self.export_and_save(params_device_state, file2, job_id, ip)
 
-        firewall_backup_file = await sync_to_async(UpdateFirewallBackupFile.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip,
-                    file_name=file2,
-                    xml_content=xml_content2
-        )
         await asyncio.sleep(10)
         await self.create_firewall_status_log(job_id, ip, "backup completed")
         return True
@@ -410,6 +405,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             if _status.group_name:
                 result[_status.group_name][_status.ip_address] = {"status":_status.status, "name": _status.name}
         return result, res
+
 
     async def async_send_initial_status(self, job_id):
         from awx.main.models import UpdateFirewallStatus
@@ -535,7 +531,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             elif firewall.status == FirewallStatus.SOLAR_WIND_UNMUTE.value:
                 status_sequence =FirewallStatus.UPDATED
                 # await self.change_next_status(firewall, result, firewall.group_name, response, status_sequence)
-                tasks.append(self.change_next_status(firewall, result, firewall.group_name, response, status_sequence))
+                tasks.append(self.change_next_status(firewall, result, firewall.group_name, response, status_sequence, firewall.name))
         
         if firewall.sequence:
             await asyncio.gather(*tasks)
