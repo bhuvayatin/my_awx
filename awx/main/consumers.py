@@ -241,43 +241,29 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         pass
     
-    async def downloading_firewalls(self, ip, job_id):
+    async def create_firewall_status_log(self, job_id, ip, text):
         from awx.main.models import UpdateFirewallStatusLogs
         firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
                     job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="downloading started"
+                    ip_address=ip,
+                    text=text
                 )
+
+    async def downloading_firewalls(self, ip, job_id):
+        await self.create_firewall_status_log(job_id, ip['ip'], "downloading started")
         await asyncio.sleep(10)
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="downloading completed"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "downloading completed")
         return True
     
     async def solar_wind_mute_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="solar_wind_mute started"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "solar_wind_mute started")
         await asyncio.sleep(10)
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="solar_wind_mute completed"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "solar_wind_mute completed")
         return True
 
     async def backup_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs, UpdateFirewallBackupFile
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="backup started"
-                )
+        from awx.main.models import UpdateFirewallBackupFile
+        await self.create_firewall_status_log(job_id, ip['ip'], "backup started")
 
         # Replace with your firewall details
         hostname = '10.215.18.85'
@@ -353,110 +339,47 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     xml_content=xml_content2
         )
         await asyncio.sleep(10)
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="backup completed"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "backup completed")
         return True
 
     async def installing_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="installing started"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "installing started")
         await asyncio.sleep(10)
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="installing completed"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "installing completed")
         return True
     
     async def rebooting_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="rebooting started"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "rebooting started")
         await asyncio.sleep(10)
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="rebooting completed"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "rebooting completed")
         return True
     
     async def commit_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="commit started"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "commit started")
         await asyncio.sleep(10)
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="commit completed"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "commit completed")
         return True
     
     async def ping_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="ping started"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "ping started")
         await asyncio.sleep(10)
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="ping completed"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "ping completed")
         return True
     
     async def login_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="login started"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "login started")
         await asyncio.sleep(10)
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="login completed"
-                )
-        return True
-
-    async def updated_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="ip_addtess updated successfully"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "login completed")
         return True
     
     async def solar_wind_unmute_firewalls(self, ip, job_id):
-        from awx.main.models import UpdateFirewallStatusLogs
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="solar_wind_unmute started"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "solar_wind_unmute started")
         await asyncio.sleep(10)
-        firewall_log = await sync_to_async(UpdateFirewallStatusLogs.objects.create)(
-                    job_id=job_id,
-                    ip_address=ip['ip'],
-                    text="solar_wind_unmute completed"
-                )
+        await self.create_firewall_status_log(job_id, ip['ip'], "solar_wind_unmute completed")
+        return True
+
+    async def updated_firewalls(self, ip, job_id):
+        await self.create_firewall_status_log(job_id, ip['ip'], "ip_addtess updated successfully")
         return True
     
     async def change_next_status(self, firewall, response_data, group_name, i, status):
