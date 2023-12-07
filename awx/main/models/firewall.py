@@ -7,13 +7,12 @@ __all__ = ['UpdateFirewallStatus', 'UpdateFirewallStatusLogs']
 
 FIREWALL_STATUS_CHOICES = (
     ('waiting', 'waiting'),
-    ('downloading', 'downloading'),
     ('solar_wind_mute', 'solar_wind_mute'),
     ('backup', 'backup'),
-    ('installing', 'installing'),
-    ('rebooting', 'rebooting'),
-    ('commit', 'commit'),
-    ('ping', 'ping'),
+    ('cleanup','cleanup'),
+    ('download', 'download'),
+    ('install', 'install'),
+    ('reboot', 'reboot'),
     ('login', 'login'),
     ('solar_wind_unmute', 'solar_wind_unmute'),
     ('updated', 'updated')
@@ -36,6 +35,9 @@ class UpdateFirewallStatus(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     sequence = models.BooleanField(default=False)
     name = models.CharField(max_length=256, null=True)
+    update_version = models.CharField(max_length=50, null=True)
+    current_version = models.CharField(max_length=50, null=True)
+    api_key = models.CharField(max_length=256, null=True)
 
 
 class UpdateFirewallStatusLogs(models.Model):

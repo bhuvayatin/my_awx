@@ -170,5 +170,4 @@ awx/ui_next/build
 # Docs build stuff
 docs/docsite/build/
 _readthedocs/
-backup_file/10.215.18.85_config_backup.xml
-backup_file/10.215.18.85_device_state_backup.xml
+backup_file/

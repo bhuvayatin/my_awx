@@ -653,12 +653,12 @@ class GeneralInformation(APIView):
     def post(self, request, *args, **kwargs):
         serializer = GeneralInformationSerializer(data=request.data)
         if serializer.is_valid():
-            host = serializer.validated_data.get('host', None)
+            ip = serializer.validated_data.get('ip', None)
             api_key = serializer.validated_data.get('api_key', None)
 
             try:
                 # Define the API endpoint
-                url = f'https://{host}/api/'
+                url = f'https://{ip}/api/'
 
                 # Define the parameters for the get request
                 params = {
@@ -673,7 +673,7 @@ class GeneralInformation(APIView):
                 # Check the response
                 if response.status_code == 200:
                     print('Successfully retrieved configuration')
-                    return Response({"data": response.text})
+                    return Response({"data": xmltodict.parse(response.text)})
                 else:
                     return Response({"Error":"Failed to retrieve configuration"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -757,12 +757,12 @@ class SessionInformation(APIView):
     def post(self, request, *args, **kwargs):
         serializer = SessionInformationSerializer(data=request.data)
         if serializer.is_valid():
-            host = serializer.validated_data.get('host', None)
+            ip = serializer.validated_data.get('ip', None)
             api_key = serializer.validated_data.get('api_key', None)
 
             try:
                 # Define the API endpoint
-                url = f'https://{host}/api/'
+                url = f'https://{ip}/api/'
 
                 # Define the parameters for the get request
                 params_session = {
@@ -775,7 +775,7 @@ class SessionInformation(APIView):
                 response = requests.get(url, params=params_session, verify=False, timeout=10)
                 if response.status_code == 200:
                     print('Successfully retrieved session information')
-                    return Response({"data": response.text})
+                    return Response({"data": xmltodict.parse(response.text)})
                 else:
                     return Response({"Error":"Failed to retrieve session information"}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
