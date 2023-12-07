@@ -1059,7 +1059,11 @@ const ComposableTableTree = () => {
       const childRows = parent.children
         ? parent.children
             .filter((child) => selectedNodeNames.includes(child.name))
-            .map((child) => ({ ip: child.IP_Address, name: child.name }))
+            .map((child) => ({
+              ip: child.IP_Address,
+              name: child.name,
+              current_version: child?.version,
+            }))
         : [];
 
       if (parentRow) {
@@ -1115,7 +1119,13 @@ const ComposableTableTree = () => {
       if (data) {
         history.push({
           pathname: `/jobs/playbook/${data.id}/fresult`,
-          state: { id: data?.id, ip: mergedRows, sequence: isChecked },
+          state: {
+            id: data?.id,
+            ip: mergedRows,
+            sequence: isChecked,
+            update_version: software_version,
+            api_key: access_token?.access_token,
+          },
         });
       }
     } catch (error) {
@@ -1125,19 +1135,22 @@ const ComposableTableTree = () => {
       );
     }
   };
-useEffect(()=>{
-  fetchXmlContent()
-},[])
-const fetchXmlContent = async () => {
-  const response = await fetch('/home/yatin/Downloads/xmldata.xml');
-  const xmlText = await response.text();
+  useEffect(() => {
+    fetchXmlContent();
+  }, []);
+  const fetchXmlContent = async () => {
+    const response = await fetch('/home/yatin/Downloads/xmldata.xml');
+    const xmlText = await response.text();
 
-  // Parse the XML string using DOMParser
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-  const formattedXml = new XMLSerializer().serializeToString(xmlDoc);
-  console.log("🚀 ~ file: LegacyTableTree.js:1146 ~ fetchXmlContent ~ formattedXml:", formattedXml)
-};
+    // Parse the XML string using DOMParser
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+    const formattedXml = new XMLSerializer().serializeToString(xmlDoc);
+    console.log(
+      '🚀 ~ file: LegacyTableTree.js:1146 ~ fetchXmlContent ~ formattedXml:',
+      formattedXml
+    );
+  };
 
   const closeModal = () => {
     setIserror(false);
@@ -1386,7 +1399,8 @@ const fetchXmlContent = async () => {
         }}
       >
         <Button onClick={handleSubmit}>Submit</Button>
-      </div>    </>
+      </div>{' '}
+    </>
   );
 };
 

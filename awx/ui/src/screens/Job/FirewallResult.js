@@ -27,6 +27,7 @@ function FirewallResult() {
   const pageSize = 10;
   const location = useLocation();
   const data = location?.state;
+  console.log('🚀 ~ file: FirewallResult.js:30 ~ FirewallResult ~ data:', data);
   const [newrecord, setNewrecord] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [datamodal, setDatamodal] = useState(false);
@@ -37,7 +38,7 @@ function FirewallResult() {
     setDatamodal(false);
   };
   const ws = useRef(null);
-  function callsocket(ip_address, id, sequence) {
+  function callsocket(ip_address, id, sequence, update_version, api_key) {
     ws.current = new WebSocket(
       `${window.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${
         window.location.host
@@ -54,6 +55,8 @@ function FirewallResult() {
           ip_address: ip_address,
           job_id: parseInt(id),
           sequence: sequence,
+          update_version:update_version,
+          api_key:api_key,
         })
       );
     };
@@ -83,7 +86,13 @@ function FirewallResult() {
   }
   useEffect(() => {
     if (data?.id && data?.ip) {
-      callsocket(data?.ip, data?.id, data?.sequence);
+      callsocket(
+        data?.ip,
+        data?.id,
+        data?.sequence,
+        data?.update_version,
+        data?.api_key
+      );
       history.replace(
         `/jobs/playbook/${data.id}/fresult?jobid=${data.id}&issquence=${data.sequence}`
       );
@@ -249,7 +258,7 @@ function FirewallResult() {
                       {repo?.prs}
                     </Label>
                   )}
-                  {repo?.prs == 'downloading' && (
+                  {repo?.prs == 'download' && (
                     <Label
                       variant="outline"
                       color={'purple'}
@@ -267,7 +276,7 @@ function FirewallResult() {
                       {repo?.prs}
                     </Label>
                   )}
-                  {repo?.prs == 'installing' && (
+                  {repo?.prs == 'install' && (
                     <Label
                       variant="outline"
                       color={'blue'}
@@ -276,7 +285,7 @@ function FirewallResult() {
                       {repo?.prs}
                     </Label>
                   )}
-                  {repo?.prs == 'rebooting' && (
+                  {repo?.prs == 'reboot' && (
                     <Label
                       variant="outline"
                       color={'blue'}
@@ -285,7 +294,7 @@ function FirewallResult() {
                       {repo?.prs}
                     </Label>
                   )}
-                  {repo?.prs == 'commit' && (
+                  {repo?.prs == 'cleanup' && (
                     <Label
                       variant="outline"
                       color={'blue'}
@@ -432,8 +441,8 @@ function FirewallResult() {
                       />
                     </g>
                   </svg>
-                  </div>
-                </Td>
+                </div>
+              </Td>
             </Tr>
           ))}
         </Tbody>
