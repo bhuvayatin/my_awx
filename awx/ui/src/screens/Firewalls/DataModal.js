@@ -260,7 +260,13 @@ function DataModal({ onClose, isOpen, ip }) {
         <Grid hasGutter span={6}>
           <GridItem>
             <Card>
-              <CardHeader style={{ justifyContent: 'space-between' }}>
+              <CardHeader
+                style={{
+                  justifyContent: 'space-between',
+                  background: '#f2f2f2',
+                  padding: '20px',
+                }}
+              >
                 <CardTitle>Availability</CardTitle>
                 <div>
                   <SyncAltIcon
@@ -269,7 +275,7 @@ function DataModal({ onClose, isOpen, ip }) {
                   />
                 </div>
               </CardHeader>
-              <CardBody>
+              <CardBody style={{ paddingTop: '24px' }}>
                 {isLoadingavail ? (
                   <Spinner size="lg" />
                 ) : (
@@ -706,7 +712,13 @@ function DataModal({ onClose, isOpen, ip }) {
               </CardBody>
             </Card>
             <Card style={{ marginTop: 20 }}>
-              <CardHeader style={{ justifyContent: 'space-between' }}>
+              <CardHeader
+                style={{
+                  justifyContent: 'space-between',
+                  background: '#f2f2f2',
+                  padding: '20px',
+                }}
+              >
                 <CardTitle>Interface</CardTitle>
                 <div>
                   <SyncAltIcon
@@ -715,14 +727,20 @@ function DataModal({ onClose, isOpen, ip }) {
                   />
                 </div>
               </CardHeader>
-              <CardBody>
+              <CardBody style={{ paddingTop: '24px' }}>
                 <div style={{ display: 'flex', margin: '10px 0' }}>
                   {isLoading ? <Spinner size="lg" /> : output}
                 </div>
               </CardBody>
             </Card>
             <Card style={{ marginTop: 20 }}>
-              <CardHeader style={{ justifyContent: 'space-between' }}>
+              <CardHeader
+                style={{
+                  justifyContent: 'space-between',
+                  background: '#f2f2f2',
+                  padding: '20px',
+                }}
+              >
                 <CardTitle>System Resources</CardTitle>
                 <div>
                   <SyncAltIcon
@@ -731,7 +749,7 @@ function DataModal({ onClose, isOpen, ip }) {
                   />
                 </div>
               </CardHeader>
-              <CardBody>
+              <CardBody style={{ paddingTop: '24px' }}>
                 {isLoadingsession ? (
                   <Spinner size="lg" />
                 ) : (
@@ -752,7 +770,13 @@ function DataModal({ onClose, isOpen, ip }) {
           <GridItem>
             <div>
               <Card>
-                <CardHeader style={{ justifyContent: 'space-between' }}>
+                <CardHeader
+                  style={{
+                    justifyContent: 'space-between',
+                    background: '#f2f2f2',
+                    padding: '20px',
+                  }}
+                >
                   <CardTitle>General Information</CardTitle>
                   <div>
                     <SyncAltIcon
@@ -761,7 +785,7 @@ function DataModal({ onClose, isOpen, ip }) {
                     />
                   </div>
                 </CardHeader>
-                <CardBody>
+                <CardBody style={{ paddingTop: '24px' }}>
                   {isLoadinggen ? (
                     <Spinner size="lg" />
                   ) : (
@@ -846,10 +870,7 @@ function DataModal({ onClose, isOpen, ip }) {
                                     className="data"
                                     style={{ paddingLeft: '10px' }}
                                   >
-                                    {
-                                      general?.response?.result?.system
-                                        ?.netmask
-                                    }
+                                    {general?.response?.result?.system?.netmask}
                                   </td>
                                 </tr>
                                 <tr>
@@ -971,10 +992,7 @@ function DataModal({ onClose, isOpen, ip }) {
                                     className="data"
                                     style={{ paddingLeft: '10px' }}
                                   >
-                                    {
-                                      general?.response?.result?.system
-                                        ?.model
-                                    }
+                                    {general?.response?.result?.system?.model}
                                   </td>
                                 </tr>
                                 <tr>
@@ -991,10 +1009,7 @@ function DataModal({ onClose, isOpen, ip }) {
                                     className="data"
                                     style={{ paddingLeft: '10px' }}
                                   >
-                                    {
-                                      general?.response?.result?.system
-                                        ?.serial
-                                    }
+                                    {general?.response?.result?.system?.serial}
                                   </td>
                                 </tr>
                                 <tr>
@@ -1263,10 +1278,7 @@ function DataModal({ onClose, isOpen, ip }) {
                                     className="data"
                                     style={{ paddingLeft: '10px' }}
                                   >
-                                    {
-                                      general?.response?.result?.system
-                                        ?.time
-                                    }
+                                    {general?.response?.result?.system?.time}
                                   </td>
                                 </tr>
                                 <tr>
@@ -1283,10 +1295,7 @@ function DataModal({ onClose, isOpen, ip }) {
                                     className="data"
                                     style={{ paddingLeft: '10px' }}
                                   >
-                                    {
-                                      general?.response?.result?.system
-                                        ?.uptime
-                                    }
+                                    {general?.response?.result?.system?.uptime}
                                   </td>
                                 </tr>
                                 <tr>
