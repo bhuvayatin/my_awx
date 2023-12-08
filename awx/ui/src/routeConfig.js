@@ -26,6 +26,7 @@ import WorkflowApprovals from 'screens/WorkflowApproval';
 import { Jobs } from 'screens/Job';
 import HostMetrics from 'screens/HostMetrics';
 import Firewalls from 'screens/Firewalls';
+import Generate_api from 'screens/Firewalls/Generate_api';
 
 function getRouteConfig(userProfile = {}) {
   let routeConfig = [
@@ -103,6 +104,11 @@ function getRouteConfig(userProfile = {}) {
           title: <Trans>Hosts</Trans>,
           path: '/hosts',
           screen: Hosts,
+        },
+        {
+          title: <Trans>Generate API Key</Trans>,
+          path: '/generate_api_key',
+          screen: Generate_api,
         },
       ],
     },

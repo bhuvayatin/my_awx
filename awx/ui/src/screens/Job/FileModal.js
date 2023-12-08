@@ -1,9 +1,10 @@
 import { Modal, Title } from '@patternfly/react-core';
+import { DownloadIcon } from '@patternfly/react-icons';
 import { InventoriesAPI } from 'api';
 import React, { useState } from 'react';
 import { useEffect } from 'react';
 import styled from 'styled-components';
-function Filemodal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
+function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
   const Header = styled.div`
   display: flex;
   svg {
@@ -15,13 +16,13 @@ function Filemodal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
 
   const [xml, setXml] = useState({
     file_name: '',
-    xml_content: '',
+    xml_content:
+      '<root><child1>Data for Child 1</child1><child2>Data for Child 2</child2></root>',
   });
   const [xml1, setXml1] = useState({
     file_name: '',
     xml_content: '',
   });
-
   useEffect(() => {
     if (islogmodal) {
       get_log();
@@ -29,6 +30,7 @@ function Filemodal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
       return () => clearInterval(intervalId);
     } else {
       get_xml();
+      console.log('🚀 ~ file: FileModal.js:32 ~ useEffect ~ get_xml:');
     }
   }, []);
   const get_log = async () => {
@@ -75,6 +77,23 @@ function Filemodal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
       </Title>
     </Header>
   );
+  const download = async () => {
+    if (xml?.xml_content !== undefined) {
+      const blob = new Blob([xml?.xml_content], { type: 'application/xml' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = xml?.file_name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      URL.revokeObjectURL(url);
+    } else {
+      alert('Please try after some time');
+    }
+  };
   return (
     <Modal
       header={customHeader}
@@ -105,17 +124,24 @@ function Filemodal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
               <table style={{ width: '100%', border: '1px solid #f2f2f2' }}>
                 <tbody>
                   <tr style={{ background: '#f2f2f2' }}>
-                    <td style={{ padding: '10px' }}>
-                      <p>
+                    <td style={{ padding: '10px', width: '50%' }}>
+                      <p style={{ display: 'flex' }}>
                         <span>
                           <b>File:</b>
                         </span>
                         {xml?.file_name?.substring(
                           xml?.file_name.lastIndexOf('/') + 1
                         )}
+                        <div
+                          onClick={() => {
+                            download();
+                          }}
+                        >
+                          <DownloadIcon />
+                        </div>
                       </p>
                     </td>
-                    <td style={{ padding: '10px' }}>
+                    <td style={{ padding: '10px', width: '50%' }}>
                       <p>
                         <span>
                           <b>File:</b>
@@ -149,4 +175,4 @@ function Filemodal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
   );
 }
 
-export default Filemodal;
+export default FileModal;

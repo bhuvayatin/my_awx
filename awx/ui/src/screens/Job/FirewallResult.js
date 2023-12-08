@@ -1,9 +1,10 @@
-import { Label, Pagination } from '@patternfly/react-core';
+import { Icon, Label, Pagination, Tooltip } from '@patternfly/react-core';
 import {
+  BanIcon,
   CheckCircleIcon,
   ClockIcon,
   DownloadIcon,
-  FileIcon,
+  MinusCircleIcon,
   SyncAltIcon,
 } from '@patternfly/react-icons';
 import {
@@ -19,7 +20,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams, useHistory } from 'react-router-dom';
 import DataModal from 'screens/Firewalls/DataModal';
 import styled, { keyframes } from 'styled-components';
-import Filemodal from './Filemodal';
+import FileModal from './FileModal';
+import { InventoriesAPI } from 'api';
 
 function FirewallResult() {
   const history = useHistory();
@@ -55,8 +57,8 @@ function FirewallResult() {
           ip_address: ip_address,
           job_id: parseInt(id),
           sequence: sequence,
-          update_version:update_version,
-          api_key:api_key,
+          update_version: update_version,
+          api_key: api_key,
         })
       );
     };
@@ -178,6 +180,7 @@ function FirewallResult() {
       });
     }
   }
+  console.log('🚀 ~ file: FirewallResult.js:173 ~ repositories:', repositories);
   const Spin = keyframes`
   from {
     transform: rotate(0);
@@ -189,13 +192,34 @@ function FirewallResult() {
   const RunningIcon = styled(SyncAltIcon)`
     animation: ${Spin} 1.75s linear infinite;
   `;
+  const stop_proceess = async (ip) => {
+    const payload = {
+      job_id: parseInt(id),
+      ip_address: ip,
+    };
+
+    try {
+      const { data } = await InventoriesAPI.stop_proccess(payload);
+      console.log(
+        '🚀 ~ file: FirewallResult.js:201 ~ conststop_proceess= ~ data:',
+        data
+      );
+
+      return data;
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: FirewallResult.js:206 ~ conststop_proceess= ~ error:',
+        error
+      );
+    }
+  };
   return (
     <div>
       {datamodal && (
         <DataModal isOpen={datamodal} onClose={closeModal} ip={ip_address} />
       )}
       {xmlmodal && (
-        <Filemodal
+        <FileModal
           isOpen={xmlmodal}
           onClose={closeDataModal}
           job_id={id}
@@ -212,6 +236,22 @@ function FirewallResult() {
             <Th>{columnNames.prs}</Th>
             <Th>Logs</Th>
             <Th>Files</Th>
+            <Th>
+              <div
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  stop_proceess([
+                    ...new Set(repositories?.map((item) => item.branches)),
+                  ]);
+                }}
+              >
+                <Tooltip content={<div>Stop All</div>}>
+                  <Icon status="danger">
+                    <BanIcon />
+                  </Icon>
+                </Tooltip>
+              </div>
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -245,6 +285,24 @@ function FirewallResult() {
                       variant="outline"
                       color={'gray'}
                       icon={<ClockIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'error' && (
+                    <Label
+                      variant="outline"
+                      color={'red'}
+                      icon={<MinusCircleIcon />}
+                    >
+                      {repo?.prs}
+                    </Label>
+                  )}
+                  {repo?.prs == 'stop' && (
+                    <Label
+                      variant="outline"
+                      color={'red'}
+                      icon={<MinusCircleIcon />}
                     >
                       {repo?.prs}
                     </Label>
@@ -339,6 +397,7 @@ function FirewallResult() {
                     setIp_address(repo?.branches);
                     setIslogmodal(true);
                   }}
+                  style={{ cursor: 'pointer' }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -375,6 +434,7 @@ function FirewallResult() {
                     setIp_address(repo?.branches);
                     setIslogmodal(false);
                   }}
+                  style={{ cursor: 'pointer' }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -441,6 +501,18 @@ function FirewallResult() {
                       />
                     </g>
                   </svg>
+                </div>
+              </Td>
+              <Td>
+                <div
+                  onClick={() => {
+                    stop_proceess([repo?.branches]);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Icon status="danger">
+                    <BanIcon />
+                  </Icon>
                 </div>
               </Td>
             </Tr>

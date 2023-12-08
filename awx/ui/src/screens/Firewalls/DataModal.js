@@ -756,7 +756,7 @@ function DataModal({ onClose, isOpen, ip }) {
                   <table>
                     <tbody>
                       <tr>
-                        <td>Session Count</td>
+                        <td style={{fontWeight:600}}>Session Count : </td>
                         <td style={{ paddingLeft: 20 }}>
                           <p>{`${sessiondata?.response?.result?.['num-active']} / ${sessiondata?.response?.result?.['num-max']}`}</p>
                         </td>
@@ -819,11 +819,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Device Name
+                                    Device Name :
                                   </td>
                                   <td
                                     className="data"
@@ -839,11 +840,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    MGT IP Address
+                                    MGT IP Address :
                                   </td>
                                   <td
                                     className="data"
@@ -860,11 +862,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    MGT Netmask
+                                    MGT Netmask :
                                   </td>
                                   <td
                                     className="data"
@@ -877,11 +880,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    MGT Default Gateway
+                                    MGT Default Gateway :
                                   </td>
                                   <td
                                     className="data"
@@ -898,11 +902,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    MGT IPv6 Address
+                                    MGT IPv6 Address :
                                   </td>
                                   <td
                                     className="data"
@@ -919,11 +924,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    MGT IPv6 Link Local Address
+                                    MGT IPv6 Link Local Address :
                                   </td>
                                   <td
                                     className="data"
@@ -940,11 +946,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    MGT IPv6 Default Gateway
+                                    MGT IPv6 Default Gateway :
                                   </td>
                                   <td
                                     className="data"
@@ -961,11 +968,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    MGT MAC Address
+                                    MGT MAC Address :
                                   </td>
                                   <td
                                     className="data"
@@ -982,11 +990,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Model
+                                    Model :
                                   </td>
                                   <td
                                     className="data"
@@ -999,11 +1008,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Serial #
+                                    Serial # :
                                   </td>
                                   <td
                                     className="data"
@@ -1016,11 +1026,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    CPU ID
+                                    CPU ID :
                                   </td>
                                   <td
                                     className="data"
@@ -1037,11 +1048,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    UUID
+                                    UUID :
                                   </td>
                                   <td
                                     className="data"
@@ -1058,11 +1070,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    VM License
+                                    VM License :
                                   </td>
                                   <td
                                     className="data"
@@ -1079,11 +1092,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    VM Mode
+                                    VM Mode :
                                   </td>
                                   <td
                                     className="data"
@@ -1100,11 +1114,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Software Version
+                                    Software Version :
                                   </td>
                                   <td
                                     className="data"
@@ -1121,11 +1136,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    GlobalProtect Agent
+                                    GlobalProtect Agent :
                                   </td>
                                   <td
                                     className="data"
@@ -1142,11 +1158,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Application Version
+                                    Application Version :
                                   </td>
                                   <td
                                     className="data"
@@ -1170,11 +1187,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Threat Version
+                                    Threat Version :
                                   </td>
                                   <td
                                     className="data"
@@ -1198,11 +1216,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Antivirus Version
+                                    Antivirus Version :
                                   </td>
                                   <td
                                     className="data"
@@ -1226,11 +1245,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    URL Filtering Version
+                                    URL Filtering Version :
                                   </td>
                                   <td
                                     className="data"
@@ -1247,11 +1267,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    GlobalProtect Clientless VPN Version
+                                    GlobalProtect Clientless VPN Version :
                                   </td>
                                   <td
                                     className="data"
@@ -1268,11 +1289,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Time
+                                    Time :
                                   </td>
                                   <td
                                     className="data"
@@ -1285,11 +1307,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Uptime
+                                    Uptime :
                                   </td>
                                   <td
                                     className="data"
@@ -1302,11 +1325,12 @@ function DataModal({ onClose, isOpen, ip }) {
                                   <td
                                     className="label"
                                     style={{
-                                      width: '150px',
+                                      width: '225px',
                                       textAlign: 'right',
+                                      fontWeight:600
                                     }}
                                   >
-                                    Plugin VM-Series
+                                    Plugin VM-Series :
                                   </td>
                                   <td
                                     className="data"

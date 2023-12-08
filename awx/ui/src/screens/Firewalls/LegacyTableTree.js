@@ -1135,22 +1135,6 @@ const ComposableTableTree = () => {
       );
     }
   };
-  useEffect(() => {
-    fetchXmlContent();
-  }, []);
-  const fetchXmlContent = async () => {
-    const response = await fetch('/home/yatin/Downloads/xmldata.xml');
-    const xmlText = await response.text();
-
-    // Parse the XML string using DOMParser
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-    const formattedXml = new XMLSerializer().serializeToString(xmlDoc);
-    console.log(
-      '🚀 ~ file: LegacyTableTree.js:1146 ~ fetchXmlContent ~ formattedXml:',
-      formattedXml
-    );
-  };
 
   const closeModal = () => {
     setIserror(false);
