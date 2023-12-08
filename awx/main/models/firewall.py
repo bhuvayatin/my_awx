@@ -15,7 +15,8 @@ FIREWALL_STATUS_CHOICES = (
     ('reboot', 'reboot'),
     ('login', 'login'),
     ('solar_wind_unmute', 'solar_wind_unmute'),
-    ('updated', 'updated')
+    ('updated', 'updated'),
+    ('error', 'error')
 )
 
 class UpdateFirewallStatus(models.Model):
