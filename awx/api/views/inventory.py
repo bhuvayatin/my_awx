@@ -922,7 +922,7 @@ class GenerateAPIKey(APIView):
             username = serializer.validated_data.get('username', None)
             password = serializer.validated_data.get('password', None)
             
-            url = f"https://{ip}/api/?type=keygen&user={username}&password={password}"
+            url = f"https://{ip_address}/api/?type=keygen&user={username}&password={password}"
             try:
                 response = request.get(url)
                 return Response({"data": response.json()})
