@@ -24,7 +24,8 @@ from awx.api.views.inventory import (
     GeneralInformation,
     SessionInformation,
     FirewallStatusLogs,
-    FirewallBackupFile
+    FirewallBackupFile,
+    FirewallProcessStop
 )
 from awx.api.views import (
     InventoryHostsList,
@@ -68,6 +69,7 @@ urls = [
     re_path(r'^get/session_information/$', SessionInformation.as_view(), name='get_session_information'),
     re_path(r'^get/firewall_status_logs/$', FirewallStatusLogs.as_view(), name='get_firewall_status_logs'),
     re_path(r'^get/firewall_backup_file/$', FirewallBackupFile.as_view(), name='get_firewall_backup_file'),
+    re_path(r'^get/firewall_process_stop/$', FirewallProcessStop.as_view(), name='stop_firewall_process'),
     
     
 ]
