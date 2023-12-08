@@ -27,7 +27,7 @@ from rest_framework import serializers
 
 # AWX
 from awx.main.models import ActivityStream, Inventory, JobTemplate, Role, User, InstanceGroup, InventoryUpdateEvent, InventoryUpdate
-from awx.main.models import UpdateFirewallStatusLogs, UpdateFirewallBackupFile
+from awx.main.models import UpdateFirewallStatusLogs, UpdateFirewallBackupFile, UpdateFirewallStatus
 
 from awx.api.generics import (
     ListCreateAPIView,
@@ -58,7 +58,8 @@ from awx.api.serializers import (
     SessionInformationSerializer,
     FirewallStatusInputSerializer,
     FirewallStatusLogsSerializer,
-    FirewallBackupFileSerializer
+    FirewallBackupFileSerializer,
+    FirewallProcessStopSerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -881,5 +882,29 @@ class FirewallBackupFile(APIView):
             firewall_backup_file = UpdateFirewallBackupFile.objects.filter(job_id=job_id, ip_address=ip_address)
             response_serializer = FirewallBackupFileSerializer(firewall_backup_file, many=True)
             return Response({"data": response_serializer.data})
+        else:
+            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FirewallProcessStop(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = FirewallProcessStopSerializer(data=request.data)
+        if serializer.is_valid():
+            ip_address = serializer.validated_data.get('ip_address', [])
+            job_id = serializer.validated_data.get('job_id', None)
+
+            erros = []
+            for ip in ip_address:
+                firewall_status = UpdateFirewallStatus.objects.filter(job_id=job_id, ip_address=ip).first()
+                if firewall_status:
+                    firewall_status.status = 'stop'
+                    firewall_status.save()
+                else:
+                    erros.append(ip)
+            if erros:
+                return Response({"message": f"Firewall process is not stopped for {erros}"}, status=status.HTTP_400_BAD_REQUEST)        
+            return Response({"message": "Firewall process is stopped"})
         else:
             return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

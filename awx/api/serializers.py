@@ -6060,3 +6060,8 @@ class FirewallBackupFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UpdateFirewallBackupFile
         fields = '__all__'
+
+
+class FirewallProcessStopSerializer(serializers.Serializer):
+    ip_address = serializers.ListField(child=serializers.CharField(), allow_empty=False)
+    job_id = serializers.IntegerField()
