@@ -59,7 +59,8 @@ from awx.api.serializers import (
     FirewallStatusInputSerializer,
     FirewallStatusLogsSerializer,
     FirewallBackupFileSerializer,
-    FirewallProcessStopSerializer
+    FirewallProcessStopSerializer,
+    GenerateAPIKeySerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -906,5 +907,31 @@ class FirewallProcessStop(APIView):
             if erros:
                 return Response({"message": f"Firewall process is not stopped for {erros}"}, status=status.HTTP_400_BAD_REQUEST)        
             return Response({"message": "Firewall process is stopped"})
+        else:
+            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+#  TODO need to test
+class GenerateAPIKey(APIView):
+    # permission_classes = (AllowAny)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = GenerateAPIKeySerializer(data=request.data)
+        if serializer.is_valid():
+            ip_address = serializer.validated_data.get('ip_address', None)
+            username = serializer.validated_data.get('username', None)
+            password = serializer.validated_data.get('password', None)
+            
+            url = f"https://{ip}/api/?type=keygen&user={username}&password={password}"
+            try:
+                response = request.get(url)
+                return Response({"data": response.json()})
+            except Exception as e:
+                print('Exception is : >>>>>>>>>>>>>',str(e))
+                # pass
+
+            finally:
+                api_key = "this is just testing key"
+                return Response({"data": api_key})
         else:
             return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

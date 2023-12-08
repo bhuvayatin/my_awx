@@ -6065,3 +6065,9 @@ class FirewallBackupFileSerializer(serializers.ModelSerializer):
 class FirewallProcessStopSerializer(serializers.Serializer):
     ip_address = serializers.ListField(child=serializers.CharField(), allow_empty=False)
     job_id = serializers.IntegerField()
+
+
+class GenerateAPIKeySerializer(serializers.Serializer):
+    ip_address = serializers.CharField()
+    username = serializers.CharField()
+    password = serializers.CharField()
