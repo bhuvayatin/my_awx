@@ -5,6 +5,7 @@ import hmac
 import asyncio
 import redis
 import requests
+from ping3 import ping
 import xml.etree.ElementTree as ET
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
@@ -235,6 +236,7 @@ class FirewallStatus(Enum):
     UPDATED = "updated"
     ERROR = "error"
 
+
 class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
@@ -338,11 +340,11 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     await self.create_firewall_status_log(job_id, ip,f'Maximum tries reached and software download failed after 15 mins')
                     return False #todo : Error
         await self.create_firewall_status_log(job_id, ip, "downloading completed")
-        return False
+        return True
     
     async def solar_wind_mute_firewalls(self, firewall, ip, job_id, api_key, version_to_download, current_version):
         await self.create_firewall_status_log(job_id, ip, "solar_wind_mute started")
-        await asyncio.sleep(10)
+        # await asyncio.sleep(10)
         await self.create_firewall_status_log(job_id, ip, "This module is not implmeneted yet.")
         await self.create_firewall_status_log(job_id, ip, "solar_wind_mute completed")
         return True
@@ -367,7 +369,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         # Export and save the configuration
         file1_result = await self.export_and_save(params_config, file1, job_id, ip)
 
-        file2 = f'backup_file/{ip}_{current_version}_device_state_backup.xml'
+        file2 = f'backup_file/{ip}_{current_version}_device_state_cfg.tgz'
         # Export and save the device state
         file2_result = await self.export_and_save(params_device_state, file2, job_id, ip)
         if file1_result and file2_result:
@@ -375,7 +377,8 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             return True
         else:
             await self.create_firewall_status_log(job_id, ip, "Backup files are not downloading")
-        return False
+            return False
+        return True
 
     async def cleanup_firewalls(self, firewall, ip, job_id, api_key, version_to_download, current_version):
         await self.create_firewall_status_log(job_id, ip, f'Removing all the old software from {ip}')
@@ -440,35 +443,40 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
 
         # Check the response
         if response.status_code == 200:
-            print(f'Successfully installed software version {version_to_download}')
-            await self.create_firewall_status_log(job_id, ip, f'Successfully installed software version {version_to_download}')
+            await self.create_firewall_status_log(job_id, ip, f'Successfully initiated software version {version_to_download}')
         else:
             print(f'Failed to install software version {version_to_download}')
             await self.create_firewall_status_log(job_id, ip, f'Failed to install software version {version_to_download}')
-
-        params_get = {
+            return False
+        
+        params_check = {
             'type': 'op',
-            'cmd': '<request><system><software><check></check></software></system></request>',
+            'cmd': '<show><jobs><all></all></jobs></show>',
             'key': api_key
         }
 
-        for i in range(10):  # Try 10 times
-            response = requests.get(url, params=params_get, verify=False)
+        for i in range(30):  # Try 10 times
+            response = requests.get(url, params=params_check, verify=False)
             if response.status_code == 200:
                 root = ET.fromstring(response.text)
-                entry = root.find(f".//versions/entry[version='{version_to_download}']")
-                if entry is not None and entry.find('current').text == 'yes':
+                # entry = root.find(f".//versions/entry[version='{version_to_download}']")
+                # if entry is not None and entry.find('current').text == 'yes':
+                #     await self.create_firewall_status_log(job_id, ip, f'Successfully installed software version {version_to_download}')
+                #   
+                #   return True
+                job = root.find(".//job[type='SWInstall']")
+                if job is not None and job.find('status').text == 'FIN':
                     print(f'Successfully installed software version {version_to_download}')
-                    await self.create_firewall_status_log(job_id, ip, f'Successfully installed software version {version_to_download}')
-                    break
-            print('Waiting for installation to complete...')
-            await self.create_firewall_status_log(job_id, ip, f'Waiting for installation to complete...')
-            await asyncio.sleep(60)  # Wait for 60 seconds before checking again
+                    return True
+            
+                await self.create_firewall_status_log(job_id, ip, f'Waiting for installation to complete...')
+                await asyncio.sleep(60)  # Wait for 60 seconds before checking again
+            else:
+                await self.create_firewall_status_log(job_id, ip, f'Invalid reponse')
         else:
-            print('Installation did not complete after 10 minutes')
             await self.create_firewall_status_log(job_id, ip, f'Installation did not complete after 10 minutes')
-            return False
-        return True
+        
+        return False
     
     async def reboot_firewalls(self, firewall, ip, job_id, api_key, version_to_download, current_version):
         await self.create_firewall_status_log(job_id, ip, f'Rebooting started on  {ip}')
@@ -502,64 +510,87 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             'key': api_key
         }
 
-        for i in range(10): 
-            await asyncio.sleep(60)
-            await self.create_firewall_status_log(job_id, ip, f'{ip} Waiting for firewall to reboot...')
+        # for i in range(10): 
+        #     await asyncio.sleep(60)
+        #     await self.create_firewall_status_log(job_id, ip, f'{ip} Waiting for firewall to reboot...')
+
+        online = False
 
         # Wait for the firewall to come back online
-        for i in range(10):  # Try 20 times
+        for i in range(20):  # Try 20 times
             try:
                 response = requests.get(url, params=params_get, verify=False)
                 if response.status_code == 200:
-                    print('Firewall is back online')
                     await self.create_firewall_status_log(job_id, ip, f'{ip} is back online')
+                    online = True
                     break
             except requests.exceptions.RequestException:
+                delay = ping(ip)
+                if delay is None:
+                    await self.create_firewall_status_log(job_id, ip, f'{ip} to down, ping failed...')
+                else:
+                    await self.create_firewall_status_log(job_id, ip, f'{ip} to up, Delay: {delay} seconds')
                 print('Waiting for firewall to reboot...')
-                await self.create_firewall_status_log(job_id, ip, f'{ip} Waiting for firewall to reboot...')
+                await self.create_firewall_status_log(job_id, ip, f' Waiting for {ip} to reboot...')
                 await asyncio.sleep(60) # Wait for 60 seconds before checking again
-        else:
-            print('Firewall did not come back online after 10 minutes')
+        if not online:
             await self.create_firewall_status_log(job_id, ip, f'{ip} did not come back online after 20 minutes')
             return False #sys.exit()  # Stop the script execution
 
         # Check the installed software version
-        response = requests.get(url, params=params_get, verify=False)
+        params_get_version = {
+            'type': 'op',
+            'cmd': '<show><system><info></info></system></show>',
+            'key': api_key
+        }
+
+        response = requests.get(url, params=params_get_version, verify=False)
         if response.status_code == 200:
             root = ET.fromstring(response.text)
-            entry = root.find(f".//sw-version")
-            if entry is not None and entry.text == version_to_download:
-                print(f'Successfully installed software version {version_to_download}')
+
+            # Find the sw-version element
+            sw_version = root.find(".//sw-version")
+
+            # Print the software version
+            if sw_version is not None and sw_version.text == version_to_download:
                 await self.create_firewall_status_log(job_id, ip, f'Successfully installed software version {version_to_download}')
             else:
-                print(f'Failed to install software version {version_to_download}')
                 await self.create_firewall_status_log(job_id, ip, f'Failed to install software version {version_to_download}')
                 return False
+            # root = ET.fromstring(response.text)
+            # entry = root.find(f".//sw-version")
+            # if entry is not None and entry.text == version_to_download:
+            #     print(f'Successfully installed software version {version_to_download}')
+            #     await self.create_firewall_status_log(job_id, ip, f'Successfully installed software version {version_to_download}')
+            # else:
+            #     print(f'Failed to install software version {version_to_download}')
+            #     await self.create_firewall_status_log(job_id, ip, f'Failed to install software version {version_to_download}')
+            #     return False
 
-        await self.create_firewall_status_log(job_id, ip, "Rebooting completed.")
+        await self.create_firewall_status_log(job_id, ip, f"{ip} rebooting completed.")
         return True
     
     async def commit_firewalls(self, firewall, ip, job_id, api_key, version_to_download, current_version):
         await self.create_firewall_status_log(job_id, ip, "commit started")
-        await asyncio.sleep(10)
+        # await asyncio.sleep(10)
         await self.create_firewall_status_log(job_id, ip, "commit completed")
         return True
     
     async def ping_firewalls(self, firewall, ip, job_id, api_key, version_to_download, current_version):
         await self.create_firewall_status_log(job_id, ip, "ping started")
-        await asyncio.sleep(10)
+        # await asyncio.sleep(10)
         await self.create_firewall_status_log(job_id, ip, "ping completed")
         return True
     
     async def login_firewalls(self, firewall, ip, job_id, api_key, version_to_download, current_version):
         await self.create_firewall_status_log(job_id, ip, "login started")
-        await asyncio.sleep(10)
+        # await asyncio.sleep(10)
         await self.create_firewall_status_log(job_id, ip, "login completed")
         return True
     
     async def solar_wind_unmute_firewalls(self, firewall, ip, job_id, api_key, version_to_download, current_version):
         await self.create_firewall_status_log(job_id, ip, "solar_wind_unmute started")
-        await asyncio.sleep(10)
+        # await asyncio.sleep(10)
         await self.create_firewall_status_log(job_id, ip, "solar_wind_unmute completed")
         return True
 
@@ -567,26 +598,33 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
         await self.create_firewall_status_log(job_id, ip, "ip_addtess updated successfully")
         return True
 
-
     async def process_firewall_status(self, firewall, result, group_name, ip, status_sequence, name, job_id, api_key, update_version, current_version):
         for new_status in status_sequence:
-
+            await self.create_firewall_status_log(job_id, ip, f"{job_id} {ip} Task: {new_status.value.lower()}")
             task_method = getattr(self, f"{new_status.value.lower()}_firewalls")
+            result[group_name][ip] = {"status": new_status.value, "name": name}
+            await self.send(text_data=json.dumps(result))
+
             _result = await task_method(firewall, ip, job_id, api_key, update_version, current_version)
+            await self.create_firewall_status_log(job_id, ip, f'{job_id} {ip} result {_result}')
             if _result:
-                result[group_name][ip] = {"status": new_status.value, "name": name}
+                # result[group_name][ip] = {"status": new_status.value, "name": name}
+                await self.create_firewall_status_log(job_id, ip, f'{job_id} {ip} status change {new_status.value}')
                 firewall.status = new_status.value
                 await sync_to_async(firewall.save)()
                 await self.send(text_data=json.dumps(result))
             else:
                 result[group_name][ip] = {"status": 'error', "name": name}
+                await self.create_firewall_status_log(job_id, ip, f'{job_id} {ip} status change in else : erros')
+                
                 firewall.status = 'error'
                 await sync_to_async(firewall.save)()
                 await self.send(text_data=json.dumps(result))
                 error_occurred = True
                 break
+        await self.create_firewall_status_log(job_id, ip, f'{job_id} {ip} fianlly finished one ip')
+        
         return not error_occurred
-
 
     @sync_to_async
     def get_firewall_statuses(self, job_id):
@@ -598,7 +636,6 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             if _status.group_name:
                 result[_status.group_name][_status.ip_address] = {"status":_status.status, "name": _status.name}
         return result, res
-
 
     async def async_send_initial_status(self, job_id):
         from awx.main.models import UpdateFirewallStatus
@@ -711,7 +748,6 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
             for task in tasks:
                 await task
 
-
     async def receive(self, text_data):
         from awx.main.models import UpdateFirewallStatus
         text_data_json = json.loads(text_data)
@@ -737,6 +773,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                         defaults={'group_name': group_name, 'status': 'waiting', 'sequence': sequence, 'name': i['name'], 'api_key':api_key, 'update_version':update_version, 'current_version':i['current_version']}
                     )
                     response_data[group_name][i['ip']] = {"status":"waiting", "name":i['name']}
+            
             await self.send(text_data=json.dumps(response_data))
             tasks = []
             for _ip in ip_address:
@@ -761,12 +798,16 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                             FirewallStatus.SOLAR_WIND_UNMUTE,
                             FirewallStatus.UPDATED
                         ]
+                        await self.create_firewall_status_log(job_id, i['ip'], f'{job_id} {i["ip"]} status change initiating the call process firewall')
+
                         tasks.append(self.process_firewall_status(firewall_status, response_data, group_name, i['ip'], status_sequence, i['name'], job_id, api_key, update_version, i['current_version']))
             
             if sequence:
+                await self.create_firewall_status_log(job_id, i['ip'], f'{job_id} {i["ip"]} in sequence')
                 await asyncio.gather(*tasks)
             else:
                 for task in tasks:
+                    await self.create_firewall_status_log(job_id, i['ip'], f'{job_id} {i["ip"]}  running task')
                     await task
         else:
             await self.async_send_initial_status(job_id)

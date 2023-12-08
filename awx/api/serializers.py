@@ -6054,6 +6054,7 @@ class FirewallStatusLogsSerializer(serializers.Serializer):
     ip_address = serializers.CharField()
     job_id = serializers.IntegerField()
     text = serializers.CharField()
+    created_at = serializers.DateTimeField()
 
 
 class FirewallBackupFileSerializer(serializers.ModelSerializer):

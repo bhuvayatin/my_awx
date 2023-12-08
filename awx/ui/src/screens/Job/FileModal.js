@@ -1,6 +1,7 @@
 import { Modal, Title } from '@patternfly/react-core';
 import { DownloadIcon } from '@patternfly/react-icons';
 import { InventoriesAPI } from 'api';
+import { DateTime } from 'luxon';
 import React, { useState } from 'react';
 import { useEffect } from 'react';
 import styled from 'styled-components';
@@ -16,8 +17,7 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
 
   const [xml, setXml] = useState({
     file_name: '',
-    xml_content:
-      '<root><child1>Data for Child 1</child1><child2>Data for Child 2</child2></root>',
+    xml_content: '',
   });
   const [xml1, setXml1] = useState({
     file_name: '',
@@ -30,7 +30,6 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
       return () => clearInterval(intervalId);
     } else {
       get_xml();
-      console.log('🚀 ~ file: FileModal.js:32 ~ useEffect ~ get_xml:');
     }
   }, []);
   const get_log = async () => {
@@ -112,7 +111,17 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
                   style={{ padding: '10px', borderRight: '1px solid #f2f2f2' }}
                 >
                   {log?.map((item) => {
-                    return <p>{item?.text}</p>;
+                    return (
+                      <p>
+                        <b>
+                          {DateTime.fromISO(item?.created_at, {
+                            zone: 'utc',
+                          }).toFormat('MM-dd-yy hh:mm:ss')}{' '}
+                          :{' '}
+                        </b>
+                        {item?.text}
+                      </p>
+                    );
                   })}
                 </td>
               </tr>

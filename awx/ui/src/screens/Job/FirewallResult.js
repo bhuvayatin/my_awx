@@ -361,7 +361,7 @@ function FirewallResult() {
                       {repo?.prs}
                     </Label>
                   )}
-                  {repo?.prs == 'ping' && (
+                  {/* {repo?.prs == 'ping' && (
                     <Label
                       variant="outline"
                       color={'blue'}
@@ -369,7 +369,7 @@ function FirewallResult() {
                     >
                       {repo?.prs}
                     </Label>
-                  )}
+                  )} */}
                   {repo?.prs == 'login' && (
                     <Label
                       variant="outline"

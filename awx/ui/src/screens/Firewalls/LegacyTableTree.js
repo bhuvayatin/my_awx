@@ -957,7 +957,7 @@ const ComposableTableTree = () => {
             {node?.IP_Address}
           </a>
         </Td>
-        <Td dataLabel={columnNames.Firewall_State}>
+        {/* <Td dataLabel={columnNames.Firewall_State}>
           {node?.status && node?.status == 'Connected' && (
             <Label variant="outline" color={'green'} icon={<CheckCircleIcon />}>
               {node?.status}
@@ -968,7 +968,7 @@ const ComposableTableTree = () => {
               {node?.status}
             </Label>
           )}
-        </Td>
+        </Td> */}
         <Td dataLabel={columnNames.Hapair_Status}>
           {node?.Hapair_Status == 'active' && (
             <Label color="green" icon={<CheckCircleIcon />}>
@@ -1063,6 +1063,7 @@ const ComposableTableTree = () => {
               ip: child.IP_Address,
               name: child.name,
               current_version: child?.version,
+              status:child?.Hapair_Status
             }))
         : [];
 
@@ -1088,6 +1089,8 @@ const ComposableTableTree = () => {
 
       return result;
     }, []);
+    console.log("🚀 ~ file: LegacyTableTree.js:1091 ~ selectedRows ~ data:", selectedRows)
+
     const mergedRows = selectedRows.reduce((result, row) => {
       const existingRow = result.find((r) => r.parent === row.parent);
 
@@ -1103,37 +1106,54 @@ const ComposableTableTree = () => {
 
       return result;
     }, []);
-    const payload_ip = selectedRows?.map((item) => item.child);
-    const payload = {
-      credential_passwords: {},
-      extra_vars: {
-        inventory_hostname: payload_ip,
-      },
-      panos_version_input: software_version,
-    };
-    try {
-      const { data } = await JobTemplatesAPI.launch(11, {
-        extra_vars: payload,
-      });
-      // callsocket(mergedRows, data?.id);
-      if (data) {
-        history.push({
-          pathname: `/jobs/playbook/${data.id}/fresult`,
-          state: {
-            id: data?.id,
-            ip: mergedRows,
-            sequence: isChecked,
-            update_version: software_version,
-            api_key: access_token?.access_token,
-          },
-        });
+    const validationResults = mergedRows.map(({ child }) => {
+      const activeChild = child.find(({ status }) => status === 'active');
+      console.log("🚀 ~ file: LegacyTableTree.js:1111 ~ validationResults ~ activeChild:", activeChild)
+      const passiveChild = child.find(({ status }) => status === 'passive');
+      console.log("🚀 ~ file: LegacyTableTree.js:1113 ~ validationResults ~ passiveChild:", passiveChild)
+
+      if (activeChild && passiveChild) {
+        return activeChild.current_version === 'passiveChild.current_version';
       }
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
-        error
-      );
-    }
+
+      return true; // If no active or passive child, consider it as valid
+    });
+
+    // Check if all validations passed
+    const isValid = validationResults.every(result => result);
+
+    console.log("🚀 ~ file: LegacyTableTree.js:1109 ~ mergedRows ~ mergedRows:", isValid)
+    // const payload_ip = selectedRows?.map((item) => item.child);
+    // const payload = {
+    //   credential_passwords: {},
+    //   extra_vars: {
+    //     inventory_hostname: payload_ip,
+    //   },
+    //   panos_version_input: software_version,
+    // };
+    // try {
+    //   const { data } = await JobTemplatesAPI.launch(11, {
+    //     extra_vars: payload,
+    //   });
+    //   // callsocket(mergedRows, data?.id);
+    //   if (data) {
+    //     history.push({
+    //       pathname: `/jobs/playbook/${data.id}/fresult`,
+    //       state: {
+    //         id: data?.id,
+    //         ip: mergedRows,
+    //         sequence: isChecked,
+    //         update_version: software_version,
+    //         api_key: access_token?.access_token,
+    //       },
+    //     });
+    //   }
+    // } catch (error) {
+    //   console.log(
+    //     '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
+    //     error
+    //   );
+    // }
   };
 
   const closeModal = () => {
@@ -1240,7 +1260,7 @@ const ComposableTableTree = () => {
                       <Th>{columnNames.name}</Th>
                       <Th>{columnNames.Firewall_Serial}</Th>
                       <Th>{columnNames.IP_Address}</Th>
-                      <Th>{columnNames.Firewall_State}</Th>
+                      {/* <Th>{columnNames.Firewall_State}</Th> */}
                       <Th>{columnNames.Hapair_Status}</Th>
                       <Th>{columnNames.Threat_Version}</Th>
                       <Th>{columnNames.Software_Version}</Th>
