@@ -1,4 +1,11 @@
-import { Modal, Title } from '@patternfly/react-core';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionToggle,
+  Modal,
+  Title,
+} from '@patternfly/react-core';
 import { DownloadIcon } from '@patternfly/react-icons';
 import { InventoriesAPI } from 'api';
 import { DateTime } from 'luxon';
@@ -14,7 +21,7 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
 `;
   const [log, setLog] = useState([]);
   const [logdetails, setLogdetails] = useState('');
-
+  const [expanded, setExpanded] = React.useState('');
   const [xml, setXml] = useState({
     file_name: '',
     xml_content: '',
@@ -23,6 +30,13 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
     file_name: '',
     xml_content: '',
   });
+  const onToggle = (id) => {
+    if (id === expanded) {
+      setExpanded('');
+    } else {
+      setExpanded(id);
+    }
+  };
   useEffect(() => {
     if (islogmodal) {
       get_log();
@@ -76,6 +90,16 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
       </Title>
     </Header>
   );
+  const customStyles = {
+    accordion: {
+      backgroundColor: '#f2f2f2',
+      // Add other CSS properties as needed
+    },
+    body: {
+      maxHeight: '350px',
+      overflowY: 'scroll',
+    },
+  };
   const download = async () => {
     if (xml?.xml_content !== undefined) {
       const blob = new Blob([xml?.xml_content], { type: 'application/xml' });
@@ -99,7 +123,7 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
       aria-label={`Alert modal`}
       aria-labelledby="alert-modal-header-label"
       isOpen={isOpen}
-      // variant="small"
+      variant={islogmodal ? 'medium' : 'large'}
       onClose={onClose}
     >
       <div>
@@ -129,7 +153,63 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
           </table>
         ) : (
           <>
-            {xml1?.file_name && xml1?.file_name ? (
+            {xml1?.file_name && xml1?.file_name && (
+              <Accordion
+                asDefinitionList
+                className="accordion"
+                style={customStyles.accordion}
+              >
+                <AccordionItem>
+                  <AccordionToggle
+                    onClick={() => {
+                      onToggle('def-list-toggle2');
+                    }}
+                    isExpanded={expanded === 'def-list-toggle2'}
+                    id="def-list-toggle2"
+                  >
+                    <div style={{ display: 'flex' }}>
+                      {xml?.file_name?.substring(
+                        xml?.file_name.lastIndexOf('/') + 1
+                      )}
+                      <div
+                        onClick={() => {
+                          download();
+                        }}
+                        style={{ margin: '0 20px' }}
+                      >
+                        <DownloadIcon />
+                      </div>
+                    </div>
+                  </AccordionToggle>
+                  <AccordionContent
+                    id="def-list-expand2"
+                    isHidden={expanded !== 'def-list-toggle2'}
+                    className="body"
+                    style={customStyles.body}
+                  >
+                    <p>{xml?.xml_content}</p>
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem>
+                  <AccordionToggle>
+                    <div style={{ display: 'flex' }}>
+                      {xml1?.file_name?.substring(
+                        xml1?.file_name.lastIndexOf('/') + 1
+                      )}
+                      <div
+                        onClick={() => {
+                          download();
+                        }}
+                        style={{ margin: '0 20px' }}
+                      >
+                        <DownloadIcon />
+                      </div>
+                    </div>
+                  </AccordionToggle>
+                </AccordionItem>
+              </Accordion>
+            )}
+            {/* {xml1?.file_name && xml1?.file_name ? (
               <table style={{ width: '100%', border: '1px solid #f2f2f2' }}>
                 <tbody>
                   <tr style={{ background: '#f2f2f2' }}>
@@ -176,7 +256,7 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
               </table>
             ) : (
               <p>Please Wait sometime</p>
-            )}
+            )} */}
           </>
         )}
       </div>

@@ -13,7 +13,7 @@ import React, { useState } from 'react';
 
 function Generate_api() {
   const [breadcrumbConfig, setBreadcrumbConfig] = useState({
-    '/generate_api_key': t`Generate API Ke`,
+    '/generate_api_key': t`Generate API Key`,
   });
   const [ip_address, setIp_address] = useState('');
 
@@ -53,63 +53,78 @@ function Generate_api() {
       />
       <PageSection>
         <Card>
-          <form style={{ width: '400px', margin: 'auto',padding:20 }}>
+          <form
+            style={{
+              width: '100%',
+              margin: 'auto',
+              padding: 20,
+            }}
+          >
             <div
-              style={{ display: 'flex', alignItems: 'center', padding: '10px' }}
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+              }}
             >
-              <label htmlFor="ip_address" style={{ margin: '0 8px' }}>
-                IP address
-              </label>
-              <TextInput
-                // value={username}
-                name="ip_address"
-                style={{ width: '200px' }}
-                type="text"
-                onChange={(_event, value) =>
-                  // console.log(
-                  //   'value?.currentTarget?.value',
-                  //   value?.currentTarget?.value
-                  // )
-                  setIp_address(value?.currentTarget?.value)
-                }
-                aria-label="Enter IP Address"
-              />
+              <div style={{ width: '50%', padding: '0 20px' }}>
+                <div style={{ padding: '10px 0' }}>
+                  <label htmlFor="ip_address" style={{ margin: '0 8px' }}>
+                    IP address
+                  </label>
+                </div>
+                <div>
+                  <TextInput
+                    name="ip_address"
+                    style={{ width: '100%' }}
+                    type="text"
+                    onChange={(_event, value) =>
+                      setIp_address(value?.currentTarget?.value)
+                    }
+                    aria-label="Enter IP Address"
+                  />
+                </div>
+              </div>
+              <div style={{ width: '50%', padding: '0 20px' }}>
+                <div style={{ padding: '10px 0' }}>
+                  <label htmlFor="username" style={{ margin: '0 8px' }}>
+                    Username
+                  </label>
+                </div>
+                <div>
+                  <TextInput
+                    name="username"
+                    type="text"
+                    style={{ width: '100%' }}
+                    onChange={(_event, value) =>
+                      setUsername(value?.currentTarget?.value)
+                    }
+                    aria-label="Enter Username"
+                  />
+                </div>
+              </div>
+              <div style={{ width: '50%', padding: '0 20px' }}>
+                <div style={{ padding: '10px 0' }}>
+                  <label htmlFor="password" style={{ margin: '0 8px' }}>
+                    Password
+                  </label>
+                </div>
+                <div>
+                  <TextInput
+                    // value={username}
+                    name="password"
+                    style={{ width: '100%' }}
+                    type="password"
+                    onChange={(_event, value) =>
+                      setPassword(value?.currentTarget?.value)
+                    }
+                    aria-label="Enter Password"
+                  />
+                </div>
+              </div>
             </div>
-            <div
-              style={{ display: 'flex', alignItems: 'center', padding: '10px' }}
-            >
-              <label htmlFor="username" style={{ margin: '0 8px' }}>
-                Username
-              </label>
-              <TextInput
-                name="username"
-                // value={username}
-                type="text"
-                style={{ width: '200px' }}
-                onChange={(_event, value) =>
-                  setUsername(value?.currentTarget?.value)
-                }
-                aria-label="Enter Username"
-              />
-            </div>
-            <div
-              style={{ display: 'flex', alignItems: 'center', padding: '10px' }}
-            >
-              <label htmlFor="password" style={{ margin: '0 8px' }}>
-                Password
-              </label>
-              <TextInput
-                // value={username}
-                name="password"
-                style={{ width: '200px' }}
-                type="text"
-                onChange={(_event, value) =>
-                  setPassword(value?.currentTarget?.value)
-                }
-                aria-label="Enter Password"
-              />
-            </div>
-            <Button style={{margin:'10px 18px'}}onClick={handleSubmit}>Submit</Button>
+            <Button style={{ margin: '10px 18px' }} onClick={handleSubmit}>
+              Submit
+            </Button>
           </form>
         </Card>
         {issubmit && (

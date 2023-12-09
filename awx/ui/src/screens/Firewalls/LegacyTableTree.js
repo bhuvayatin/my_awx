@@ -54,7 +54,7 @@ const ComposableTableTree = () => {
     Threat_Version: 'Apps And Threat',
     Hapair_Status: 'Ha Pair Status',
   };
-  const pageSize = 10;
+  // const pageSize = 10;
   // Static Data JSON
   const childdata = [
     {
@@ -125,7 +125,7 @@ const ComposableTableTree = () => {
 
   const newchilddata = [
     {
-      name: 'XSOAR_Upgrade_testing',
+      name: 'XSOAR_Upgrade_testing4',
       firewalls: [
         {
           hostname: 'PA-VM_85',
@@ -464,14 +464,14 @@ const ComposableTableTree = () => {
       ],
     },
     {
-      name: '',
+      name: 'XSOAR_Upgrade_testing1',
       firewalls: [
         {
-          hostname: 'PA-VM_87',
-          'ip-address': '10.215.18.180',
+          hostname: 'PA-VM_851',
+          'ip-address': '10.215.18.851',
           'public-ip-address': 'unknown',
+          'ha-pair': '111',
           netmask: '255.255.254.0',
-          'ha-pair': '112',
           'default-gateway': '10.215.18.1',
           'is-dhcp': 'no',
           'ipv6-address': 'unknown',
@@ -480,7 +480,7 @@ const ComposableTableTree = () => {
           'mac-address': '00:50:56:9e:1d:d2',
           time: 'Wed Nov  1 09:07:34 2023',
           uptime: '41 days, 21:15:49',
-          devicename: 'PA-VM_87',
+          devicename: 'PA-VM_851',
           family: 'vm',
           model: 'PA-VM',
           serial: '007951000342260',
@@ -543,7 +543,7 @@ const ComposableTableTree = () => {
                 'av-compat': 'Match',
                 'ha2-ipaddr': '192.168.1.1/24',
                 'vpnclient-compat': 'Match',
-                'ha1-ipaddr': '10.215.18.85/23',
+                'ha1-ipaddr': '10.215.18.851/23',
                 'vm-license': 'vm100',
                 'ha2-macaddr': '00:50:56:9e:4d:8c',
                 'monitor-fail-holdup': '0',
@@ -561,7 +561,7 @@ const ComposableTableTree = () => {
                 'hello-interval': '8000',
                 'ha1-port': 'management',
                 'ha1-encrypt-imported': 'no',
-                'mgmt-ip': '10.215.18.85/23',
+                'mgmt-ip': '10.215.18.851/23',
                 'vpnclient-version': 'Not Installed',
                 'preempt-flap-cnt': '0',
                 'nonfunc-flap-cnt': '0',
@@ -596,7 +596,7 @@ const ComposableTableTree = () => {
                 'conn-status': 'up',
                 'av-version': '4361-4874',
                 'vpnclient-version': 'Not Installed',
-                'mgmt-ip': '10.215.18.86/23',
+                'mgmt-ip': '10.215.18.861/23',
                 'conn-ha2': {
                   'conn-status': 'up',
                   'conn-ka-enbled': 'no',
@@ -612,7 +612,7 @@ const ComposableTableTree = () => {
                 },
                 'vm-license-type': 'VM-100',
                 'state-duration': '1213383',
-                'ha1-ipaddr': '10.215.18.86',
+                'ha1-ipaddr': '10.215.18.861',
                 'mgmt-ipv6': 'None',
                 'last-error-state': 'suspended',
                 preemptive: 'no',
@@ -636,11 +636,195 @@ const ComposableTableTree = () => {
             },
           },
         },
+        {
+          hostname: 'PA-VM_861',
+          'ip-address': '10.215.18.861',
+          'public-ip-address': 'unknown',
+          'ha-pair': '111',
+          netmask: '255.255.254.0',
+          'default-gateway': '10.215.18.1',
+          'is-dhcp': 'no',
+          'ipv6-address': 'unknown',
+          'ipv6-link-local-address': 'fe80::250:56ff:fe9e:aef0/64',
+          'ipv6-default-gateway': 'None',
+          'mac-address': '00:50:56:9e:ae:f0',
+          time: 'Wed Nov  1 09:07:35 2023',
+          uptime: '14 days, 1:07:19',
+          devicename: 'PA-VM_861',
+          family: 'vm',
+          model: 'PA-VM',
+          serial: '007951000342259',
+          'vm-mac-base': '7C:89:C1:89:7A:00',
+          'vm-mac-count': '256',
+          'vm-uuid': '421E1A8C-FEF5-7BDF-90D3-CD096E92F569',
+          'vm-cpuid': 'ESX:57060500FFFB8B1F',
+          'vm-license': 'VM-100',
+          'vm-mode': 'VMware ESXi',
+          'cloud-mode': 'non-cloud',
+          'sw-version': '9.1.0',
+          'global-protect-client-package-version': '0.0.0',
+          'app-version': '8766-8347',
+          'app-release-date': '2023/10/17 19:43:26 PDT',
+          'av-version': '4361-4874',
+          'av-release-date': 'None',
+          'threat-version': '8766-8347',
+          'threat-release-date': '2023/10/17 19:43:26 PDT',
+          'wf-private-version': '0',
+          'wf-private-release-date': 'unknown',
+          'url-db': 'paloaltonetworks',
+          'wildfire-version': '0',
+          'wildfire-release-date': 'None',
+          'url-filtering-version': '0000.00.00.000',
+          'global-protect-datafile-version': 'unknown',
+          'global-protect-datafile-release-date': 'unknown',
+          'global-protect-clientless-vpn-version': '0',
+          'global-protect-clientless-vpn-release-date': 'None',
+          'logdb-version': '9.1.21',
+          plugin_versions: {
+            entry: {
+              pkginfo: 'vm_series-1.0.13',
+              '@name': 'vm_series',
+              '@version': '1.0.13',
+            },
+          },
+          'platform-family': 'vm',
+          'vpn-disable-mode': 'off',
+          'multi-vsys': 'off',
+          'operational-mode': 'normal',
+          peer_info_state: {
+            enabled: 'yes',
+            group: {
+              mode: 'Active-Passive',
+              'local-info': {
+                'url-compat': 'Mismatch',
+                'app-version': '8766-8347',
+                'gpclient-version': 'Not Installed',
+                'build-rel': '9.1.0',
+                'ha2-port': 'ethernet1/3',
+                'av-version': '4361-4874',
+                'ha1-gateway': '10.215.18.1',
+                'url-version': '0000.00.00.000',
+                'active-passive': {
+                  'passive-link-state': 'shutdown',
+                  'monitor-fail-holddown': '1',
+                },
+                'platform-model': 'PA-VM',
+                'av-compat': 'Match',
+                'ha2-ipaddr': '192.168.1.2/24',
+                'vpnclient-compat': 'Match',
+                'ha1-ipaddr': '10.215.18.861/23',
+                'vm-license': 'VM-100',
+                'ha2-macaddr': '00:50:56:9e:a1:d1',
+                'monitor-fail-holdup': '0',
+                priority: '100',
+                'preempt-hold': '1',
+                state: 'passive',
+                version: '1',
+                'promotion-hold': '2000',
+                'threat-compat': 'Match',
+                'state-sync': 'Complete',
+                'addon-master-holdup': '500',
+                'heartbeat-interval': '2000',
+                'ha1-link-mon-intv': '3000',
+                'hello-interval': '8000',
+                'ha1-port': 'management',
+                'ha1-encrypt-imported': 'no',
+                'mgmt-ip': '10.215.18.861/23',
+                'vpnclient-version': 'Not Installed',
+                'preempt-flap-cnt': '0',
+                'nonfunc-flap-cnt': '0',
+                'threat-version': '8766-8347',
+                'ha1-macaddr': '00:50:56:9e:ae:f0',
+                'state-duration': '1213383',
+                'max-flaps': '3',
+                'ha1-encrypt-enable': 'no',
+                'mgmt-ipv6': 'None',
+                'state-sync-type': 'ethernet',
+                preemptive: 'no',
+                'gpclient-compat': 'Match',
+                mode: 'Active-Passive',
+                'build-compat': 'Mismatch',
+                VMS: 'Compat Match',
+                'app-compat': 'Match',
+              },
+              'peer-info': {
+                'app-version': '8766-8347',
+                'gpclient-version': 'Not Installed',
+                'url-version': '20231101.20252',
+                'build-rel': '9.0.16-h3',
+                'ha2-ipaddr': '192.168.1.1',
+                'platform-model': 'PA-VM',
+                'vm-license': 'vm100',
+                'ha2-macaddr': '00:50:56:9e:4d:8c',
+                priority: '10',
+                state: 'active',
+                version: '1',
+                'conn-status': 'up',
+                'av-version': '4361-4874',
+                'vpnclient-version': 'Not Installed',
+                'mgmt-ip': '10.215.18.851/23',
+                'conn-ha2': {
+                  'conn-status': 'up',
+                  'conn-ka-enbled': 'no',
+                  'conn-primary': 'yes',
+                  'conn-desc': 'link status',
+                },
+                'threat-version': '8766-8347',
+                'ha1-macaddr': '00:50:56:9e:1d:d2',
+                'conn-ha1': {
+                  'conn-status': 'up',
+                  'conn-primary': 'yes',
+                  'conn-desc': 'heartbeat status',
+                },
+                'state-duration': '1213389',
+                'ha1-ipaddr': '10.215.18.851',
+                'mgmt-ipv6': 'None',
+                preemptive: 'no',
+                mode: 'Active-Passive',
+                VMS: '1.0.5',
+              },
+              'link-monitoring': {
+                'fail-cond': 'any',
+                enabled: 'yes',
+                groups: 'None',
+              },
+              'path-monitoring': {
+                vwire: 'None',
+                'fail-cond': 'any',
+                vlan: 'None',
+                enabled: 'yes',
+                vrouter: 'None',
+              },
+              'running-sync': 'not synchronized',
+              'running-sync-enabled': 'yes',
+            },
+          },
+        },
       ],
     },
   ];
 
-  const version_info = ['9.1.0', '9.1.1', '9.1.2', '9.1.3', '9.1.4'];
+  const version_info = [
+    '9.1.0',
+    '9.1.1',
+    '9.1.2',
+    '9.1.3',
+    '9.1.4',
+    '9.1.5',
+    '9.1.6',
+    '9.1.7',
+    '9.1.8',
+    '9.1.9',
+    '9.1.10',
+    '9.1.11',
+    '9.1.12',
+    '9.1.13',
+    '9.1.14',
+    '9.1.15',
+    '9.1.16',
+    '9.1',
+    '',
+  ];
   const history = useHistory();
   const [expandedNodeName, setExpandedNodeName] = useState(null);
   const [expandedDetailsNodeNames, setExpandedDetailsNodeNames] = useState([]);
@@ -658,7 +842,7 @@ const ComposableTableTree = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [software_version, setSoftware_version] = useState('');
   const [isopensoftware_version, setIsopenoftware_version] = useState(false);
-
+  const [pageSize, setPageSize] = useState(10);
   const [getdata, setGetdata] = useState(newchilddata);
   const [iserror, setIserror] = useState(false);
   const [datamodal, setDatamodal] = useState(false);
@@ -1051,91 +1235,136 @@ const ComposableTableTree = () => {
   //   OnSubmit Create One Payload For POST API
 
   const handleSubmit = async () => {
-    const selectedRows = data.reduce((result, parent) => {
-      const parentRow = selectedNodeNames.includes(parent.name)
-        ? { parent: parent.name, child: [] }
-        : null;
+    if (software_version !== '') {
+      const selectedRows = data.reduce((result, parent) => {
+        const parentRow = selectedNodeNames.includes(parent.name)
+          ? { parent: parent.name, child: [] }
+          : null;
 
-      const childRows = parent.children
-        ? parent.children
-            .filter((child) => selectedNodeNames.includes(child.name))
-            .map((child) => ({
-              ip: child.IP_Address,
-              name: child.name,
-              current_version: child?.version,
-              status: child?.Hapair_Status,
+        const childRows = parent.children
+          ? parent.children
+              .filter((child) => selectedNodeNames.includes(child.name))
+              .map((child) => ({
+                ip: child.IP_Address,
+                name: child.name,
+                current_version: child?.version,
+                status: child?.Hapair_Status,
+              }))
+          : [];
+
+        if (parentRow) {
+          const existingRow = result.find(
+            (row) => row.parent === parentRow.parent
+          );
+
+          if (existingRow) {
+            existingRow.child.push(...childRows);
+          } else {
+            parentRow.child = childRows;
+            result.push(parentRow);
+          }
+        } else {
+          result.push(
+            ...childRows.map((child) => ({
+              parent: parent.name,
+              child,
             }))
-        : [];
+          );
+        }
 
-      if (parentRow) {
-        const existingRow = result.find(
-          (row) => row.parent === parentRow.parent
-        );
+        return result;
+      }, []);
+
+      const mergedRows = selectedRows.reduce((result, row) => {
+        const existingRow = result.find((r) => r.parent === row.parent);
 
         if (existingRow) {
-          existingRow.child.push(...childRows);
+          if (Array.isArray(existingRow.child)) {
+            existingRow.child.push(row.child);
+          } else {
+            existingRow.child = [existingRow.child, row.child];
+          }
         } else {
-          parentRow.child = childRows;
-          result.push(parentRow);
+          result.push({ parent: row.parent, child: [row.child] });
         }
-      } else {
-        result.push(
-          ...childRows.map((child) => ({
-            parent: parent.name,
-            child,
-          }))
-        );
-      }
 
-      return result;
-    }, []);
-
-    const mergedRows = selectedRows.reduce((result, row) => {
-      const existingRow = result.find((r) => r.parent === row.parent);
-
-      if (existingRow) {
-        if (Array.isArray(existingRow.child)) {
-          existingRow.child.push(row.child);
+        return result;
+      }, []);
+      var errorMsg = [];
+      mergedRows?.forEach((element) => {
+        if (element.child.length !== 1) {
+          errorMsg.push({
+            parent: element.parent,
+            error:
+              'At a time you can only update one firewall in same device group ',
+          });
         } else {
-          existingRow.child = [existingRow.child, row.child];
+          const passiveData = getdata.find((vm) => vm.name === element?.parent);
+          // console.log("🚀 ~ file: LegacyTableTree.js:1122 ~ handleSubmit ~ passiveData:", passiveData)
+          // const passiveData2=passiveData?.firewalls?.find((vm) => vm.name === element?.parent);
+          const passiveData2 = passiveData?.firewalls?.find(
+            (item) =>
+              item.peer_info_state.group['local-info'].state === 'passive'
+          );
+          // console.log("🚀 ~ file: LegacyTableTree.js:1124 ~ handleSubmit ~ passiveData2:", passiveData2.peer_info_state.group['local-info']['build-rel'])
+          if (element?.child[0]?.status == 'active') {
+            if (
+              software_version !=
+              passiveData2.peer_info_state.group['local-info']['build-rel']
+            ) {
+              errorMsg.push({
+                parent: element.parent,
+                error: 'First You need to Update Passive Firewall',
+              });
+            }
+          }
         }
-      } else {
-        result.push({ parent: row.parent, child: [row.child] });
-      }
-
-      return result;
-    }, []);
-
-    const payload_ip = selectedRows?.map((item) => item.child);
-    const payload = {
-      credential_passwords: {},
-      extra_vars: {
-        inventory_hostname: payload_ip,
-      },
-      panos_version_input: software_version,
-    };
-    try {
-      const { data } = await JobTemplatesAPI.launch(11, {
-        extra_vars: payload,
       });
-      // callsocket(mergedRows, data?.id);
-      if (data) {
-        history.push({
-          pathname: `/jobs/playbook/${data.id}/fresult`,
-          state: {
-            id: data?.id,
-            ip: mergedRows,
-            sequence: isChecked,
-            update_version: software_version,
-            api_key: access_token?.access_token,
+      if (errorMsg.length < 1) {
+        const payload_ip = selectedRows?.map((item) => item.child);
+        const payload = {
+          credential_passwords: {},
+          extra_vars: {
+            inventory_hostname: payload_ip,
           },
-        });
+          panos_version_input: software_version,
+        };
+        try {
+          const { data } = await JobTemplatesAPI.launch(11, {
+            extra_vars: payload,
+          });
+          // callsocket(mergedRows, data?.id);
+          if (data) {
+            history.push({
+              pathname: `/jobs/playbook/${data.id}/fresult`,
+              state: {
+                id: data?.id,
+                ip: mergedRows,
+                sequence: isChecked,
+                update_version: software_version,
+                api_key: access_token?.access_token,
+              },
+            });
+          }
+        } catch (error) {
+          console.log(
+            '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
+            error
+          );
+        }
+      } else {
+        setIserror(true);
+        const error = errorMsg?.map((item) => (
+          <div key={item.parent}>
+            in <span style={{ fontWeight: 'bold' }}>{item.parent}</span>{' '}
+            {item.error}
+          </div>
+        ));
+        setIserrormsg(error);
       }
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
-        error
-      );
+    } else {
+      setIserror(true);
+      setIserrormsg('Please select the Software version ');
     }
   };
 
@@ -1188,6 +1417,7 @@ const ComposableTableTree = () => {
             selections={selectinventory}
             placeholderText="Select a Inventory"
             width={200}
+            style={{ maxHeight: '200px', overflowY: 'auto' }}
           >
             {results.map((option, index) => (
               <SelectOption
@@ -1213,6 +1443,7 @@ const ComposableTableTree = () => {
             selections={selectedOption}
             placeholderText="Select a Panoramas Devices"
             width={250}
+            style={{ maxHeight: '200px', overflowY: 'auto' }}
           >
             {gethostname.map((option, index) => (
               <SelectOption key={index} value={option} isPlaceholder={false}>
@@ -1281,6 +1512,18 @@ const ComposableTableTree = () => {
               perPage={pageSize}
               page={currentPage}
               onSetPage={(_, page) => setCurrentPage(page)}
+              onPerPageSelect={(_event, newPerPage, newPage) => {
+                setPageSize(newPerPage);
+                setCurrentPage(newPage);
+                console.log(
+                  '🚀 ~ file: LegacyTableTree.js:5417 ~ ComposableTableTree ~ newPage:',
+                  newPage
+                );
+                console.log(
+                  '🚀 ~ file: LegacyTableTree.js:5417 ~ ComposableTableTree ~ newPerPage:',
+                  newPerPage
+                );
+              }}
             />
           )}
         </>
@@ -1356,6 +1599,7 @@ const ComposableTableTree = () => {
                 selections={software_version}
                 placeholderText="Select a Version"
                 width={250}
+                style={{ maxHeight: '200px', overflowY: 'auto' }}
               >
                 {version_info.map((option, index) => (
                   <SelectOption

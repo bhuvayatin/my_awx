@@ -247,6 +247,12 @@ function DataModal({ onClose, isOpen, ip }) {
       console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
     }
   };
+  const header_style = {
+    width: '50%',
+    textAlign: 'right',
+    fontWeight: 600,
+  };
+  const value_style = { paddingLeft: '10px', width: '50%' };
   return (
     <Modal
       header={customHeader}
@@ -280,7 +286,7 @@ function DataModal({ onClose, isOpen, ip }) {
                   <Spinner size="lg" />
                 ) : (
                   <>
-                    <table>
+                    <table style={{ margin: 'auto' }}>
                       <tbody>
                         <tr>
                           <td
@@ -554,14 +560,23 @@ function DataModal({ onClose, isOpen, ip }) {
                               paddingLeft: '20px',
                             }}
                           >
-                            {availability?.response?.result?.group?.[
+                            {availability !== undefined &&
+                            availability?.response?.result?.group?.[
                               'local-info'
                             ]?.['build-rel'] ==
-                            availability?.response?.result?.group?.[
-                              'peer-info'
-                            ]?.['build-rel']
+                              availability?.response?.result?.group?.[
+                                'peer-info'
+                              ]?.['build-rel']
                               ? 'Match'
-                              : 'Mismatch'}
+                              : availability !== undefined &&
+                                availability?.response?.result?.group?.[
+                                  'local-info'
+                                ]?.['build-rel'] !=
+                                  availability?.response?.result?.group?.[
+                                    'peer-info'
+                                  ]?.['build-rel']
+                              ? 'Mismatch'
+                              : ''}
                           </td>
                         </tr>
                         <tr>
@@ -756,9 +771,12 @@ function DataModal({ onClose, isOpen, ip }) {
                   <table>
                     <tbody>
                       <tr>
-                        <td style={{fontWeight:600}}>Session Count : </td>
+                        <td style={{ fontWeight: 600 }}>Session Count : </td>
                         <td style={{ paddingLeft: 20 }}>
-                          <p>{`${sessiondata?.response?.result?.['num-active']} / ${sessiondata?.response?.result?.['num-max']}`}</p>
+                          <p>
+                            {sessiondata &&
+                              `${sessiondata?.response?.result?.['num-active']} / ${sessiondata?.response?.result?.['num-max']}`}
+                          </p>
                         </td>
                       </tr>
                     </tbody>
@@ -795,41 +813,31 @@ function DataModal({ onClose, isOpen, ip }) {
                       style={{
                         height: 'auto',
                         display: 'block',
-                        width: '541px',
+                        width: '100%',
                       }}
                     >
                       <div
                         className="x-column-inner"
                         id="ext-gen183"
-                        style={{ width: '541px' }}
+                        style={{ width: '100%' }}
                       >
                         <div
                           id="ext-comp-1027"
                           className=" x-form-label-left x-column"
-                          style={{ display: 'block', width: '541px' }}
+                          style={{ display: 'block', width: '100%' }}
                         >
                           <div
                             id="ext-comp-1028"
                             itemId="$"
                             className=" dashboard_widget"
                           >
-                            <table>
+                            <table style={{ margin: 'auto' }}>
                               <tbody>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Device Name :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system
                                         ?.hostname
@@ -837,20 +845,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     MGT IP Address :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'ip-address'
@@ -859,38 +857,18 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     MGT Netmask :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {general?.response?.result?.system?.netmask}
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     MGT Default Gateway :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'default-gateway'
@@ -899,20 +877,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     MGT IPv6 Address :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'ipv6-address'
@@ -921,20 +889,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     MGT IPv6 Link Local Address :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'ipv6-link-local-address'
@@ -943,20 +901,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     MGT IPv6 Default Gateway :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'ipv6-default-gateway'
@@ -965,20 +913,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     MGT MAC Address :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'mac-address'
@@ -987,56 +925,26 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Model :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {general?.response?.result?.system?.model}
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Serial # :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {general?.response?.result?.system?.serial}
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     CPU ID :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'vm-cpuid'
@@ -1045,20 +953,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     UUID :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'vm-uuid'
@@ -1067,20 +965,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     VM License :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'vm-license'
@@ -1089,20 +977,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     VM Mode :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'vm-mode'
@@ -1111,20 +989,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Software Version :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'sw-version'
@@ -1133,20 +1001,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     GlobalProtect Agent :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'global-protect-client-package-version'
@@ -1155,20 +1013,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Application Version :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'app-version'
@@ -1184,20 +1032,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Threat Version :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'threat-version'
@@ -1213,20 +1051,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Antivirus Version :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'av-version'
@@ -1242,20 +1070,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     URL Filtering Version :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'url-filtering-version'
@@ -1264,20 +1082,10 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     GlobalProtect Clientless VPN Version :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system?.[
                                         'global-protect-clientless-vpn-version'
@@ -1286,56 +1094,26 @@ function DataModal({ onClose, isOpen, ip }) {
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Time :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {general?.response?.result?.system?.time}
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Uptime :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {general?.response?.result?.system?.uptime}
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td
-                                    className="label"
-                                    style={{
-                                      width: '225px',
-                                      textAlign: 'right',
-                                      fontWeight:600
-                                    }}
-                                  >
+                                  <td className="label" style={header_style}>
                                     Plugin VM-Series :
                                   </td>
-                                  <td
-                                    className="data"
-                                    style={{ paddingLeft: '10px' }}
-                                  >
+                                  <td className="data" style={value_style}>
                                     {
                                       general?.response?.result?.system
                                         ?.plugin_versions?.entry?.pkginfo

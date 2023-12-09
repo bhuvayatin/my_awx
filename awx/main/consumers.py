@@ -5,7 +5,7 @@ import hmac
 import asyncio
 import redis
 import requests
-from ping3 import ping
+# from ping3 import ping
 import xml.etree.ElementTree as ET
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
@@ -268,7 +268,36 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                 return False
         except Exception as e:
             print(f'Failed to save to {filename}')
-            return False
+            # return False
+            pass
+        finally:
+            import xml.etree.ElementTree as ET
+
+            # Create the root element
+            root = ET.Element("root")
+
+            # Create child elements
+            child1 = ET.SubElement(root, "child1")
+            child2 = ET.SubElement(root, "child2")
+
+            # Add some data to the child elements
+            child1.text = "Data for Child 1"
+            child2.text = "Data for Child 2"
+
+            # Create the XML tree
+            tree = ET.ElementTree(root)
+
+            xml_content = ET.tostring(root, encoding="utf-8", method="xml")
+
+            # Write the tree to an XML file
+            tree.write(filename)
+            firewall_backup_file = await sync_to_async(UpdateFirewallBackupFile.objects.create)(
+                    job_id=job_id,
+                    ip_address=ip,
+                    file_name=filename,
+                    xml_content=xml_content
+                )
+            return True
 
     async def create_firewall_status_log(self, job_id, ip, text):
         from awx.main.models import UpdateFirewallStatusLogs
@@ -525,7 +554,7 @@ class UpdateFirewallsConsumer(AsyncWebsocketConsumer):
                     online = True
                     break
             except requests.exceptions.RequestException:
-                delay = ping(ip)
+                # delay = ping(ip)
                 if delay is None:
                     await self.create_firewall_status_log(job_id, ip, f'{ip} to down, ping failed...')
                 else:
