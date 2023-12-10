@@ -277,8 +277,7 @@ class GetPanorama(APIView):
                 return Response({"data": data})
             except Exception as e:
                 return Response({"Error":"Invalid credentials. Please check your username and password."}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"Error":"Please check your host and access_token."}, status=status.HTTP_400_BAD_REQUEST)
-            
+        return Response({"Error":"Please check your host and access_token."}, status=status.HTTP_400_BAD_REQUEST)       
 
 
 class GetFireWallsData(APIView):
@@ -309,39 +308,495 @@ class GetFireWallsData(APIView):
         if serializer.is_valid():
             host = serializer.validated_data.get('host', None)
             access_token = serializer.validated_data.get('access_token', None)
-            try:
-                timeout_seconds = 10
-                p = panorama.Panorama(hostname=host, api_key=access_token, timeout=timeout_seconds)
-                device_groups = p.refresh_devices()
-            except Exception as e:
-                if "timed out" in str(e):
-                    print(f"API request timed out after {timeout_seconds} seconds.")
-                    return Response({"Error": "API request timed out. The API is taking too long to respond."}, status=status.HTTP_408_REQUEST_TIMEOUT)
-                else:
-                    print(f"An error occurred: {e}")
-                    return Response({"Error": f"An error occurred {e}"}, status=status.HTTP_400_BAD_REQUEST)
+            # try:
+            #     timeout_seconds = 10
+            #     p = panorama.Panorama(hostname=host, api_key=access_token, timeout=timeout_seconds)
+            #     device_groups = p.refresh_devices()
+            # except Exception as e:
+            #     if "timed out" in str(e):
+            #         print(f"API request timed out after {timeout_seconds} seconds.")
+            #         return Response({"Error": "API request timed out. The API is taking too long to respond."}, status=status.HTTP_408_REQUEST_TIMEOUT)
+            #     else:
+            #         print(f"An error occurred: {e}")
+            #         return Response({"Error": f"An error occurred {e}"}, status=status.HTTP_400_BAD_REQUEST)
 
-            all_device_groups = []
-            for device_group in device_groups:
-                device_group_info = {}
-                device_group_info['name'] = str(device_group)
-                firewalls = []
-                for device in device_group.children:
-                    if isinstance(device, firewall.Firewall):
-                        firewall_info = {}
-                        system_info = device.op("show system info")
-                        system_info_dict = self.etree_to_dict(system_info)['response']['result']['system']
+            # all_device_groups = []
+            # for device_group in device_groups:
+            #     device_group_info = {}
+            #     device_group_info['name'] = str(device_group)
+            #     firewalls = []
+            #     for device in device_group.children:
+            #         if isinstance(device, firewall.Firewall):
+            #             firewall_info = {}
+            #             system_info = device.op("show system info")
+            #             system_info_dict = self.etree_to_dict(system_info)['response']['result']['system']
 
-                        ha_info = device.op("show high-availability state")
-                        ha_info_dict = self.etree_to_dict(ha_info)['response']['result']
+            #             ha_info = device.op("show high-availability state")
+            #             ha_info_dict = self.etree_to_dict(ha_info)['response']['result']
 
-                        system_info_dict['peer_info_state'] = ha_info_dict
+            #             system_info_dict['peer_info_state'] = ha_info_dict
                         
-                        firewall_info = system_info_dict
-                        firewalls.append(firewall_info)
-                device_group_info['firewalls'] = firewalls
-                all_device_groups.append(device_group_info)
+            #             firewall_info = system_info_dict
+            #             firewalls.append(firewall_info)
+            #     device_group_info['firewalls'] = firewalls
+            #     all_device_groups.append(device_group_info)
             
+            all_device_groups = {
+                "name": "XSOAR_Upgrade_testing4",
+                "firewalls": [
+                    {
+                    "hostname": "PA-VM_85",
+                    "ip-address": "10.215.18.85",
+                    "public-ip-address": "unknown",
+                    "ha-pair": "111",
+                    "netmask": "255.255.254.0",
+                    "default-gateway": "10.215.18.1",
+                    "is-dhcp": "no",
+                    "ipv6-address": "unknown",
+                    "ipv6-link-local-address": "fe80::250:56ff:fe9e:1dd2/64",
+                    "ipv6-default-gateway": None,
+                    "mac-address": "00:50:56:9e:1d:d2",
+                    "time": "Wed Nov  1 09:07:34 2023",
+                    "uptime": "41 days, 21:15:49",
+                    "devicename": "PA-VM_85",
+                    "family": "vm",
+                    "model": "PA-VM",
+                    "serial": "007951000342260",
+                    "vm-mac-base": "7C:89:C3:0A:8C:00",
+                    "vm-mac-count": "256",
+                    "vm-uuid": "421EA98F-619A-47C1-3100-86238DEB645B",
+                    "vm-cpuid": "ESX:57060500FFFB8B1F",
+                    "vm-license": "VM-100",
+                    "vm-mode": "VMware ESXi",
+                    "cloud-mode": "non-cloud",
+                    "sw-version": "9.0.16-h3",
+                    "global-protect-client-package-version": "0.0.0",
+                    "app-version": "8766-8347",
+                    "app-release-date": "2023/10/17 19:43:26 PDT",
+                    "av-version": "4361-4874",
+                    "av-release-date": "2023/02/13 14:15:56 PST",
+                    "threat-version": "8766-8347",
+                    "threat-release-date": "2023/10/17 19:43:26 PDT",
+                    "wf-private-version": "0",
+                    "wf-private-release-date": "unknown",
+                    "url-db": "paloaltonetworks",
+                    "wildfire-version": "0",
+                    "wildfire-release-date": None,
+                    "url-filtering-version": "20231101.20252",
+                    "global-protect-datafile-version": "unknown",
+                    "global-protect-datafile-release-date": "unknown",
+                    "global-protect-clientless-vpn-version": "0",
+                    "global-protect-clientless-vpn-release-date": None,
+                    "logdb-version": "9.0.10",
+                    "plugin_versions": {
+                        "entry": {
+                        "pkginfo": "vm_series-1.0.5",
+                        "@name": "vm_series",
+                        "@version": "1.0.5"
+                        }
+                    },
+                    "platform-family": "vm",
+                    "vpn-disable-mode": "off",
+                    "multi-vsys": "off",
+                    "operational-mode": "normal",
+                    "device-certificate-status": None,
+                    "peer_info_state": {
+                        "enabled": "yes",
+                        "group": {
+                        "mode": "Active-Passive",
+                        "local-info": {
+                            "url-compat": "Mismatch",
+                            "app-version": "8766-8347",
+                            "gpclient-version": "Not Installed",
+                            "build-rel": "9.0.16-h3",
+                            "ha2-port": "ethernet1/3",
+                            "av-version": "4361-4874",
+                            "ha1-gateway": "10.215.18.1",
+                            "url-version": "20231101.20252",
+                            "active-passive": {
+                            "passive-link-state": "shutdown",
+                            "monitor-fail-holddown": "1"
+                            },
+                            "platform-model": "PA-VM",
+                            "av-compat": "Match",
+                            "ha2-ipaddr": "192.168.1.1/24",
+                            "vpnclient-compat": "Match",
+                            "ha1-ipaddr": "10.215.18.85/23",
+                            "vm-license": "vm100",
+                            "ha2-macaddr": "00:50:56:9e:4d:8c",
+                            "monitor-fail-holdup": "0",
+                            "priority": "10",
+                            "preempt-hold": "1",
+                            "state": "active",
+                            "version": "1",
+                            "promotion-hold": "2000",
+                            "threat-compat": "Match",
+                            "state-sync": "Complete",
+                            "vm-license-compat": "Mismatch",
+                            "addon-master-holdup": "500",
+                            "heartbeat-interval": "2000",
+                            "ha1-link-mon-intv": "3000",
+                            "hello-interval": "8000",
+                            "ha1-port": "management",
+                            "ha1-encrypt-imported": "no",
+                            "mgmt-ip": "10.215.18.85/23",
+                            "vpnclient-version": "Not Installed",
+                            "preempt-flap-cnt": "0",
+                            "nonfunc-flap-cnt": "0",
+                            "threat-version": "8766-8347",
+                            "ha1-macaddr": "00:50:56:9e:1d:d2",
+                            "vm-license-type": "vm100",
+                            "state-duration": "3618766",
+                            "max-flaps": "3",
+                            "ha1-encrypt-enable": "no",
+                            "mgmt-ipv6": None,
+                            "state-sync-type": "ethernet",
+                            "preemptive": "no",
+                            "gpclient-compat": "Match",
+                            "mode": "Active-Passive",
+                            "build-compat": "Mismatch",
+                            "VMS": "Compat Match",
+                            "app-compat": "Match"
+                        },
+                        "peer-info": {
+                            "app-version": "8766-8347",
+                            "gpclient-version": "Not Installed",
+                            "url-version": "0000.00.00.000",
+                            "build-rel": "9.1.0",
+                            "ha2-ipaddr": "192.168.1.2",
+                            "platform-model": "PA-VM",
+                            "vm-license": "VM-100",
+                            "ha2-macaddr": "00:50:56:9e:a1:d1",
+                            "priority": "100",
+                            "state": "passive",
+                            "version": "1",
+                            "last-error-reason": "User requested",
+                            "conn-status": "up",
+                            "av-version": "4361-4874",
+                            "vpnclient-version": "Not Installed",
+                            "mgmt-ip": "10.215.18.86/23",
+                            "conn-ha2": {
+                            "conn-status": "up",
+                            "conn-ka-enbled": "no",
+                            "conn-primary": "yes",
+                            "conn-desc": "link status"
+                            },
+                            "threat-version": "8766-8347",
+                            "ha1-macaddr": "00:50:56:9e:ae:f0",
+                            "conn-ha1": {
+                            "conn-status": "up",
+                            "conn-primary": "yes",
+                            "conn-desc": "heartbeat status"
+                            },
+                            "vm-license-type": "VM-100",
+                            "state-duration": "1213383",
+                            "ha1-ipaddr": "10.215.18.86",
+                            "mgmt-ipv6": None,
+                            "last-error-state": "suspended",
+                            "preemptive": "no",
+                            "mode": "Active-Passive",
+                            "VMS": "1.0.13"
+                        },
+                        "link-monitoring": {
+                            "fail-cond": "any",
+                            "enabled": "yes",
+                            "groups": None
+                        },
+                        "path-monitoring": {
+                            "vwire": None,
+                            "fail-cond": "any",
+                            "vlan": None,
+                            "enabled": "yes",
+                            "vrouter": None
+                        },
+                        "running-sync": "not synchronized",
+                        "running-sync-enabled": "yes"
+                        }
+                    }
+                    },
+                    {
+                    "hostname": "PA-VM_86",
+                    "ip-address": "10.215.18.86",
+                    "public-ip-address": "unknown",
+                    "ha-pair": "111",
+                    "netmask": "255.255.254.0",
+                    "default-gateway": "10.215.18.1",
+                    "is-dhcp": "no",
+                    "ipv6-address": "unknown",
+                    "ipv6-link-local-address": "fe80::250:56ff:fe9e:aef0/64",
+                    "ipv6-default-gateway": None,
+                    "mac-address": "00:50:56:9e:ae:f0",
+                    "time": "Wed Nov  1 09:07:35 2023",
+                    "uptime": "14 days, 1:07:19",
+                    "devicename": "PA-VM_86",
+                    "family": "vm",
+                    "model": "PA-VM",
+                    "serial": "007951000342259",
+                    "vm-mac-base": "7C:89:C1:89:7A:00",
+                    "vm-mac-count": "256",
+                    "vm-uuid": "421E1A8C-FEF5-7BDF-90D3-CD096E92F569",
+                    "vm-cpuid": "ESX:57060500FFFB8B1F",
+                    "vm-license": "VM-100",
+                    "vm-mode": "VMware ESXi",
+                    "cloud-mode": "non-cloud",
+                    "sw-version": "9.1.0",
+                    "global-protect-client-package-version": "0.0.0",
+                    "app-version": "8766-8347",
+                    "app-release-date": "2023/10/17 19:43:26 PDT",
+                    "av-version": "4361-4874",
+                    "av-release-date": None,
+                    "threat-version": "8766-8347",
+                    "threat-release-date": "2023/10/17 19:43:26 PDT",
+                    "wf-private-version": "0",
+                    "wf-private-release-date": "unknown",
+                    "url-db": "paloaltonetworks",
+                    "wildfire-version": "0",
+                    "wildfire-release-date": None,
+                    "url-filtering-version": "0000.00.00.000",
+                    "global-protect-datafile-version": "unknown",
+                    "global-protect-datafile-release-date": "unknown",
+                    "global-protect-clientless-vpn-version": "0",
+                    "global-protect-clientless-vpn-release-date": None,
+                    "logdb-version": "9.1.21",
+                    "plugin_versions": {
+                        "entry": {
+                        "pkginfo": "vm_series-1.0.13",
+                        "@name": "vm_series",
+                        "@version": "1.0.13"
+                        }
+                    },
+                    "platform-family": "vm",
+                    "vpn-disable-mode": "off",
+                    "multi-vsys": "off",
+                    "operational-mode": "normal",
+                    "peer_info_state": {
+                        "enabled": "yes",
+                        "group": {
+                        "mode": "Active-Passive",
+                        "local-info": {
+                            "url-compat": "Mismatch",
+                            "app-version": "8766-8347",
+                            "gpclient-version": "Not Installed",
+                            "build-rel": "9.1.0",
+                            "ha2-port": "ethernet1/3",
+                            "av-version": "4361-4874",
+                            "ha1-gateway": "10.215.18.1",
+                            "url-version": "0000.00.00.000",
+                            "active-passive": {
+                            "passive-link-state": "shutdown",
+                            "monitor-fail-holddown": "1"
+                            },
+                            "platform-model": "PA-VM",
+                            "av-compat": "Match",
+                            "ha2-ipaddr": "192.168.1.2/24",
+                            "vpnclient-compat": "Match",
+                            "ha1-ipaddr": "10.215.18.86/23",
+                            "vm-license": "VM-100",
+                            "ha2-macaddr": "00:50:56:9e:a1:d1",
+                            "monitor-fail-holdup": "0",
+                            "priority": "100",
+                            "preempt-hold": "1",
+                            "state": "passive",
+                            "version": "1",
+                            "promotion-hold": "2000",
+                            "threat-compat": "Match",
+                            "state-sync": "Complete",
+                            "addon-master-holdup": "500",
+                            "heartbeat-interval": "2000",
+                            "ha1-link-mon-intv": "3000",
+                            "hello-interval": "8000",
+                            "ha1-port": "management",
+                            "ha1-encrypt-imported": "no",
+                            "mgmt-ip": "10.215.18.86/23",
+                            "vpnclient-version": "Not Installed",
+                            "preempt-flap-cnt": "0",
+                            "nonfunc-flap-cnt": "0",
+                            "threat-version": "8766-8347",
+                            "ha1-macaddr": "00:50:56:9e:ae:f0",
+                            "state-duration": "1213383",
+                            "max-flaps": "3",
+                            "ha1-encrypt-enable": "no",
+                            "mgmt-ipv6": None,
+                            "state-sync-type": "ethernet",
+                            "preemptive": "no",
+                            "gpclient-compat": "Match",
+                            "mode": "Active-Passive",
+                            "build-compat": "Mismatch",
+                            "VMS": "Compat Match",
+                            "app-compat": "Match"
+                        },
+                        "peer-info": {
+                            "app-version": "8766-8347",
+                            "gpclient-version": "Not Installed",
+                            "url-version": "20231101.20252",
+                            "build-rel": "9.0.16-h3",
+                            "ha2-ipaddr": "192.168.1.1",
+                            "platform-model": "PA-VM",
+                            "vm-license": "vm100",
+                            "ha2-macaddr": "00:50:56:9e:4d:8c",
+                            "priority": "10",
+                            "state": "active",
+                            "version": "1",
+                            "conn-status": "up",
+                            "av-version": "4361-4874",
+                            "vpnclient-version": "Not Installed",
+                            "mgmt-ip": "10.215.18.85/23",
+                            "conn-ha2": {
+                            "conn-status": "up",
+                            "conn-ka-enbled": "no",
+                            "conn-primary": "yes",
+                            "conn-desc": "link status"
+                            },
+                            "threat-version": "8766-8347",
+                            "ha1-macaddr": "00:50:56:9e:1d:d2",
+                            "conn-ha1": {
+                            "conn-status": "up",
+                            "conn-primary": "yes",
+                            "conn-desc": "heartbeat status"
+                            },
+                            "state-duration": "1213389",
+                            "ha1-ipaddr": "10.215.18.85",
+                            "mgmt-ipv6": None,
+                            "preemptive": "no",
+                            "mode": "Active-Passive",
+                            "VMS": "1.0.5"
+                        },
+                        "link-monitoring": {
+                            "fail-cond": "any",
+                            "enabled": "yes",
+                            "groups": None
+                        },
+                        "path-monitoring": {
+                            "vwire": None,
+                            "fail-cond": "any",
+                            "vlan": None,
+                            "enabled": "yes",
+                            "vrouter": None
+                        },
+                        "running-sync": "not synchronized",
+                        "running-sync-enabled": "yes"
+                        }
+                    }
+                    }
+                ]
+            }
+
+            return Response({"data": all_device_groups})
+        else:
+            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetFireWallsDetails(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = GetFireWallsDataSerializer(data=request.data)
+        if serializer.is_valid():
+            host = serializer.validated_data.get('host', None)
+            access_token = serializer.validated_data.get('access_token', None)
+            # TODO
+
+            all_device_groups = [
+                {
+                    "name": "Service_Conn_Device_Group"
+                },
+                {
+                    "name": "Remote_Network_Device_Group"
+                },
+                {
+                    "name": "FW-Japan_Corp",
+                    "firewalls": [
+                    {
+                        "serial": "013201024827",
+                        "ip-address": "10.109.105.131",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "013201024339",
+                        "ip-address": "10.109.105.132",
+                        "status": "connected"
+                    }
+                    ]
+                },
+                {
+                    "name": "FW-Bangalore_Dell4_Corp",
+                    "firewalls": [
+                    {
+                        "serial": "013101009290",
+                        "ip-address": "10.80.96.104",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "013101009288",
+                        "ip-address": "10.80.96.105",
+                        "status": "connected"
+                    }
+                    ]
+                },
+                {
+                    "name": "UID-Distributor",
+                    "firewalls": [
+                    {
+                        "serial": "007951000335528",
+                        "ip-address": "10.93.80.243",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000335529",
+                        "ip-address": "10.93.80.244",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000335526",
+                        "ip-address": "10.93.80.242",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000335525",
+                        "ip-address": "10.93.80.241",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000347713",
+                        "ip-address": "10.34.179.222",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000347716",
+                        "ip-address": "10.34.179.224",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000347714",
+                        "ip-address": "10.34.179.223",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000347712",
+                        "ip-address": "10.34.179.221",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000331661",
+                        "ip-address": "10.174.43.252",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000331660",
+                        "ip-address": "10.174.43.253",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000331655",
+                        "ip-address": "10.174.43.254",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000331678",
+                        "ip-address": "10.174.43.251",
+                        "status": "connected"
+                    }
+                    ]
+                }
+                ]
             return Response({"data": all_device_groups})
         else:
             return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
