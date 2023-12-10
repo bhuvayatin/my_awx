@@ -693,6 +693,7 @@ class GetFireWallsDetails(APIView):
         if serializer.is_valid():
             host = serializer.validated_data.get('host', None)
             access_token = serializer.validated_data.get('access_token', None)
+            name = serializer.validated_data.get('name', None)
             # TODO
 
             all_device_groups = [
