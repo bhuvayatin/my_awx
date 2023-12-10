@@ -60,7 +60,8 @@ from awx.api.serializers import (
     FirewallStatusLogsSerializer,
     FirewallBackupFileSerializer,
     FirewallProcessStopSerializer,
-    GenerateAPIKeySerializer
+    GenerateAPIKeySerializer,
+    GetFireWallsDetailsSerializer
 )
 from awx.api.views.mixin import RelatedJobsPreventDeleteMixin
 
@@ -688,7 +689,7 @@ class GetFireWallsData(APIView):
 
 class GetFireWallsDetails(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = GetFireWallsDataSerializer(data=request.data)
+        serializer = GetFireWallsDetailsSerializer(data=request.data)
         if serializer.is_valid():
             host = serializer.validated_data.get('host', None)
             access_token = serializer.validated_data.get('access_token', None)
