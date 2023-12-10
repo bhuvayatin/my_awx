@@ -342,6 +342,124 @@ class GetFireWallsData(APIView):
             #     device_group_info['firewalls'] = firewalls
             #     all_device_groups.append(device_group_info)
             
+            all_device_groups = [
+                {
+                    "name": "Service_Conn_Device_Group"
+                },
+                {
+                    "name": "Remote_Network_Device_Group"
+                },
+                {
+                    "name": "FW-Japan_Corp",
+                    "firewalls": [
+                    {
+                        "serial": "013201024827",
+                        "ip-address": "10.109.105.131",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "013201024339",
+                        "ip-address": "10.109.105.132",
+                        "status": "connected"
+                    }
+                    ]
+                },
+                {
+                    "name": "FW-Bangalore_Dell4_Corp",
+                    "firewalls": [
+                    {
+                        "serial": "013101009290",
+                        "ip-address": "10.80.96.104",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "013101009288",
+                        "ip-address": "10.80.96.105",
+                        "status": "connected"
+                    }
+                    ]
+                },
+                {
+                    "name": "UID-Distributor",
+                    "firewalls": [
+                    {
+                        "serial": "007951000335528",
+                        "ip-address": "10.93.80.243",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000335529",
+                        "ip-address": "10.93.80.244",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000335526",
+                        "ip-address": "10.93.80.242",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000335525",
+                        "ip-address": "10.93.80.241",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000347713",
+                        "ip-address": "10.34.179.222",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000347716",
+                        "ip-address": "10.34.179.224",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000347714",
+                        "ip-address": "10.34.179.223",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000347712",
+                        "ip-address": "10.34.179.221",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000331661",
+                        "ip-address": "10.174.43.252",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000331660",
+                        "ip-address": "10.174.43.253",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000331655",
+                        "ip-address": "10.174.43.254",
+                        "status": "connected"
+                    },
+                    {
+                        "serial": "007951000331678",
+                        "ip-address": "10.174.43.251",
+                        "status": "connected"
+                    }
+                    ]
+                }
+                ]
+
+            return Response({"data": all_device_groups})
+        else:
+            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetFireWallsDetails(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = GetFireWallsDetailsSerializer(data=request.data)
+        if serializer.is_valid():
+            host = serializer.validated_data.get('host', None)
+            access_token = serializer.validated_data.get('access_token', None)
+            name = serializer.validated_data.get('name', None)
+            # TODO
+
             all_device_groups = {
                 "name": "XSOAR_Upgrade_testing4",
                 "firewalls": [
@@ -681,124 +799,6 @@ class GetFireWallsData(APIView):
                     }
                 ]
             }
-
-            return Response({"data": all_device_groups})
-        else:
-            return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class GetFireWallsDetails(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = GetFireWallsDetailsSerializer(data=request.data)
-        if serializer.is_valid():
-            host = serializer.validated_data.get('host', None)
-            access_token = serializer.validated_data.get('access_token', None)
-            name = serializer.validated_data.get('name', None)
-            # TODO
-
-            all_device_groups = [
-                {
-                    "name": "Service_Conn_Device_Group"
-                },
-                {
-                    "name": "Remote_Network_Device_Group"
-                },
-                {
-                    "name": "FW-Japan_Corp",
-                    "firewalls": [
-                    {
-                        "serial": "013201024827",
-                        "ip-address": "10.109.105.131",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "013201024339",
-                        "ip-address": "10.109.105.132",
-                        "status": "connected"
-                    }
-                    ]
-                },
-                {
-                    "name": "FW-Bangalore_Dell4_Corp",
-                    "firewalls": [
-                    {
-                        "serial": "013101009290",
-                        "ip-address": "10.80.96.104",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "013101009288",
-                        "ip-address": "10.80.96.105",
-                        "status": "connected"
-                    }
-                    ]
-                },
-                {
-                    "name": "UID-Distributor",
-                    "firewalls": [
-                    {
-                        "serial": "007951000335528",
-                        "ip-address": "10.93.80.243",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000335529",
-                        "ip-address": "10.93.80.244",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000335526",
-                        "ip-address": "10.93.80.242",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000335525",
-                        "ip-address": "10.93.80.241",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000347713",
-                        "ip-address": "10.34.179.222",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000347716",
-                        "ip-address": "10.34.179.224",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000347714",
-                        "ip-address": "10.34.179.223",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000347712",
-                        "ip-address": "10.34.179.221",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000331661",
-                        "ip-address": "10.174.43.252",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000331660",
-                        "ip-address": "10.174.43.253",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000331655",
-                        "ip-address": "10.174.43.254",
-                        "status": "connected"
-                    },
-                    {
-                        "serial": "007951000331678",
-                        "ip-address": "10.174.43.251",
-                        "status": "connected"
-                    }
-                    ]
-                }
-                ]
             return Response({"data": all_device_groups})
         else:
             return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -1404,3 +1404,6 @@ class GenerateAPIKey(APIView):
 
         else:
             return Response({"Error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
