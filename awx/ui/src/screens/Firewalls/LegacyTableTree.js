@@ -843,9 +843,10 @@ const ComposableTableTree = () => {
   const [software_version, setSoftware_version] = useState('');
   const [isopensoftware_version, setIsopenoftware_version] = useState(false);
   const [pageSize, setPageSize] = useState(10);
-  const [getdata, setGetdata] = useState(newchilddata);
+  const [getdata, setGetdata] = useState([]);
   const [iserror, setIserror] = useState(false);
   const [datamodal, setDatamodal] = useState(false);
+  const [detail_load, setDetail_load] = useState(false);
   const [iserrormsg, setIserrormsg] = useState('');
   const [isChecked, setIsChecked] = useState(false);
   const [ip_address, setIp_address] = useState();
@@ -1052,7 +1053,8 @@ const ComposableTableTree = () => {
     level = 1,
     posinset = 1,
     rowIndex = 0,
-    isHidden = false
+    isHidden = false,
+    loadingDisplayed = false
   ) => {
     if (!node) {
       return [];
@@ -1072,6 +1074,9 @@ const ComposableTableTree = () => {
 
     const treeRow = {
       onCollapse: () => {
+        if (level == 1) {
+          get_firewall_detail(node?.name);
+        }
         setExpandedNodeName((prevExpanded) =>
           prevExpanded === node.name ? null : node.name
         );
@@ -1086,7 +1091,10 @@ const ComposableTableTree = () => {
             : [...otherDetailsExpandedNodeNames, node];
         }),
       onCheckChange: (_event, isChecking) => {
-        const nodeNamesToCheck = getDescendants(node).map((n) => n.name);
+        const nodeNamesToCheck = getDescendants(node).map((n) => {
+          // console.log("🚀 ~ file: LegacyTableTree.js:1090 ~ ComposableTableTree ~ node:", n.Firewall_Serial)
+          return n.name;
+        });
         setSelectedNodeNames((prevSelected) => {
           const otherSelectedNodeNames = prevSelected.filter(
             (name) => !nodeNamesToCheck.includes(name)
@@ -1119,54 +1127,110 @@ const ComposableTableTree = () => {
             level + 1,
             1,
             rowIndex + 1,
-            !isExpanded || isHidden
+            !isExpanded || isHidden,
+            loadingDisplayed || !detail_load
           )
         : [];
-
+    const loadingRow =
+      detail_load && !loadingDisplayed ? (
+        <Td colSpan={6}>
+          <Spinner size="lg" style={{ margin: 'auto', display: 'block' }} />
+        </Td>
+      ) : null;
     return [
       <TreeRowWrapper key={rowIndex} row={{ props: treeRow.props }}>
-        <Td dataLabel={columnNames.name} treeRow={treeRow}>
-          {node.name}
-        </Td>
-        <Td dataLabel={columnNames.Firewall_Serial}>{node?.Firewall_Serial}</Td>
-        <Td dataLabel={columnNames.IP_Address}>
-          <a
-            onClick={() => {
-              if (level == 2) {
-                setDatamodal(true);
-                setIp_address(node?.IP_Address);
-              }
-            }}
-          >
-            {node?.IP_Address}
-          </a>
-        </Td>
-        {/* <Td dataLabel={columnNames.Firewall_State}>
-          {node?.status && node?.status == 'Connected' && (
-            <Label variant="outline" color={'green'} icon={<CheckCircleIcon />}>
-              {node?.status}
-            </Label>
-          )}
-          {node?.status && node?.status == 'Disconnected' && (
-            <Label variant="outline" color={'red'} icon={<MinusCircleIcon />}>
-              {node?.status}
-            </Label>
-          )}
-        </Td> */}
-        <Td dataLabel={columnNames.Hapair_Status}>
-          {node?.Hapair_Status == 'active' && (
-            <Label color="green" icon={<CheckCircleIcon />}>
-              {node?.Hapair_Status}
-            </Label>
-          )}
-          {node?.Hapair_Status == 'passive' && (
-            <Label color="gold" icon={<MinusCircleIcon />}>
-              {node?.Hapair_Status}
-            </Label>
-          )}
-        </Td>
-        <Td dataLabel={columnNames.Threat_Version}>{node?.Threat_Version}</Td>
-        <Td dataLabel={columnNames.version}>{node?.version}</Td>
+        {level == 1 ? (
+          <>
+            <Td dataLabel={columnNames.name} treeRow={treeRow}>
+              {node?.name} ({`${node?.total_connected} / ${node?.total}`})
+            </Td>
+            <Td dataLabel={columnNames.Firewall_Serial}>
+              {node?.Firewall_Serial}
+            </Td>
+            <Td dataLabel={columnNames.IP_Address}>
+              <a
+                onClick={() => {
+                  if (level == 2) {
+                    setDatamodal(true);
+                    setIp_address(node?.IP_Address);
+                  }
+                }}
+              >
+                {node?.IP_Address}
+              </a>
+            </Td>
+            {/* <Td dataLabel={columnNames.Firewall_State}>
+        {node?.status && node?.status == 'Connected' && (
+          <Label variant="outline" color={'green'} icon={<CheckCircleIcon />}>
+            {node?.status}
+          </Label>
+        )}
+        {node?.status && node?.status == 'Disconnected' && (
+          <Label variant="outline" color={'red'} icon={<MinusCircleIcon />}>
+            {node?.status}
+          </Label>
+        )}
+      </Td> */}
+            <Td dataLabel={columnNames.Hapair_Status}>
+              {node?.Hapair_Status == 'active' && (
+                <Label color="green" icon={<CheckCircleIcon />}>
+                  {node?.Hapair_Status}
+                </Label>
+              )}
+              {node?.Hapair_Status == 'passive' && (
+                <Label color="gold" icon={<MinusCircleIcon />}>
+                  {node?.Hapair_Status}
+                </Label>
+              )}
+            </Td>
+            <Td dataLabel={columnNames.Threat_Version}>
+              {node?.Threat_Version}
+            </Td>
+            <Td dataLabel={columnNames.version}>{node?.version}</Td>
+          </>
+        ) : (
+          <>
+            {loadingRow}
+            {!detail_load && (
+              <>
+                <Td dataLabel={columnNames.name} treeRow={treeRow}>
+                  {node?.name}
+                </Td>
+                <Td dataLabel={columnNames.Firewall_Serial}>
+                  {node?.Firewall_Serial}
+                </Td>
+                <Td dataLabel={columnNames.IP_Address}>
+                  <a
+                    onClick={() => {
+                      if (level == 2) {
+                        setDatamodal(true);
+                        setIp_address(node?.IP_Address);
+                      }
+                    }}
+                  >
+                    {node?.IP_Address}
+                  </a>
+                </Td>
+                <Td dataLabel={columnNames.Hapair_Status}>
+                  {node?.Hapair_Status == 'active' && (
+                    <Label color="green" icon={<CheckCircleIcon />}>
+                      {node?.Hapair_Status}
+                    </Label>
+                  )}
+                  {node?.Hapair_Status == 'passive' && (
+                    <Label color="gold" icon={<MinusCircleIcon />}>
+                      {node?.Hapair_Status}
+                    </Label>
+                  )}
+                </Td>
+                <Td dataLabel={columnNames.Threat_Version}>
+                  {node?.Threat_Version}
+                </Td>
+                <Td dataLabel={columnNames.version}>{node?.version}</Td>
+              </>
+            )}
+          </>
+        )}
       </TreeRowWrapper>,
       ...childRows,
       ...renderRows(
@@ -1174,28 +1238,92 @@ const ComposableTableTree = () => {
         level,
         posinset + 1,
         rowIndex + 1 + childRows.length,
-        isHidden
+        isHidden,
+        loadingDisplayed
       ),
     ];
   };
-
-  // Get Data From Data JSON And Filter Accroding To Our Neew
-  const data = getdata?.map((parent) => {
-    let children = parent?.firewalls?.map((child) => ({
-      name: child['devicename'],
-      Firewall_Serial: child['serial'],
-      IP_Address: child['ip-address'],
-      status: child['serial'] == true ? 'Connected' : 'Disconnected',
-      // hapair: child['HA_Group_ID'],
-      version: child['sw-version'],
-      Threat_Version: child['threat-version'],
-      Hapair_Status: child['peer_info_state']['group']['local-info']['state'],
-    }));
-    return {
-      name: parent['name'] == '' ? 'No Device Group' : parent['name'],
-      children,
+  const get_firewall_detail = async (name) => {
+    setDetail_load(true);
+    const payload = {
+      host: selectedOption,
+      access_token: access_token?.access_token,
+      name: name,
     };
+    try {
+      const { data } = await InventoriesAPI.firewalls_details(payload);
+
+      const updatedData = getdata?.map((item) => {
+        if (item.name === data?.data[0]?.name) {
+          // Replace the data for FW-Japan_Corp with the new data
+          return data?.data[0];
+        }
+        return item;
+      });
+      setGetdata(updatedData);
+      setDetail_load(false);
+      return data;
+    } catch (error) {
+      setDetail_load(false);
+      console.log(
+        '🚀 ~ file: LegacyTableTree.js:1203 ~ constget_firewall_detail=async ~ error:',
+        error
+      );
+    }
+  };
+  // Get Data From Data JSON And Filter Accroding To Our Neew
+  const processedData = getdata.map((item) => {
+    if (item.firewalls) {
+      const totalIPs = item.firewalls.length;
+      const totalConnectedIPs = item.firewalls.filter(
+        (fw) => fw.status === 'connected'
+      ).length;
+
+      return {
+        ...item,
+        totalIPs,
+        totalConnectedIPs,
+      };
+    } else {
+      // For objects without firewalls array
+      return item;
+    }
   });
+  console.log(
+    '🚀 ~ file: LegacyTableTree.js:1290 ~ processedData ~ processedData:',
+    processedData
+  );
+  const data = processedData
+    ?.map((parent) => {
+      if (!parent?.firewalls || parent.firewalls.length === 0) {
+        return null; // Ignore if there are no firewalls
+      }
+
+      let children = parent.firewalls.map((child) => {
+        return {
+          name: child?.['devicename'] || child?.['serial'],
+          Firewall_Serial: child?.['serial'] || '',
+          IP_Address: child?.['ip-address'] || '',
+          status: child?.['status'],
+          version: child?.['sw-version'] || '',
+          Threat_Version: child?.['threat-version'] || '',
+          Hapair_Status:
+            child?.['peer_info_state']?.['group']?.['local-info']?.['state'] ||
+            '',
+        };
+      });
+      return {
+        name: parent['name'] || 'No Device Group',
+        total: parent['totalIPs'],
+        total_connected: parent['totalConnectedIPs'],
+        children,
+      };
+    })
+    .filter(Boolean); // Remove null entries
+  console.log(
+    '🚀 ~ file: LegacyTableTree.js:1276 ~ ComposableTableTree ~ getdata:',
+    data
+  );
 
   // Slice Data Accroding To The Current Page
   const pageData = data?.slice(startIndex, endIndex);
@@ -1290,78 +1418,82 @@ const ComposableTableTree = () => {
 
         return result;
       }, []);
-      var errorMsg = [];
-      mergedRows?.forEach((element) => {
-        if (element.child.length !== 1) {
-          errorMsg.push({
-            parent: element.parent,
-            error:
-              'At a time you can only update one firewall in same device group ',
+      console.log(
+        '🚀 ~ file: LegacyTableTree.js:1393 ~ mergedRows ~ mergedRows:',
+        mergedRows
+      );
+      // var errorMsg = [];
+      // mergedRows?.forEach((element) => {
+      //   if (element.child.length !== 1) {
+      //     errorMsg.push({
+      //       parent: element.parent,
+      //       error:
+      //         'At a time you can only update one firewall in same device group ',
+      //     });
+      //   } else {
+      //     const passiveData = getdata.find((vm) => vm.name === element?.parent);
+      //     // console.log("🚀 ~ file: LegacyTableTree.js:1122 ~ handleSubmit ~ passiveData:", passiveData)
+      //     // const passiveData2=passiveData?.firewalls?.find((vm) => vm.name === element?.parent);
+      //     const passiveData2 = passiveData?.firewalls?.find(
+      //       (item) =>
+      //         item.peer_info_state.group['local-info'].state === 'passive'
+      //     );
+      //     // console.log("🚀 ~ file: LegacyTableTree.js:1124 ~ handleSubmit ~ passiveData2:", passiveData2.peer_info_state.group['local-info']['build-rel'])
+      //     if (element?.child[0]?.status == 'active') {
+      //       if (
+      //         software_version !=
+      //         passiveData2.peer_info_state.group['local-info']['build-rel']
+      //       ) {
+      //         errorMsg.push({
+      //           parent: element.parent,
+      //           error: 'First You need to Update Passive Firewall',
+      //         });
+      //       }
+      //     }
+      //   }
+      // });
+      // if (errorMsg.length < 1) {
+      const payload_ip = selectedRows?.map((item) => item.child);
+      const payload = {
+        credential_passwords: {},
+        extra_vars: {
+          inventory_hostname: payload_ip,
+        },
+        panos_version_input: software_version,
+      };
+      try {
+        const { data } = await JobTemplatesAPI.launch(11, {
+          extra_vars: payload,
+        });
+        // callsocket(mergedRows, data?.id);
+        if (data) {
+          history.push({
+            pathname: `/jobs/playbook/${data.id}/fresult`,
+            state: {
+              id: data?.id,
+              ip: mergedRows,
+              sequence: isChecked,
+              update_version: software_version,
+              api_key: access_token?.access_token,
+            },
           });
-        } else {
-          const passiveData = getdata.find((vm) => vm.name === element?.parent);
-          // console.log("🚀 ~ file: LegacyTableTree.js:1122 ~ handleSubmit ~ passiveData:", passiveData)
-          // const passiveData2=passiveData?.firewalls?.find((vm) => vm.name === element?.parent);
-          const passiveData2 = passiveData?.firewalls?.find(
-            (item) =>
-              item.peer_info_state.group['local-info'].state === 'passive'
-          );
-          // console.log("🚀 ~ file: LegacyTableTree.js:1124 ~ handleSubmit ~ passiveData2:", passiveData2.peer_info_state.group['local-info']['build-rel'])
-          if (element?.child[0]?.status == 'active') {
-            if (
-              software_version !=
-              passiveData2.peer_info_state.group['local-info']['build-rel']
-            ) {
-              errorMsg.push({
-                parent: element.parent,
-                error: 'First You need to Update Passive Firewall',
-              });
-            }
-          }
         }
-      });
-      if (errorMsg.length < 1) {
-        const payload_ip = selectedRows?.map((item) => item.child);
-        const payload = {
-          credential_passwords: {},
-          extra_vars: {
-            inventory_hostname: payload_ip,
-          },
-          panos_version_input: software_version,
-        };
-        try {
-          const { data } = await JobTemplatesAPI.launch(11, {
-            extra_vars: payload,
-          });
-          // callsocket(mergedRows, data?.id);
-          if (data) {
-            history.push({
-              pathname: `/jobs/playbook/${data.id}/fresult`,
-              state: {
-                id: data?.id,
-                ip: mergedRows,
-                sequence: isChecked,
-                update_version: software_version,
-                api_key: access_token?.access_token,
-              },
-            });
-          }
-        } catch (error) {
-          console.log(
-            '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
-            error
-          );
-        }
-      } else {
-        setIserror(true);
-        const error = errorMsg?.map((item) => (
-          <div key={item.parent}>
-            in <span style={{ fontWeight: 'bold' }}>{item.parent}</span>{' '}
-            {item.error}
-          </div>
-        ));
-        setIserrormsg(error);
+      } catch (error) {
+        console.log(
+          '🚀 ~ file: InventoryTable.js:177 ~ handleSubmit ~ error:',
+          error
+        );
       }
+      // } else {
+      //   setIserror(true);
+      //   const error = errorMsg?.map((item) => (
+      //     <div key={item.parent}>
+      //       in <span style={{ fontWeight: 'bold' }}>{item.parent}</span>{' '}
+      //       {item.error}
+      //     </div>
+      //   ));
+      //   setIserrormsg(error);
+      // }
     } else {
       setIserror(true);
       setIserrormsg('Please select the Software version ');
@@ -1515,14 +1647,6 @@ const ComposableTableTree = () => {
               onPerPageSelect={(_event, newPerPage, newPage) => {
                 setPageSize(newPerPage);
                 setCurrentPage(newPage);
-                console.log(
-                  '🚀 ~ file: LegacyTableTree.js:5417 ~ ComposableTableTree ~ newPage:',
-                  newPage
-                );
-                console.log(
-                  '🚀 ~ file: LegacyTableTree.js:5417 ~ ComposableTableTree ~ newPerPage:',
-                  newPerPage
-                );
               }}
             />
           )}

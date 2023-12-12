@@ -58,7 +58,7 @@ function DataModal({ onClose, isOpen, ip }) {
     width: '20px',
     height: '20px',
     borderRadius: '50%',
-    background: 'yellow',
+    background: 'gray',
   };
   const reddiv = {
     width: '20px',
@@ -75,10 +75,10 @@ function DataModal({ onClose, isOpen, ip }) {
 
   const output = [];
 
-  for (let i = 0; i < 9; i += 2) {
+  for (let i = 0; i < get_socket?.length; i += 2) {
     output.push(
       <div key={i} style={{ display: 'flex', flexDirection: 'column' }}>
-        {i <= 9 && get_socket?.length > 0 && (
+        {i <= get_socket?.length && get_socket?.length > 0 && (
           <div
             style={{
               display: 'flex',
@@ -90,9 +90,9 @@ function DataModal({ onClose, isOpen, ip }) {
             <div
               style={{
                 background:
-                  get_socket[i]?.state == 'up'
+                  get_socket[i]?.state === 'up'
                     ? 'green'
-                    : get_socket[i]?.state == 'down'
+                    : get_socket[i]?.state === 'down'
                     ? 'red'
                     : 'gray',
                 border: '1px solid',
@@ -132,7 +132,7 @@ function DataModal({ onClose, isOpen, ip }) {
             </div>
           </div>
         )}
-        {i + 2 <= 9 && get_socket?.length > 0 && (
+        {i + 2 <= get_socket?.length && get_socket?.length > 0 && (
           <div
             style={{
               display: 'flex',
@@ -143,9 +143,9 @@ function DataModal({ onClose, isOpen, ip }) {
             <div
               style={{
                 background:
-                  get_socket[i + 1]?.state == 'up'
+                  get_socket[i + 1]?.state === 'up'
                     ? 'green'
-                    : get_socket[i + 1]?.state == 'down'
+                    : get_socket[i + 1]?.state === 'down'
                     ? 'red'
                     : 'gray',
                 border: '1px solid',
@@ -263,7 +263,7 @@ function DataModal({ onClose, isOpen, ip }) {
       onClose={onClose}
     >
       <div>
-        <Grid hasGutter span={6}>
+        <Grid hasGutter sm={12} md={6} lg={6} xl2={6}>
           <GridItem>
             <Card>
               <CardHeader
@@ -283,7 +283,15 @@ function DataModal({ onClose, isOpen, ip }) {
               </CardHeader>
               <CardBody style={{ paddingTop: '24px' }}>
                 {isLoadingavail ? (
-                  <Spinner size="lg" />
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Spinner size="lg" />
+                  </div>
                 ) : (
                   <>
                     <table style={{ margin: 'auto' }}>
@@ -328,9 +336,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'local-info'
-                                ]?.['state'] == 'active'
+                                ]?.['state'] === 'active'
                                   ? greendiv
-                                  : reddiv
+                                  : availability?.response?.result?.group?.[
+                                      'local-info'
+                                    ]?.['state'] === 'passive'
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -369,9 +381,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'peer-info'
-                                ]?.state == 'active'
+                                ]?.state === 'active'
                                   ? greendiv
-                                  : reddiv
+                                  : availability?.response?.result?.group?.[
+                                      'peer-info'
+                                    ]?.state === 'passive'
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -404,9 +420,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'running-sync'
-                                ] == 'not synchronized'
+                                ] === 'not synchronized'
                                   ? reddiv
-                                  : greendiv
+                                  : availability?.response?.result?.group?.[
+                                      'running-sync'
+                                    ] === 'synchronized'
+                                  ? greendiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -439,9 +459,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'local-info'
-                                ]?.['app-compat'] == 'Match'
+                                ]?.['app-compat'] === 'Match'
                                   ? greendiv
-                                  : reddiv
+                                  : availability?.response?.result?.group?.[
+                                      'local-info'
+                                    ]?.['app-compat'] === 'Mismatch'
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -474,9 +498,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'local-info'
-                                ]?.['threat-compat'] == 'Match'
+                                ]?.['threat-compat'] === 'Match'
                                   ? greendiv
-                                  : reddiv
+                                  : availability?.response?.result?.group?.[
+                                      'local-info'
+                                    ]?.['threat-compat'] === 'Mismatch'
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -509,9 +537,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'local-info'
-                                ]?.['av-compat'] == 'Match'
+                                ]?.['av-compat'] === 'Match'
                                   ? greendiv
-                                  : reddiv
+                                  : availability?.response?.result?.group?.[
+                                      'local-info'
+                                    ]?.['av-compat'] === 'Mismatch'
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -542,14 +574,23 @@ function DataModal({ onClose, isOpen, ip }) {
                           <td>
                             <div
                               style={
+                                availability &&
                                 availability?.response?.result?.group?.[
                                   'local-info'
-                                ]?.['build-rel'] ==
+                                ]?.['build-rel'] === availability &&
                                 availability?.response?.result?.group?.[
                                   'peer-info'
                                 ]?.['build-rel']
                                   ? greendiv
-                                  : reddiv
+                                  : availability &&
+                                    availability?.response?.result?.group?.[
+                                      'local-info'
+                                    ]?.['build-rel'] !== availability &&
+                                    availability?.response?.result?.group?.[
+                                      'peer-info'
+                                    ]?.['build-rel']
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -563,7 +604,7 @@ function DataModal({ onClose, isOpen, ip }) {
                             {availability !== undefined &&
                             availability?.response?.result?.group?.[
                               'local-info'
-                            ]?.['build-rel'] ==
+                            ]?.['build-rel'] ===
                               availability?.response?.result?.group?.[
                                 'peer-info'
                               ]?.['build-rel']
@@ -594,9 +635,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'local-info'
-                                ]?.['gpclient-compat'] == 'Match'
+                                ]?.['gpclient-compat'] === 'Match'
                                   ? greendiv
-                                  : reddiv
+                                  : availability?.response?.result?.group?.[
+                                      'local-info'
+                                    ]?.['gpclient-compat'] === 'Mismatch'
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -629,9 +674,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'peer-info'
-                                ]?.['conn-ha1']?.['conn-status'] == 'up'
+                                ]?.['conn-ha1']?.['conn-status'] === 'up'
                                   ? greendiv
-                                  : reddiv
+                                  : availability?.response?.result?.group?.[
+                                      'peer-info'
+                                    ]?.['conn-ha1']?.['conn-status'] === 'down'
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -665,9 +714,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'peer-info'
-                                ]?.['conn-ha2']?.['conn-status'] == 'up'
+                                ]?.['conn-ha2']?.['conn-status'] === 'up'
                                   ? greendiv
-                                  : reddiv
+                                  : availability?.response?.result?.group?.[
+                                      'peer-info'
+                                    ]?.['conn-ha2']?.['conn-status'] === 'down'
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -700,9 +753,13 @@ function DataModal({ onClose, isOpen, ip }) {
                               style={
                                 availability?.response?.result?.group?.[
                                   'local-info'
-                                ]?.['vm-license-compat'] == 'Match'
+                                ]?.['vm-license-compat'] === 'Match'
                                   ? greendiv
-                                  : reddiv
+                                  : availability?.response?.result?.group?.[
+                                      'local-info'
+                                    ]?.['vm-license-compat'] === 'Mismatch'
+                                  ? reddiv
+                                  : yellowdiv
                               }
                             ></div>
                           </td>
@@ -743,8 +800,25 @@ function DataModal({ onClose, isOpen, ip }) {
                 </div>
               </CardHeader>
               <CardBody style={{ paddingTop: '24px' }}>
-                <div style={{ display: 'flex', margin: '10px 0' }}>
-                  {isLoading ? <Spinner size="lg" /> : output}
+                <div
+                  style={{
+                    display: 'flex',
+                    margin: '10px 0',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {isLoading ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        margin: 'auto',
+                      }}
+                    >
+                      <Spinner size="lg" />{' '}
+                    </div>
+                  ) : (
+                    output
+                  )}
                 </div>
               </CardBody>
             </Card>
@@ -766,7 +840,15 @@ function DataModal({ onClose, isOpen, ip }) {
               </CardHeader>
               <CardBody style={{ paddingTop: '24px' }}>
                 {isLoadingsession ? (
-                  <Spinner size="lg" />
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Spinner size="lg" />
+                  </div>
                 ) : (
                   <table>
                     <tbody>
@@ -805,7 +887,15 @@ function DataModal({ onClose, isOpen, ip }) {
                 </CardHeader>
                 <CardBody style={{ paddingTop: '24px' }}>
                   {isLoadinggen ? (
-                    <Spinner size="lg" />
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Spinner size="lg" />
+                    </div>
                   ) : (
                     <div
                       id="ext-comp-1026"

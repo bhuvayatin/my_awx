@@ -30,6 +30,10 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
     file_name: '',
     xml_content: '',
   });
+  const [error, setError] = useState({
+    xml: '',
+    tzg: '',
+  });
   const onToggle = (id) => {
     if (id === expanded) {
       setExpanded('');
@@ -114,7 +118,36 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
 
       URL.revokeObjectURL(url);
     } else {
-      alert('Please try after some time');
+      setError((prev) => ({
+        ...prev,
+        xml: 'Unable to locate the specified resource',
+      }));
+    }
+  };
+  const download_file = async () => {
+    var payload = {
+      ip_address,
+      job_id: parseInt(job_id),
+      name: xml1.file_name,
+    };
+    try {
+      const  response  = await InventoriesAPI.firewall_backup_tgz_file(payload);
+
+      console.log(
+        '🚀 ~ file: FileModal.js:135 ~ constdownload_file= ~ data:',
+        response
+      );
+      const stream = await response.data;
+      // Create a Blob from the ArrayBuffer
+      const blob = new Blob([await stream], { type: 'application/x-gzip' });
+
+      // Create a temporary link and click it to trigger the download
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'your_file.tgz';
+      link.click();
+    } catch (error) {
+      console.log('🚀 ~ file: DataModal.js:202 ~ fetchData ~ error:', error);
     }
   };
   return (
@@ -190,6 +223,7 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
                     <p>{xml?.xml_content}</p>
                   </AccordionContent>
                 </AccordionItem>
+                <span style={{ color: 'red' }}>{error.xml}</span>
                 <AccordionItem>
                   <AccordionToggle>
                     <div style={{ display: 'flex' }}>
@@ -198,7 +232,7 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
                       )}
                       <div
                         onClick={() => {
-                          download();
+                          download_file();
                         }}
                         style={{ margin: '0 20px' }}
                       >
@@ -207,6 +241,7 @@ function FileModal({ isOpen, onClose, job_id, ip_address, islogmodal }) {
                     </div>
                   </AccordionToggle>
                 </AccordionItem>
+                <span style={{ color: 'red' }}>{error.tzg}</span>
               </Accordion>
             )}
             {/* {xml1?.file_name && xml1?.file_name ? (

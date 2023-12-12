@@ -26,7 +26,9 @@ class Inventories extends InstanceGroupsMixin(Base) {
     this.get_log = this.get_log.bind(this);
     this.get_xml = this.get_xml.bind(this);
     this.stop_proccess = this.stop_proccess.bind(this);
-    this.generate_api_key =this.generate_api_key.bind(this);
+    this.generate_api_key = this.generate_api_key.bind(this);
+    this.firewalls_details = this.firewalls_details.bind(this);
+    this.firewall_backup_tgz_file = this.firewall_backup_tgz_file.bind(this);
   }
 
   readHostVersion(data) {
@@ -57,6 +59,12 @@ class Inventories extends InstanceGroupsMixin(Base) {
   }
   get_xml(data) {
     return this.http.post(`${this.baseUrl}get/firewall_backup_file/`, data);
+  }
+  firewalls_details(data) {
+    return this.http.post(`${this.baseUrl}get/firewalls_details/`, data);
+  }
+  firewall_backup_tgz_file(data){
+    return this.http.post(`${this.baseUrl}get/firewall_backup_tgz_file/`, data);
   }
   stop_proccess(data) {
     return this.http.post(`${this.baseUrl}get/firewall_process_stop/`, data);

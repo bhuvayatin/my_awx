@@ -6056,6 +6056,11 @@ class FirewallStatusInputSerializer(serializers.Serializer):
     job_id = serializers.IntegerField()
 
 
+class FirewallBackupTGZFileSerializer(serializers.Serializer):
+    ip_address = serializers.CharField()
+    job_id = serializers.IntegerField()
+    name = serializers.CharField()
+
 class FirewallStatusLogsSerializer(serializers.Serializer):
     ip_address = serializers.CharField()
     job_id = serializers.IntegerField()
